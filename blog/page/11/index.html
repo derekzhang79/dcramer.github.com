@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="I was searching the internet the other day for a solution to word-wrap preformatted text for pastethat.com. Low and behold, Google answers all, it &hellip;">
+  <meta name="description" content="One of my first projects at the new company has been updating a script called iBox. Most people are familiar with the concept, that of lightbox, as &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,53 +63,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/03/12/word-wrap-preformatted-text">Word-wrap Preformatted Text</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-12T00:00:00-07:00" pubdate data-updated="true">Mar 12<span>th</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I was searching the internet the other day for a solution to word-wrap preformatted text for <a href="http://www.pastethat.com">pastethat.com</a>. Low and behold, Google answers all, it just takes finding the right keywords. So, the solution:</p>
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">pre-wrap</span><span class="o">;</span>       <span class="c">/* CSS-3                  */</span>
-</span><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">-moz-pre-wrap</span><span class="o">;</span>  <span class="c">/* Mozilla, since 1999    */</span>
-</span><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">-pre-wrap</span><span class="o">;</span>      <span class="c">/* Opera 4-6              */</span>
-</span><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">-o-pre-wrap</span><span class="o">;</span>    <span class="c">/* Opera 7                */</span>
-</span><span class='line'><span class="nt">word-wrap</span><span class="o">:</span> <span class="nt">break-word</span><span class="o">;</span>       <span class="c">/* Internet Explorer 5.5+ */</span>
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -454,6 +407,79 @@
   <div class="entry-content"><p>Thanks to Michael Moroz there is now initial <a href="http://code.google.com/p/django-sphinx/downloads/list">unicode support in the django-sphinx</a> project. I have also went ahead and setup <a href="http://code.google.com/p/django-sphinx/source">SVN</a> for the project at Google code.</p>
 
 <p>I will be updating the code with some timeout parameters and the requested weight attributes sometime over the next week.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/21/caching-layer-for-django-orm">Caching Layer for Django ORM</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-21T00:00:00-08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&#8217;ve finally completed what I&#8217;ll call &#8220;phase 1&#8221; of the caching layer. It handles the easiest, and for my cases, the most useful level of cache invalidation: removing objects.</p>
+
+<p><strong>&#8220;Phase 1&#8221; Features:</strong><br><ul><li>Automatic caching of querysets.</li><li>Invalidating querysets when an object is removed.</li><li>Caching querysets objects in a key by key basis (per-object caching).</li><li>Automatic invalidation of per-object caches.</li></ul></p>
+
+<p><a href="http://code.google.com/p/django-orm-cache/">Grab the code from Google</a> and look it over if you&#8217;re interested. This is still very much in a &#8220;It probably doesn&#8217;t work correctly&#8221; phase, and the code will have a lot of cleanup and structure changes before it&#8217;s done.</p>
+
+<p>Here&#8217;s a quick rundown of the intended functionality and SQL usage:</p>
+
+<pre>
+class MyModel(CachedModel): [...]
+
+MyModel.objects.create(name="Test") [1 query]
+
+MyModel.objects.all() [1 query ]
+[Test,]
+
+MyModel.objects.create(name="Test2") [1 query]
+
+MyModel.objects.all() [no queries]
+[Test,]
+
+MyModel.objects.create(name="Test3") [1 query]
+
+MyModel.objects.all().reset() [1 query]
+>>> [Test, Test2, Test3]
+
+MyModel.objects.get(name="Test2").delete() [1 query]
+
+MyModel.objects.all() [2 queries]
+[Test, Test3]
+
+z = MyModel.objects.get(name="Test")
+z.name = "Test Changed"
+z.save() [1 query]
+
+MyModel.objects.all() [no queries]
+[Test Changed, Test3]
+</pre>
+</div>
   
   
 

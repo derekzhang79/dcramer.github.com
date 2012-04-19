@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="I was one of the lucky few around here to get my hands on a BlackBerry Storm on Friday. Let me start by saying, I didn&#8217;t purchase (before or &hellip;">
+  <meta name="description" content="Tonight I finally took the chance to finish up the sidebar widgets in LifeStream, and I think everyone who&#8217;s been waiting for them will be &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,53 +63,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/11/22/impressions-of-the-blackberry-storm">Impressions of the BlackBerry Storm</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-11-22T00:00:00-08:00" pubdate data-updated="true">Nov 22<span>nd</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I was one of the lucky few around here to get my hands on a BlackBerry Storm on Friday. Let me start by saying, I didn&#8217;t purchase (before or now) an iPhone simply because of AT&T&#8217;s coverage where my parents live. I came into this having never owned a BlackBerry before. I&#8217;ve only owned one other smartphone/pda, and it was the AT&T Tilt (HTC Kaiser). At the best of times, I was unsatisfied with the way the Tilt handled, so the Storm had a lot to prove.</p>
-
-<p><img src="http://www.davidcramer.net/wp-content/uploads/2008/11/1223442288_blackberrystormhandson-300x202.jpg" alt="" title="1223442288_blackberrystormhandson" width="300" height="202" class="size-medium wp-image-367" /></p>
-
-<p>So first things first, the touch display. It has similar technology to the iPhone (although, from the looks of things the iPhone is a bit more advanced). It has a &#8220;click&#8221; system, much like the touchpad on new Macbooks. You can touch the screen for a hover effect in most places, and push in to get a click. For the most part the screen works very well, and I think the solution is probably more usable than the iPhone&#8217;s simple touch. There are some issues with apps having controls which are too small, but that will probably end up getting worked out in the coming weeks and months.</p>
-
-<p>All of the applications work just as you&#8217;d expect. They&#8217;re quality business level applications from BlackBerry. From what I understand, it&#8217;s pretty much the same as the other BlackBerry phones, some apps just have different interface controls. It includes all of the normal apps you&#8217;d expect, including your instant messengers, Facebook, Flickr, and even has a Visual Voice Mail app ($1.99/month, lame). Facebook&#8217;s app is nice, but again, you end up with controls that are hard to touch. This same issue arrises in the contact list, and browser as well.</p>
-
-<p>The Storm also has an &#8220;Accelerometer&#8221;. You know, that trendy word that most people have no meaning of (including myself). This is the technology which handles adjusting the display when you rotate or tilt the device. It&#8217;s very cool technology, and works just like you&#8217;d expect on the iPhone. The Storm, on the other hand, does not work as well. I&#8217;ve had numerous issues (I&#8217;ve even updated to the latest released version of the platform) with it not wanting to tilt no matter what you try. I&#8217;ve ended up rebooted the device several times just to fix it (somehow it fixes itself eventually though, and the reboots are fast).</p>
-
-<p>There are also some other issues which, while they are minor, are very annoying at times. One such issue is found in your SMS (and most likely email) controls. There&#8217;s a threaded (sort of) display for messages, and while it&#8217;s decent it&#8217;s not great. Replying to a message works like you&#8217;d expect. Select the message, and hit reply. The issue here however, is that while you&#8217;re typing your message, you sometimes will have trouble finding the &#8220;Send&#8221; button. There are two ways in which you can send: Using &#8220;Send&#8221; in the BlackBerry menu, or hiding the keyboard and hitting the button for send. Hiding the keyboard is obviously a pain, and the menu does not always function correctly. Sometimes it will not show the proper menu as if you were editing a message, but one as if you were simply viewing the threaded discussion still.</p>
-
-<p>Overall I am very pleased with the phone. Most of the small issues are software related, and will likely be fixed very quickly. I was disappointed with the application store not being present at launch (everything I read said it was going to be), as well as the fact that Verizon seemed unprepared for the launch. I think it has a lot of potential, and should make some great consumer friendly competition for Apple. Will I keep it? I guess only time will tell :)</p></div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -818,6 +771,89 @@ Here&#8217;s a rough implementation (a bit old) of how ours was working. As you 
 <p>The truest quote of them all:</p>
 
 <blockquote><br>I like the custom tag system in Django, and I wouln’t want to see it go away if the template engine is improved. But for example “ifnotequal foo bar” “endifnotequal” is no way better than “if foo != bar” “endif”.<br></blockquote></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/11/dealing-with-automated-form-submission-spam">Dealing With Automated Form Submission (Spam)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00-07:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form submission on websites, which is typically spam, or something else you don&#8217;t want happening. I added our routines to the new iBegin&#8217;s submission system today, and thought that I&#8217;d share with the world what we&#8217;re doing. I&#8217;m also curious as to what everyone else does to solve these problems, without burdening the user.</p>
+
+<p>On Curse we implemented a middleware, which on any POST request, would confirm that a user had filled in a Captcha box within the last N hours, or had verified themselves as a human being in some other fashion (a text message was our method).</p>
+
+<p>Now in iBegin, and my websites, we use two different methods to prevent spam. One is the <em>honeypot</em> method, which insert a text field with no value. This field is hidden with CSS, and if a value is passed on submission we assume that it&#8217;s a bot or something else trying to submit the form.</p>
+
+<p>The second method, requires the user have JavaScript enabled, but is very similar. We insert another text field, and set the value to &#8216;hello&#8217;. This field is also hidden with CSS, and on submission, we verify the value is still &#8216;hello&#8217;.</p>
+
+<p>If either of this fail, the form will throw a validation error, and of course log the attempt. So far, in all of my use-cases, it has worked very well, and the only &#8220;spam&#8221; I&#8217;ve seen are real users doing it themselves.</p>
+
+<p>So for a more technical look, here&#8217;s a sample of the code from our submission page for business listings:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;p&gt;&lt;div</span> <span class="na">style=</span><span class="s">&quot;display:none;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>These fields are present to prevent automated submission systems. If you see it, please do not fill in a value.
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span><span class="kd">var</span> <span class="nx">varname</span><span class="o">=</span><span class="s1">&#39;nospam1&#39;</span><span class="p">;</span><span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">&#39;&lt;inp&#39;</span><span class="o">+</span><span class="s1">&#39;ut name=&quot;&#39;</span><span class="o">+</span><span class="nx">varname</span><span class="o">+</span><span class="s1">&#39;&quot; type=&quot;text&quot; value=&quot;1&quot;/&gt;&#39;</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;nospam2&quot;</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+And our Django form validation:
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s">&#39;POST&#39;</span><span class="p">:</span>
+</span><span class='line'><span class="n">form</span> <span class="o">=</span> <span class="n">BusinessForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="n">initial</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="n">hidden</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nospam1&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&#39;hello&#39;</span><span class="p">:</span>
+</span><span class='line'><span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;`nospam1` value not set properly on form submission form </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;REMOTE_ADDR&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;noip&gt;&#39;</span><span class="p">),))</span>
+</span><span class='line'><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="s">&#39;__all__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;There was an unknown error submitting your request.&#39;</span>
+</span><span class='line'><span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nospam2&#39;</span><span class="p">):</span>
+</span><span class='line'><span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;`nospam2` value set on form submission form </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;REMOTE_ADDR&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;noip&gt;&#39;</span><span class="p">),))</span>
+</span><span class='line'><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="s">&#39;__all__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;There was an unknown error submitting your request.&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
   
   
 

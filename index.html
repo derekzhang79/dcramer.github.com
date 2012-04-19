@@ -92,7 +92,7 @@
   </header>
 
 
-  <div class="entry-content"><p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>.</p>
+  <div class="entry-content"><p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>. In the end, this is an overly complicated solution to solve the problem of threads having 10s or 100s of thousands of comments.</p>
 
 <p>For some background, our first implementation is very similar to how <a href="http://reddit.com">Reddit</a> and many other systems work. It generally looks something like this:</p>
 

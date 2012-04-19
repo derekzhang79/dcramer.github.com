@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://dcramer.github.com/atom.xml" rel="self"/>
   <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-18T17:28:48-07:00</updated>
+  <updated>2012-04-18T17:43:53-07:00</updated>
   <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -18,7 +18,7 @@
     <link href="http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
     <updated>2012-04-08T16:52:00-07:00</updated>
     <id>http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
-    <content type="html"><![CDATA[<p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>.</p>
+    <content type="html"><![CDATA[<p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>. In the end, this is an overly complicated solution to solve the problem of threads having 10s or 100s of thousands of comments.</p>
 
 <p>For some background, our first implementation is very similar to how <a href="http://reddit.com">Reddit</a> and many other systems work. It generally looks something like this:</p>
 
@@ -1747,17 +1747,71 @@ project/conf/settings/dev.py
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Stop with the ponies]]></title>
-    <link href="http://dcramer.github.com/2010/10/21/stop-with-the-fucking-ponies"/>
-    <updated>2010-10-21T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2010/10/21/stop-with-the-fucking-ponies</id>
-    <content type="html"><![CDATA[<p>Someone stirred this up today, so I wanted to publicly rant about how much <strong>I hate the Django pony</strong>, and I&#8217;m not alone.</p>
+    <title type="html"><![CDATA[Keeping your logging compatible with Sentry]]></title>
+    <link href="http://dcramer.github.com/2010/10/19/keeping-your-logging-compatible-with-sentry"/>
+    <updated>2010-10-19T00:00:00-07:00</updated>
+    <id>http://dcramer.github.com/2010/10/19/keeping-your-logging-compatible-with-sentry</id>
+    <content type="html"><![CDATA[<p>Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with <a href="http://github.com/dcramer/django-sentry">Sentry</a>, and in the end gives us some very ugly exception logging.</p>
 
-<p>First off, this thing started as a joke, and it was funny&#8230; as a one-liner. Since then it&#8217;s been turned in to a Mascot of sorts, and we were all gifted with My Little Pony toys at DjangoCon.</p>
+<p>Let&#8217;s take a simple example (we&#8217;re going to use Celery for this one):</p>
 
-<p><img src="http://www.davidcramer.net/wp-content/uploads/2010/10/fuckingponies.png" alt="" title="fuckingponies" width="500" class="aligncenter size-full wp-image-36317" /></p>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+</span><span class='line'>            <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+</span><span class='line'>            <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
+</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<p>I don&#8217;t want a toy pony, I don&#8217;t want to see a flying pony representing a brand, and<strong> I definitely dont want to see grown men running around with a stuffed pony</strong>.</p>]]></content>
+The functionality is pretty obvious. The logger is set via something similar to:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;celery&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now the big issue with this, is it doesnt use the standardized logging storage for exceptions. This isn&#8217;t an issue if you&#8217;re logging to a text file, or something that just streams the messages, but once you start using something as powerful as Sentry, it is. To fix this, we need to make one simple adjustment:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># import the sys module</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>    <span class="c"># append exc_info=sys.exc_info</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+</span><span class='line'>        <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span>
+</span><span class='line'>        <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">),</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now we&#8217;ll pass along the exception, just like we would had we used <code>logging.exception</code> over </code>logging.error</code>, and apps like Sentry can take advantage of this.</p>
+
+<p>&#8212;&#8211;</p>
+
+<p>For those unaware, Sentry is a logging application built on top of Django. It allows you to efficiently log exceptions (and other messages, if you want) to a database. This gives you the benefit of being able to have a higher level overview of what&#8217;s going on in your environment, especially with bug tracking.</p>]]></content>
   </entry>
   
 </feed>

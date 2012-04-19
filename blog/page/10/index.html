@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="One of my goals, beyond the constant improvement of the ORM in Django, is to make django.newforms easier for all of the lazy people, like myself, &hellip;">
+  <meta name="description" content="Today I was creating the submission form for the new iBegin.com homepage. In this we use a lot of JavaScript to make the process more clean. One such &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,45 +63,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/03/27/making-django-newforms-useful">Making Django Newforms Useful</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-27T00:00:00-07:00" pubdate data-updated="true">Mar 27<span>th</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>One of my goals, beyond the constant improvement of the ORM in Django, is to make django.newforms easier for all of the lazy people, like myself, which I know are plentiful. I personally hate the repetitive task of creating templates for your forms, and the as_X methods are extremely limited. So let&#8217;s get down to business.<br></div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2008/03/27/making-django-newforms-useful">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
   
   
     <article>
@@ -477,6 +438,53 @@
     <footer>
       <a rel="full-article" href="/2008/03/13/pastethats-super-sexy-revamp">Read on &rarr;</a>
     </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/12/word-wrap-preformatted-text">Word-wrap Preformatted Text</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-12T00:00:00-07:00" pubdate data-updated="true">Mar 12<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I was searching the internet the other day for a solution to word-wrap preformatted text for <a href="http://www.pastethat.com">pastethat.com</a>. Low and behold, Google answers all, it just takes finding the right keywords. So, the solution:</p>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">pre-wrap</span><span class="o">;</span>       <span class="c">/* CSS-3                  */</span>
+</span><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">-moz-pre-wrap</span><span class="o">;</span>  <span class="c">/* Mozilla, since 1999    */</span>
+</span><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">-pre-wrap</span><span class="o">;</span>      <span class="c">/* Opera 4-6              */</span>
+</span><span class='line'><span class="nt">white-space</span><span class="o">:</span> <span class="nt">-o-pre-wrap</span><span class="o">;</span>    <span class="c">/* Opera 7                */</span>
+</span><span class='line'><span class="nt">word-wrap</span><span class="o">:</span> <span class="nt">break-word</span><span class="o">;</span>       <span class="c">/* Internet Explorer 5.5+ */</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
   
 
 

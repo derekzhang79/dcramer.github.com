@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with Sentry, &hellip;">
+  <meta name="description" content="Tonight was our Django meetup here in San Francisco. Four of us presented (three from Whiskey, outnumbering everyone as always ;), with some pretty &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,101 +63,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/10/19/keeping-your-logging-compatible-with-sentry">Keeping Your Logging Compatible With Sentry</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-10-19T00:00:00-07:00" pubdate data-updated="true">Oct 19<span>th</span>, 2010</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with <a href="http://github.com/dcramer/django-sentry">Sentry</a>, and in the end gives us some very ugly exception logging.</p>
-
-<p>Let&#8217;s take a simple example (we&#8217;re going to use Celery for this one):</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
-</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-</span><span class='line'>            <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-</span><span class='line'>            <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
-</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-The functionality is pretty obvious. The logger is set via something similar to:
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;celery&#39;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now the big issue with this, is it doesnt use the standardized logging storage for exceptions. This isn&#8217;t an issue if you&#8217;re logging to a text file, or something that just streams the messages, but once you start using something as powerful as Sentry, it is. To fix this, we need to make one simple adjustment:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># import the sys module</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
-</span><span class='line'><span class="k">try</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-</span><span class='line'><span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
-</span><span class='line'>    <span class="c"># append exc_info=sys.exc_info</span>
-</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-</span><span class='line'>        <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span>
-</span><span class='line'>        <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">),</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
-</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now we&#8217;ll pass along the exception, just like we would had we used <code>logging.exception</code> over </code>logging.error</code>, and apps like Sentry can take advantage of this.</p>
-
-<p>&#8212;&#8211;</p>
-
-<p>For those unaware, Sentry is a logging application built on top of Django. It allows you to efficiently log exceptions (and other messages, if you want) to a database. This gives you the benefit of being able to have a higher level overview of what&#8217;s going on in your environment, especially with bug tracking.</p></div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -799,6 +704,91 @@ categories: [&#8220;django&#8221;]&#8212;
 <p>So, my first step was to update to EVGA&#8217;s latest drivers for Windows 7 64-bit. That didn&#8217;t change anything, which was a huge disappointment. After much Googling though, I found a solution which suggested using the Windows Vista 64 bit drivers. Not that it makes much sense, but it seems to have worked for me and many others.</p>
 
 <p>The conclusion: Install Windows Vista drivers for your EVGA motherboard if you&#8217;re using Windows 7. This is pretty quick:<br><ul><br><li>Download the correct motherboard drivers for Windows Vista</li><br><li>Extract them by running the original setup.py (don&#8217;t continue installing once they&#8217;ve been extracted).</li><br><li>Right click Computer -> Properties.</li><br><li>Click &#8220;Device Manager&#8221; on the left sidebar.</li><br><li>Find your Network adapters page, and look for &#8220;NVIDIA nForce &#8230;&#8221;. Right click this and click &#8220;Update driver software&#8221;.</li><br><li>Click on &#8220;Browse my computer for driver software&#8221;.</li><br><li>In the search box, click Browse, and locate the folder where you extracted the drivers. Should look like &#8220;C:\NVIDIA\nForceWinVista64Eng\15.51\Ethernet&#8221;</li><br><li>Enjoy no more network loss.</li><br></ul></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/09/30/jinja2-and-django-registration">Jinja2 and Django-registration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-09-30T00:00:00-07:00" pubdate data-updated="true">Sep 30<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many have yet to realize the benefit of class-based views. Today, I&#8217;m going to explain how we approached this for <a href="http://www.djangospot.com">DjangoSpot</a> (<a href="http://www.github.com/dcramer/djangospot">GitHub</a>) and <a href="http://bitbucket.org/ubernostrum/django-registration">django-registration</a>.</p>
+
+<p>The goal, as always, is the write the least amount of code. However, extending function-based views is now an easy task. So our approach involves using some tricky Python code (thanks to Chris Leary for the ideas!).</p>
+
+<p>Let&#8217;s talk about requirements real quick. You&#8217;ll need Django 1.1 (or newer), <a href="http://jinja.pocoo.org/2">Jinja2</a>, and <a href="http://www.github.com/dcramer/coffin">Coffin</a> 0.3.1 or newer (which as of writing, is not on PyPi).</p>
+
+<p>First off, we&#8217;re going to use <code>inspect.getsource</code> to retrieve source code for functions, and <code>exec</code> to evaluate that source code. One thing to note here, is that if the function you are trying to modify is using a decorator, it may not be possible to get the actual functions source code. Some, however, can be obtained by using <code>my_function.func_var_name</code>.</p>
+
+<p>So let&#8217;s take a look at our <code>urls.py</code> in <code>djangospot.accounts.urls</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">inspect</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">registration</span> <span class="kn">import</span> <span class="n">urls</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>\
+</span><span class='line'>     <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;django.contrib.auth&#39;</span><span class="p">,</span> <span class="s">&#39;coffin.contrib.auth&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see above, we&#8217;re importing the <code>urls</code> from django registration, and then running <code>getsource</code> on it. This gets us the source code from that entire file. From there, we simply swap out <code>django.contrib.auth</code> for our drop-in <code>coffin.contrib.auth</code>.
+
+Next up, we need to handle the views. It&#8217;s a similar approach, except we&#8217;re not doing any tricky string replacement:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">inspect</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">registration.views</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">coffin.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">coffin.template</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">activate</span><span class="p">)</span>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">register</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>What we&#8217;re doing here, is getting the source code for the actual methods, and simply executing it. To ensure we have all the needed imports, we first import everything from the <code>registration.views</code>. Afterwards, we replace the <code>render_to_response</code> and <code>RequestContext</code> imports with the ones made available in Coffin.</p>
+
+<p>Overall, it&#8217;s a fairly sketchy process, but it works beautiful. We approach the problem in a similar fashion with Coffin and the generic and contrib views in there.</p></div>
   
   
 
