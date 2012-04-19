@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: postgresql | David Cramer's Blog]]></title>
-  <link href="http://justcramer.com/categories/postgresql/atom.xml" rel="self"/>
-  <link href="http://justcramer.com/"/>
-  <updated>2012-04-18T17:17:02-07:00</updated>
-  <id>http://justcramer.com/</id>
+  <link href="http://dcramer.github.com/categories/postgresql/atom.xml" rel="self"/>
+  <link href="http://dcramer.github.com/"/>
+  <updated>2012-04-18T17:24:24-07:00</updated>
+  <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
-    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
+    <link href="http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
     <updated>2012-04-08T16:52:00-07:00</updated>
-    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
+    <id>http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
     <content type="html"><![CDATA[<p>Something we've been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that's somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>.</p>
 
 
@@ -187,7 +187,7 @@ ORDER BY value
 
 
 
-<p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, as well as some other things we've been doing. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
+<p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, and has pushed us into a new direction in what we can do with SQL. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
 
 
 

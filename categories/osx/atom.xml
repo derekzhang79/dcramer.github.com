@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: osx | David Cramer's Blog]]></title>
-  <link href="http://justcramer.com/categories/osx/atom.xml" rel="self"/>
-  <link href="http://justcramer.com/"/>
-  <updated>2012-04-18T17:17:02-07:00</updated>
-  <id>http://justcramer.com/</id>
+  <link href="http://dcramer.github.com/categories/osx/atom.xml" rel="self"/>
+  <link href="http://dcramer.github.com/"/>
+  <updated>2012-04-18T17:24:24-07:00</updated>
+  <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Python and OS X Lion]]></title>
-    <link href="http://justcramer.com/2011/07/20/python-and-os-x-lion"/>
+    <link href="http://dcramer.github.com/2011/07/20/python-and-os-x-lion"/>
     <updated>2011-07-20T00:00:00-07:00</updated>
-    <id>http://justcramer.com/2011/07/20/python-and-os-x-lion</id>
+    <id>http://dcramer.github.com/2011/07/20/python-and-os-x-lion</id>
     <content type="html"><![CDATA[<p>Just a few quick tips that I've had to run through and discover today while upgrading to Lion.</p>
 
 

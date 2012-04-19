@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: solr | David Cramer's Blog]]></title>
-  <link href="http://justcramer.com/categories/solr/atom.xml" rel="self"/>
-  <link href="http://justcramer.com/"/>
-  <updated>2012-04-18T17:17:02-07:00</updated>
-  <id>http://justcramer.com/</id>
+  <link href="http://dcramer.github.com/categories/solr/atom.xml" rel="self"/>
+  <link href="http://dcramer.github.com/"/>
+  <updated>2012-04-18T17:24:24-07:00</updated>
+  <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[How to actually make LocalSolr work]]></title>
-    <link href="http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work"/>
+    <link href="http://dcramer.github.com/2011/01/04/how-to-actually-make-localsolr-work"/>
     <updated>2011-01-04T00:00:00-08:00</updated>
-    <id>http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work</id>
+    <id>http://dcramer.github.com/2011/01/04/how-to-actually-make-localsolr-work</id>
     <content type="html"><![CDATA[<p>Today I've been working on integrating geospatial search with our upcoming DISQUS Search product, which happens to rely on Solr. It didn't take much work before I stumbled upon <a href="http://www.gissearch.com/localsolr">LocalSolr</a>, which seems to be the defacto gis implementation. The docs were fairly brief, but it <em>seemed</em> easy to get up and running. It just so happens that it wasnt <em>that</em> easy after all. Hoping that this helps someone else out, here's my step by step to getting it setup (locally, at least):</p>
 
 

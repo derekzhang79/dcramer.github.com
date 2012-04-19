@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
-  <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
-  <link href="http://justcramer.com/"/>
-  <updated>2012-04-18T17:17:02-07:00</updated>
-  <id>http://justcramer.com/</id>
+  <link href="http://dcramer.github.com/categories/sentry/atom.xml" rel="self"/>
+  <link href="http://dcramer.github.com/"/>
+  <updated>2012-04-18T17:24:24-07:00</updated>
+  <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Error Tracing in Sentry]]></title>
-    <link href="http://justcramer.com/2011/01/25/error-tracing-in-sentry"/>
+    <link href="http://dcramer.github.com/2011/01/25/error-tracing-in-sentry"/>
     <updated>2011-01-25T00:00:00-08:00</updated>
-    <id>http://justcramer.com/2011/01/25/error-tracing-in-sentry</id>
+    <id>http://dcramer.github.com/2011/01/25/error-tracing-in-sentry</id>
     <content type="html"><![CDATA[<p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it's version to 1.6.0. Among the changes was a new "Sentry ID" value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
 
 

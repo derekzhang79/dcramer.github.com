@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
-  <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
-  <link href="http://justcramer.com/"/>
-  <updated>2012-04-18T17:17:02-07:00</updated>
-  <id>http://justcramer.com/</id>
+  <link href="http://dcramer.github.com/categories/disqus/atom.xml" rel="self"/>
+  <link href="http://dcramer.github.com/"/>
+  <updated>2012-04-18T17:24:24-07:00</updated>
+  <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
-    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
+    <link href="http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
     <updated>2012-04-08T16:52:00-07:00</updated>
-    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
+    <id>http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
     <content type="html"><![CDATA[<p>Something we've been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that's somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>.</p>
 
 
@@ -187,7 +187,7 @@ ORDER BY value
 
 
 
-<p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, as well as some other things we've been doing. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
+<p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, and has pushed us into a new direction in what we can do with SQL. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
 
 
 
@@ -199,9 +199,9 @@ ORDER BY value
   
   <entry>
     <title type="html"><![CDATA[Scaling Schema Changes]]></title>
-    <link href="http://justcramer.com/2011/11/10/scaling-schema-changes"/>
+    <link href="http://dcramer.github.com/2011/11/10/scaling-schema-changes"/>
     <updated>2011-11-10T16:06:00-08:00</updated>
-    <id>http://justcramer.com/2011/11/10/scaling-schema-changes</id>
+    <id>http://dcramer.github.com/2011/11/10/scaling-schema-changes</id>
     <content type="html"><![CDATA[<p>I frequently get asked how Disqus deals with schema changes. It's a fair question, since we operate a fairly large amount of servers, but I also tend to think the answer is somewhat obvious. So let's start with the problem of schema changes at scale (in PostgreSQL).</p>
 
 
@@ -301,9 +301,9 @@ ORDER BY value
   
   <entry>
     <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
-    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
+    <link href="http://dcramer.github.com/2011/08/05/extending-django-nose"/>
     <updated>2011-08-05T00:00:00-07:00</updated>
-    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
+    <id>http://dcramer.github.com/2011/08/05/extending-django-nose</id>
     <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django's test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I'm happy to say we're running (basically) Nose with some minor extensions, and it's working great.</p>
 
 
@@ -733,9 +733,9 @@ tests/db/connections/redis/tests.py
   
   <entry>
     <title type="html"><![CDATA[EuroPython]]></title>
-    <link href="http://justcramer.com/2011/06/24/europython"/>
+    <link href="http://dcramer.github.com/2011/06/24/europython"/>
     <updated>2011-06-24T00:00:00-07:00</updated>
-    <id>http://justcramer.com/2011/06/24/europython</id>
+    <id>http://dcramer.github.com/2011/06/24/europython</id>
     <content type="html"><![CDATA[<p>This last week I've been attending <a href="http://europython.eu">EuroPython</a> over here in Firenze (or as we Americans know it, Florence), Italy. It's been a pretty amazing time, visiting the beautiful city, putting faces to names, and seeing some great presentations. More importantly, and the main reason for my trip, was the two talks that I delivered here this week.</p>
 
 
@@ -763,9 +763,9 @@ tests/db/connections/redis/tests.py
   
   <entry>
     <title type="html"><![CDATA[Creating a Read-only Mirror for your GitHub Server]]></title>
-    <link href="http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
+    <link href="http://dcramer.github.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
     <updated>2011-05-09T00:00:00-07:00</updated>
-    <id>http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
+    <id>http://dcramer.github.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
     <content type="html"><![CDATA[<p>Recently we've been transitioning our git repositories to GitHub. We chose to go this route for a variety of reasons, but mostly
 because they have kickass pull requests, which we're going to test run as code reviews. However, one of the requirements of this process was that
 our original git-server still remain functional, in at least a read-only state. This saves us the time of having to update deploy and
