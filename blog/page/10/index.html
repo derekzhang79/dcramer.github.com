@@ -1,0 +1,637 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="One of my goals, beyond the constant improvement of the ORM in Django, is to make django.newforms easier for all of the lazy people, like myself, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/blog/page/10">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/27/making-django-newforms-useful">Making Django Newforms Useful</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-27T00:00:00-07:00" pubdate data-updated="true">Mar 27<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of my goals, beyond the constant improvement of the ORM in Django, is to make django.newforms easier for all of the lazy people, like myself, which I know are plentiful. I personally hate the repetitive task of creating templates for your forms, and the as_X methods are extremely limited. So let&#8217;s get down to business.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/27/making-django-newforms-useful">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/24/modelchoicefields-as-charfields-in-django">ModelChoiceFields as CharFields in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-24T00:00:00-07:00" pubdate data-updated="true">Mar 24<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today I was creating the submission form for the new iBegin.com homepage. In this we use a lot of JavaScript to make the process more clean. One such use, was an autocomplete on Cities and Categories. To do this, and to keep validation, you need to use a ModelChoiceField, but using a ModelChoiceField with a TextInput doesn&#8217;t work. So, I give you an <a href="http://www.pastethat.com/django-inlinemodelchoice">InlineModelChoiceField in Django</a>.</p>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">newforms</span> <span class="k">as</span> <span class="n">forms</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">InlineModelChoiceField</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;widget&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;widget&#39;</span><span class="p">,</span> <span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">TextInput</span><span class="p">)</span>
+</span><span class='line'>        <span class="nb">super</span><span class="p">(</span><span class="n">InlineModelChoiceField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">None</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</span><span class='line'>        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="s">&quot;Please enter a valid </span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">verbose_name</span><span class="p">,))</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/22/setup-mod_wsgi-for-django-and-shared-hosting">Setup Mod_wsgi for Django and Shared Hosting</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-22T00:00:00-07:00" pubdate data-updated="true">Mar 22<span>nd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Recently I took the opportunity to configure my server for per-user hosting (to offer some free hosting to people who needed it). Doing this I had to configure mod_wsgi per-user as well. First, let me say that <a href="http://code.google.com/p/modwsgi/wiki/ConfigurationGuidelines">the documentation</a> is excellent, but real world examples are always very helpful. Below is the output of a script which runs per-user on my server.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/22/setup-mod_wsgi-for-django-and-shared-hosting">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/22/deploying-django">How to Deploy Django With Subversion and Mod_wsgi</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-22T00:00:00-07:00" pubdate data-updated="true">Mar 22<span>nd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today a question was raised on how to deploy Django on your server. I figured it&#8217;d be useful to put together a quick how-to for deploying Django on your standard LAMP infrastructure. I&#8217;m not going to say the way we&#8217;ve done things is the best, or if it&#8217;s even common, but it&#8217;s the way we&#8217;ve handled it.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/22/deploying-django">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/21/pastethat-ideas">PasteThat Ideas</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-21T00:00:00-07:00" pubdate data-updated="true">Mar 21<span>st</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In response to a few suggestions from users, I had been thinking of ways to improve <a href="http://www.pastethat.com/">PasteThat</a>. While I feel it&#8217;s a superb engine for what it does, I think it can be expanded.</p>
+
+<p>I&#8217;ve considered adding authentication and library features. What this would do is allow users who want long-term data available to sign-up and submit those pastes. They would then be able to &#8220;share&#8221; galleries. You&#8217;d simply tag a paste with any number of tags, and select that it is public.</p>
+
+<p>These galleries could then be syndicated, to a different page or PasteThat, or I considered using one of my domains (such as Nibbits). That page could then allow users possibly rate and comment on the code, images, or URLs (seems strange). It would include a simple bookmarking system as well.</p>
+
+<p>The core idea behind it, would be exactly the same as PasteThat currently is, except that it would be much easier to publicly share code (that is more than just a temporary paste), as I do quite often via my blog.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/19/django-hosting-want-some">Django Hosting &#8211; Want Some?</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T00:00:00-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I just finished moving everything to my new server (Ubuntu 7.x), which means I can deal with installing Django. Being that I have plenty of resources (I used to have some very active websites), I&#8217;m going to offer free, with no guarantee, Django hosting. Whether you have a domain or don&#8217;t, if you have a small project (a Blog, or something that&#8217;s not high in traffic), I&#8217;ll probably host it.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/19/django-hosting-want-some">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/17/ibegin-places-powered-by-django">iBegin Places &#8211; Powered by Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-17T00:00:00-07:00" pubdate data-updated="true">Mar 17<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href='/wp-content/uploads/2008/03/picture-1.png'><img src="http://www.davidcramer.net/wp-content/uploads/2008/03/picture-1.png" alt="" title="picture-" width="150" height="70" class="alignleft size-thumbnail attachment wp-att-104" /></a>We&#8217;ve launched our first new site over at iBegin, and it&#8217;s called <a href="http://places.ibegin.com/">Places</a>. It&#8217;s an experiment in mapping informal spaces, or outlining landmarks and other types of locations that you wouldn&#8217;t normally find on a map. The framework was built in about a week, and is powered by Django, MySQL, the Jinja templating engine, and of course, Google Maps.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/17/ibegin-places-powered-by-django">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/15/ibegin-share-ibox-and-wordpress-plug-ins">iBegin Share, iBox, and Wordpress Plug-ins</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-15T00:00:00-07:00" pubdate data-updated="true">Mar 15<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today we released <a href="http://gamma.ibegin.com/share/">iBegin Share v2.10</a>, a complete rewrite to the original, <a href="http://gamma.ibegin.com/ibox/">iBox v2.11</a>, and WordPress plug-in&#8217;s to go along with each of them (see Share below this post).<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/15/ibegin-share-ibox-and-wordpress-plug-ins">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/14/get-offsets-xy-for-an-object-javascript">Get X/Y Offsets for an Object in JavaScript</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-14T00:00:00-07:00" pubdate data-updated="true">Mar 14<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I had to fix a strange bug today in the iBegin Share widget. On one of our pages (the readme specifically) it was positioning wrong. The goal was to position it 5px below the bottom of the object it&#8217;s attached to. Easily enough I was able to Google and find the same 10 results that said &#8220;here is what you do to get the *correct* absolute positions for an object&#8221;. None of them actually worked :)<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/14/get-offsets-xy-for-an-object-javascript">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/13/pastethats-super-sexy-revamp">PasteThat&#8217;s Super Sexy Revamp</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-13T00:00:00-07:00" pubdate data-updated="true">Mar 13<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I found a couple bugs tonight on <a href="http://www.pastethat.com">PasteThat</a>, by the time I was done correcting them I had redesigned the site, updated the syntax highlighter (strangely enough, which now supports 1/3 the languages it used to), and added several new features.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/03/13/pastethats-super-sexy-revamp">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/11/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/9/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = ''
+        
+        var disqus_url = 'http://justcramer.com/blog/page/10/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

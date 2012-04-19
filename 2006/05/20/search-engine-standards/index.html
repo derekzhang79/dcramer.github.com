@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Search Engine Standards - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Just some notes, so I can hand these out to people: Every page should have an h1The H1 should specifically tell what that page is. It should not be &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2006/05/20/search-engine-standards">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Search Engine Standards</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-05-20T00:00:00-07:00" pubdate data-updated="true">May 20<span>th</span>, 2006</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Just some notes, so I can hand these out to people:</p>
+
+<p><strong>Every page should have an h1</strong><br>The H1 should specifically tell what that page is. It should not be filled w/ keywords, keep it compact and simple. If your page has news about a game, the h1 should be &#8220;Name of Game News&#8221;. Ok?</p>
+
+<p><strong>The title should be very similar to the h1</strong><br>In most cases, your title can match your h1. Although you may want additional keywords and the added ability to brand the site name. A good structure is H1 Name - Category/Section Name - Site Name</p>
+
+<p>Although for your Index, this is the exception. Your main page (www.blah.com) is a good area to describe what your site is about in the title. Include many keywords but keep it less than 255 characters. &#8220;My Site - Game News, Game Forums, Game Porn&#8221; you get the jist.</p>
+
+<p><strong>Now we have h1 we need h2</strong><br>In my experiences I&#8217;ve followed all of these rules, and I&#8217;ve never used anything to much extend beyond h1 and h2. My rules for h2 are use it for navigation (section) headers, and article titles.</p>
+
+<p>In your nav you may have a section called forums,and list links under it. Forums would be in h2, the links of course should be in a standard list<br>If you have news on your page, make each news title an h2 (I&#8217;ve also seen these pushed to h3 but I believe they have a lot of weight and sticking w/ my routine, I&#8217;ve used h2).</p>
+
+<p><strong>Keyworded links and titles</strong><br>So you have a webpage, and when you link to stuff you say &#8220;click here&#8221; as the link name. Find a new career path (or keep reading). No one searches for &#8220;click here&#8221; so why would you say the page your linking to is about &#8220;click here&#8221;. Your link&#8217;s name should be about what the page is about, makes sense don&#8217;t it?</p>
+
+<p>There *are* exceptions where you need to link something w/ some retarded text, or an image, etc.. This is where the title attribute comes into use. <a title="World of Warcraft" href="http://mmotheatre.com/~dcramer/mysite">CLICK HERE</a> - This basically changes the name of the link to &#8220;World of Warcraft&#8221; in a search engine&#8217;s eyes.</p>
+
+<p>Keep your html clean, small, and prefix it with an x for even more luck<br>If you can&#8217;t figure out XHTML transitional, refer to finding a new career path. Overloading your page w/ tables, extra attributes, and well, improper tags hurts you not only in bandwidth costs (xhtml vs html) but it can also hurt your SE ranking. This is where using headers, proper linking, and lists comes into play as well.</p>
+
+<p>Use tags as they were meant to be used. It&#8217;s not like you&#8217;re sticking your link in an IMG tag are you? So why would you stick paragraph in div, or your list in a table.</p>
+
+<p><strong>URL Rewriting</strong><br>I dont think this does as much as everyone thinks, but it&#8217;s still a nice touch.<br>Most sites have dynamic content, and pages will look something like /myscript.php?someID=5. I prefer to take this, and say for example myscript shows articles. We can use mod_rewrite (google it) and do /articles/5/this-is-fake-words-blah-blah.html.<br>Try this, can&#8217;t say I never did anything for you:</p>
+
+<p>function safe_name($string)<br>{<br>if (!trim($string))<br>return false;<br>$string = preg_replace(&#8216;/[^a-zA-Z0-9_-s.]/&#8217;, &#8221;, $string);<br>$string = preg_replace(&#8216;/s/&#8217;, &#8216;-&#8216;, $string);<br>$string = strtolower($string); // make the string all lowercase values</p>
+
+<p>return $string;<br>}</p>
+
+<p>Already follow all these rules? Congratulations! You are one of the few people who seem to understand this not so complicated concept!<br>Anyways, agree or not, my methods are proven effective, check out <a href="http://www.nibbits.com/">Nibbits</a> for my latest example of finely tuned SE content as well as proof on <a href="http://www.wowguru.com/">World of Warcraft Guru</a>.<br><ul /></p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-05-20T00:00:00-07:00" pubdate data-updated="true">May 20<span>th</span>, 2006</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2006/05/20/search-engine-standards" data-via="zeeg" data-counturl="http://justcramer.com/2006/05/20/search-engine-standards" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/2006/05/21/html-tooltips" title="next Post: HTML Tooltips">HTML Tooltips &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '5 http://mmotheatre.com/~dcramer/other/5/search-engine-standards.html';
+        
+        var disqus_url = 'http://justcramer.com/2006/05/20/search-engine-standards';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '5 http://mmotheatre.com/~dcramer/other/5/search-engine-standards.html';
+        
+        var disqus_url = 'http://justcramer.com/2006/05/20/search-engine-standards';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

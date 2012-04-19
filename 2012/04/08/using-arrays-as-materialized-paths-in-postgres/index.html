@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Using Arrays as Materialized Paths in Postgres - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Something we&#8217;ve been casually working on at Disqus for quite some time is an improved pagination method for threaded comments. This is &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Using Arrays as Materialized Paths in Postgres</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-08T16:52:00-07:00" pubdate data-updated="true">Apr 8<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>.</p>
+
+<p>For some background, our first implementation is very similar to how <a href="http://reddit.com">Reddit</a> and many other systems work. It generally looks something like this:</p>
+
+<ol>
+    <li>Fetch all children for a tree</li>
+    <li>Resort them in memory</li>
+    <li>Return the N entry result set</li>
+</ol>
+
+<p>While fairly easy to implement, this has the enormous cost of pulling down every single child and resorting it at an application level. There are various ways to optimize this, and we even attempted doing it <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">within the database</a> itself. In the end, none of our solutions worked at scale. They would either be too write heavy, or they&#8217;d move too much of the logic (read: CPU usage) to the database servers. That said, they led to something great, and in the end we settled on a solution that&#8217;s neither too write or read heavy. That solution was materialized paths, but not in your typical way.</p>
+
+<p>A materialized path generally is represented as a serialization of all parents. So in a simple case, it might be a simple delimited list of id values. As an example, let&#8217;s say that we have a list of comments that are guaranteed to only be less than 1000 for their identifying value:</p>
+
+<pre>
+001
+001002
+001002003
+001002007
+001004
+001005
+001005006
+</pre>
+
+<p>In this case we&#8217;ve managed to stuff all of this into a sortable numeric value. Unfortunately, in the real world, it&#8217;s never this easy, so we looked for existing solutions to solve this problem. We&#8217;ll skip all of the bikeshedding here, and jump straight to our solution: Arrays.</p>
+
+<p>Arrays are quite an interesting feature in Postgresql. They&#8217;re a native data type, indexable, sortable, and contain a variety of operators and functions (and even more so in 8.4+). They also fit in nicely with our previous solution, with the caveat that we had to write to the arrays rather than generate them at execution time. In fact, they fit so well that we were able to directly translate a majority of the effort we spent while toying with CTEs.</p>
+
+<p>What we finally settled on was a schema which looks something like this:</p>
+
+<pre>
+\d postsort
+
+  Column   |   Type    | Modifiers 
+-----------+-----------+-----------
+ tree_id   | integer   | not null
+ child_id  | integer   | not null
+ value     | numeric[] | not null
+
+Indexes:
+    "postsort_pkey" PRIMARY KEY, btree (tree_id, child_id)
+    "postsort_path" btree (tree_id, value)
+</pre>
+
+<p>A simple three-column schema gives us:</p>
+
+<ul>
+    <li><code>tree_id</code> The root node for this tree (for us, this is a comment thread)</li>
+    <li><code>child_id</code> A child contained within this tree. There&#8217;s a row for every child</li>
+    <li><code>value</code> Our materialized path, implemented as an array</li>
+</ul>
+
+<p>The most important bit here is the <code>value</code>, and even more so what that array contains. Let&#8217;s take a look at our previous example of simple numeric IDs, and how that&#8217;d be represented in this table:</p>
+
+<pre>
+child_id | value
+----------------
+1        | [1.0]
+2        | [1.0, 2.0]
+3        | [1.0, 2.0, 3.0]
+7        | [1.0, 2.0, 7.0]
+4        | [1.0, 4.0]
+5        | [1.0, 5.0]
+6        | [1.0, 5.0, 6.0]
+</pre>
+
+<p>You&#8217;ll notice that the value always contains the id of the child as the last element, and is prefixed parents value. The child&#8217;s ID <strong>must</strong> be present in order to guarantee sortability in conditions where these values are not unique. More specifically, in a real world scenario, you&#8217;ll probably have some kind of <code>score</code> that you&#8217;d be including. As a demonstration of this eventual conflict, take the following values:</p>
+
+<pre>
+child_id | value
+----------------
+1        | [0.9134834, 1.0]
+2        | [0.9134834, 1.0, 0.149341, 2.0]
+3        | [0.9134834, 1.0, 0.149341, 2.0, 0.14123434, 3.0]
+4        | [0.9134834, 1.0, 0.149341, 2.0, 0.14123434, 7.0]
+5        | [0.9134834, 1.0, 0.149341, 5.0]
+6        | [0.9134834, 1.0, 0.149341, 5.0, 0.601343, 5.0]
+</pre>
+
+<p>You&#8217;ll see that we had a conflicting score for two children. If we always include the <strong>unique identifying numeric value</strong> we&#8217;ll never have to worry about rows shifting into parents which they&#8217;re not a part of. You will also see that we&#8217;ve prefixed each child&#8217;s value with the score. This again gives us the numeric sorting order which we&#8217;re looking for and allows us to sort by any arbitrary score. This could be anything from a timestamp to a completely custom scoring algorithm based on something like up and down votes on a child.</p>
+
+<p>The schema and data storage is pretty straightforward, the bigger challenge is actually implementing the logic in your application (or if you&#8217;re insane, within SQL triggers). We end up with a mess of SQL statements, with a singular goal to bring everything down to an atomic, transactionless nature. As an example, creating a new child probably resemebles something like the following:</p>
+
+<pre>
+INSERT INTO postsort (
+    tree_id,
+    child_id,
+    value
+)
+SELECT t2.tree_id,
+       %(child_id)d as child_id,
+       (t2.value || %(value)s::numeric[]) as value
+FROM postsort as t2
+WHERE t2.tree_id = %(tree_id)d
+  AND t2.child_id = %(parent_child_id)d
+</pre>
+
+<p>Once you&#8217;ve populated the table, queries become amazingly simple:</p>
+
+<pre>
+SELECT child_id
+FROM postsort
+WHERE tree_id = %(tree_id)s
+ORDER BY value
+</pre>
+
+<p>We&#8217;ve just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, as well as some other things we&#8217;ve been doing. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
+
+<p>If Disqus sounds interesting to you, and you think you&#8217;re a good fit and we&#8217;re looking for passionate people to <a href="http://disqus.com/jobs/">join our team</a>.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-08T16:52:00-07:00" pubdate data-updated="true">Apr 8<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>, <a class='category' href='/categories/postgresql/'>postgresql</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres" data-via="zeeg" data-counturl="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2011/11/10/scaling-schema-changes" title="Previous Post: Scaling Schema Changes">&laquo; Scaling Schema Changes</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '/2012/04/08/using-arrays-as-materialized-paths-in-postgres'
+        
+        var disqus_url = 'http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '/2012/04/08/using-arrays-as-materialized-paths-in-postgres'
+        
+        var disqus_url = 'http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

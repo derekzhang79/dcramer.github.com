@@ -1,0 +1,1554 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/blog/page/4">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/09/30/jinja2-and-django-registration">Jinja2 and Django-registration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-09-30T00:00:00-07:00" pubdate data-updated="true">Sep 30<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many have yet to realize the benefit of class-based views. Today, I&#8217;m going to explain how we approached this for <a href="http://www.djangospot.com">DjangoSpot</a> (<a href="http://www.github.com/dcramer/djangospot">GitHub</a>) and <a href="http://bitbucket.org/ubernostrum/django-registration">django-registration</a>.</p>
+
+<p>The goal, as always, is the write the least amount of code. However, extending function-based views is now an easy task. So our approach involves using some tricky Python code (thanks to Chris Leary for the ideas!).</p>
+
+<p>Let&#8217;s talk about requirements real quick. You&#8217;ll need Django 1.1 (or newer), <a href="http://jinja.pocoo.org/2">Jinja2</a>, and <a href="http://www.github.com/dcramer/coffin">Coffin</a> 0.3.1 or newer (which as of writing, is not on PyPi).</p>
+
+<p>First off, we&#8217;re going to use <code>inspect.getsource</code> to retrieve source code for functions, and <code>exec</code> to evaluate that source code. One thing to note here, is that if the function you are trying to modify is using a decorator, it may not be possible to get the actual functions source code. Some, however, can be obtained by using <code>my_function.func_var_name</code>.</p>
+
+<p>So let&#8217;s take a look at our <code>urls.py</code> in <code>djangospot.accounts.urls</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">inspect</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">registration</span> <span class="kn">import</span> <span class="n">urls</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>\
+</span><span class='line'>     <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;django.contrib.auth&#39;</span><span class="p">,</span> <span class="s">&#39;coffin.contrib.auth&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see above, we&#8217;re importing the <code>urls</code> from django registration, and then running <code>getsource</code> on it. This gets us the source code from that entire file. From there, we simply swap out <code>django.contrib.auth</code> for our drop-in <code>coffin.contrib.auth</code>.
+
+Next up, we need to handle the views. It&#8217;s a similar approach, except we&#8217;re not doing any tricky string replacement:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">inspect</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">registration.views</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">coffin.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">coffin.template</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">activate</span><span class="p">)</span>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">register</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>What we&#8217;re doing here, is getting the source code for the actual methods, and simply executing it. To ensure we have all the needed imports, we first import everything from the <code>registration.views</code>. Afterwards, we replace the <code>render_to_response</code> and <code>RequestContext</code> imports with the ones made available in Coffin.</p>
+
+<p>Overall, it&#8217;s a fairly sketchy process, but it works beautiful. We approach the problem in a similar fashion with Coffin and the generic and contrib views in there.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/09/14/using-jinja2-with-django">Using Jinja2 With Django (via Coffin)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-09-14T00:00:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>As an advocate of Jinja2 I figured it was about time I got on board the train. Up until now I had been using Jinja1 at work, and in most projects. The main reasoning behind this was there was no good connector. Now many might say that you don&#8217;t need a connector, you can just throw in a couple of functions and it works. While that might be true, there&#8217;s a lot more that goes into rendering templates than simply parsing standard HTML.</p>
+
+<p>So as I began the conversion, I found a project called <a href="http://github.com/dcramer/coffin">Coffin</a>. The project was hosted over at LaunchPad, which personally, I wish would disappear from the internet. Among the problem of getting bzr working on my Mac, and servers, so that I could check out the project, I also found that the project wasn&#8217;t very stable.</p>
+
+<p>Quickly I noticed it didn&#8217;t have support for globals, or tests. We don&#8217;t really use tests, but we have many global functions. Things such as the URL template tag in Django, we had written as a Jinja Global (<code>&#123;&#123; url() &#125;&#125;</code> vs <code>&#123;% url %&#125;</code>). So I quickly began moving a copy of the repository over to GitHub, so I could get these additions in. While doing this I had also found some other areas which were needing improvements (mostly caching optimizations).</p>
+
+<p>By the end of the day, I had gotten a discussion going w/ the original author (Chris Leary) of Coffin to find out that it was kind of a dead project. After a few back and forth I decided to take over the project. So we&#8217;ve now got it up at GitHub, and it includes several optimizations, support for globals and tests, and a critical threading fix. What we have now is a fairly stable (as of tonight) binding between Jinja2 and Django.</p>
+
+<p>Now let&#8217;s talk a bit about how you can use this with your Django project. It&#8217;s pretty compicated so try to keep up!</p>
+
+<p>First up, installation:</p>
+
+<pre><br># As of the time of writing the current version is 0.3<br>easy_install Coffin==0.3<br></pre>
+
+<p>Load up your <code>settings.py</code> and add it to your installed apps (this step is not required):</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+</span><span class='line'>    <span class="s">&#39;coffin&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="o">...</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Go into your <code>urls.py</code> and switch out your import line:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">coffin.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now the next part we do in our own project, simply because we dont use Context instances:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">coffin</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">render_to_string</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">request</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">context_instance</span> <span class="o">=</span> <span class="n">RequestContext</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">context_instance</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">context_instance</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">render_to_response</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{},</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mimetype</span><span class="o">=</span><span class="s">&quot;text/html&quot;</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">response</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">mimetype</span><span class="o">=</span><span class="n">mimetype</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now you&#8217;re ready to start rendering those amazingly fast Jinja2 templates!
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">myshortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">myview</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">render_to_response</span><span class="p">(</span><span class="s">&#39;template/path.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="s">&#39;Hello World&#39;</span><span class="p">},</span> <span class="n">request</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Pretty painful, we know :)
+
+So let&#8217;s move on to a bit more of the advanced Jinja2 bits, registering your own extensions. In Coffin this is fairly easy:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">coffin</span> <span class="kn">import</span> <span class="n">template</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">Markup</span>
+</span><span class='line'><span class="n">register</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">Library</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@register.filter</span><span class="p">(</span><span class="n">jinja2_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">mark_safe</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Marks the value as HTML-safe, and disables auto-escaping it. &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">Markup</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@register.object</span><span class="p">()</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Outputs &#39;world&#39; &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;world&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@register.test</span><span class="p">(</span><span class="n">is_a_string</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">is_a_string</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">UselessExtension</span><span class="p">(</span><span class="n">Extension</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Outputs the given value .&quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;useless&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">lineno</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">next</span><span class="p">()</span><span class="o">.</span><span class="n">lineno</span>
+</span><span class='line'>        <span class="n">body</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_statements</span><span class="p">([</span><span class="s">&#39;name:endspaceless&#39;</span><span class="p">],</span> <span class="n">drop_needle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">nodes</span><span class="o">.</span><span class="n">CallBlock</span><span class="p">(</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">call_method</span><span class="p">(</span><span class="s">&#39;_do_nothing&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+</span><span class='line'>            <span class="p">[],</span> <span class="p">[],</span> <span class="n">body</span>
+</span><span class='line'>        <span class="p">)</span><span class="o">.</span><span class="n">set_lineno</span><span class="p">(</span><span class="n">lineno</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">_do_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">caller</span><span class="p">()</span>
+</span><span class='line'><span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">UselessExtension</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Please check out the <a href="http://github.com/dcramer/coffin/blob/master/README.rst">README</a> for more information. Enjoy!</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/07/15/dynamic-keyword-arguments-in-django-urls">Dynamic Keyword Arguments in Django URLs</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-15T00:00:00-07:00" pubdate data-updated="true">Jul 15<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today I&#8217;m going to talk a little bit about one of our hurdles, and a quick solution we came up with to get around it at <a href="http://www.ibegin.com/">iBegin</a>. We needed the ability to override URLs per-site, which by itself is fairly easy. You simply change the <code>ROOT_URLCONF</code> in your local or per-site settings file. Let&#8217;s take an example:</p>
+
+<p>Let&#8217;s say I want <code>/blog/details/&lt;post_slug&gt;</code> on Site A, but on Site B I want that to be <code>/blog/details/&lt;post_id&gt;</code>. This is fairly easy to handle in templates, by simply passing different kwargs to your url resolver, but we needed to be able to handle this in methods like <code>get_absolute_url()</code>. First let&#8217;s explain why we needed this instead of the default resolver.</p>
+
+<p>In many cases, your URLs are not going to allow changing variables. This is common in overloading of methods as the arguments accepted can change. At iBegin we had a need for this in several situations, and thus we needed a way to pass varying kwargs to the same view. For example, if you had <code>/blog/details/&lt;post_id&gt;</code> and you just wanted to change it to <code>/blog/view-post/&lt;post_id&gt;/</code> your resolver is going to pick up the change without any work, and you wont need to change any calls for this URL.</p>
+
+<p>The way the resolver works, is it simply loops over any matching <code>lookup_view</code> and tries to find URL which matches the kwargs or args you passed to it. In our case, we needed to be able to pass it all available kwargs, and have it return a working URL. This allows us to easily change the URL to match any of the accepted arguments in our overloaded view, and not worry about modifying our <code>reverse()</code> lookups.</p>
+
+<p>So back to our original example, using our newly implemented <code>vary_permalink</code>, we can have a dynamic overloaded absolute url by doing the following:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="nd">@vary_permalink</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">kwarg_map</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s">&#39;city_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;state_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;country_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;business_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;business_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">(</span><span class="s">&#39;directory:business&#39;</span><span class="p">,</span> <span class="n">kwarg_map</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+In this situation, as long as we have a url named <code>directory:business</code> that accepts any number of those kwargs, in any order, it will be returned. The only limitation presented in this situation currently, is there&#8217;s no way of determining which one to return. So for this example, we simply use a first-in-first-out routine. Future plans could possible include extending the <code>url()</code> method and url resolvers to implement a <code>priority</code> flag.
+
+Enough with the explanation, let&#8217;s get down to the actual code:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">get_resolver</span><span class="p">,</span> <span class="n">reverse</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">vary_reverse</span><span class="p">(</span><span class="n">lookup_view</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    Returns the first matching URL for the ``lookup_view``</span>
+</span><span class='line'><span class="sd">    matching any number of ``kwargs`` in any order.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">    vary_reverse(&#39;lookup_view&#39;, {&#39;param1&#39;: &#39;value&#39;, &#39;param2&#39;: &#39;value&#39;})</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">resolver</span> <span class="o">=</span> <span class="n">get_resolver</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">resolver</span><span class="o">.</span><span class="n">reverse_dict</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="n">lookup_view</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">pattern</span><span class="p">,</span> <span class="n">req_kwargs</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">req_kwargs</span><span class="p">])</span>
+</span><span class='line'>        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">continue</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="n">lookup_view</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;No url matching kwargs.&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+The first part is our new <code>reverse()</code> method. We can pass in the same arguments as seen above in the <code>@vary_permalink</code> decorator, which is shown below:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">vary_permalink</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">bits</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">vary_reverse</span><span class="p">(</span><span class="o">*</span><span class="n">bits</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">inner</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>That&#8217;s the quick and dirty rundown of how we&#8217;ve solved overloading of views with differing arguments and maintaining callable URL methods on models. Have you come up with a better solution, let me know!</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/07/02/pagination-in-django">Pagination in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-02T00:00:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the common things we do across projects is paginate querysets and lists. Django happens to provide a base Paginator for us, but it&#8217;s usefulness is limited. It requires you to do the same repetitive tasks over and over. We&#8217;re one of those groups of people who believe that not every URL need&#8217;s to be rewritten into a retarded directory structure, and paged entries just so happen to be one of those. For most of our paging needs, we simply use ?p=N.</p>
+
+<p>So, let me start by saying I haven&#8217;t looked into any existing pagination solutions, but I believe what we use is a great approach to handling pagination in a generic and reusable approach. In a typical pagination situation, you would do something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">paginator</span> <span class="o">=</span> <span class="n">paginator_class</span><span class="p">(</span><span class="n">queryset_or_list</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">query_dict</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span class='line'><span class="k">if</span> <span class="s">&#39;p&#39;</span> <span class="ow">in</span> <span class="n">query_dict</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">del</span> <span class="n">query_dict</span><span class="p">[</span><span class="s">&#39;p&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;page&#39;</span><span class="p">))</span>
+</span><span class='line'><span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>    <span class="c"># show an error</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">pager</span> <span class="o">=</span> <span class="n">paginator</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="p">(</span><span class="n">InvalidPage</span><span class="p">,</span> <span class="n">EmptyPage</span><span class="p">):</span>
+</span><span class='line'>    <span class="c"># show an error</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">page</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">start</span> <span class="o">=</span> <span class="n">page</span><span class="o">-</span><span class="n">range_gap</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">page</span> <span class="o">&lt;</span> <span class="n">paginator</span><span class="o">.</span><span class="n">num_pages</span><span class="o">-</span><span class="n">range_gap</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">end</span> <span class="o">=</span> <span class="n">page</span><span class="o">+</span><span class="n">range_gap</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">end</span> <span class="o">=</span> <span class="n">paginator</span><span class="o">.</span><span class="n">num_pages</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s">&#39;query_string&#39;</span><span class="p">:</span> <span class="n">query_dict</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;page_range&#39;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+</span><span class='line'>    <span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;num_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;has_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="n">paginator</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Ok, well that&#8217;s fine and all, but we don&#8217;t want to do that a hundred times throughout our code. And going beyond the defaults, in our example above we use some additional information, such as the page range. What we ended up doing over at <a href="http://www.ibegin.com">iBegin</a>, <a href="http://www.lifestrm.com">Lifestrm</a>, and <a href="http://www.nibbits.com">Nibbits</a> are two solutions: a better pagination class to handle this for us, and a template tag to paginate so we can keep it out of the view.
+
+Let&#8217;s start with our new pagination class. It involves creating a new method called <code>get_context()</code> which allows you to simply return your generic use-case context for a paginator.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">BetterPaginator</span><span class="p">(</span><span class="n">Paginator</span><span class="p">):</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">An enhanced version of the QuerySetPaginator.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; my_objects = BetterPaginator(queryset, 25)</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; page = 1</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; context = {</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt;     &#39;my_objects&#39;: my_objects.get_context(page),</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; }</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">range_gap</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">raise</span> <span class="n">InvalidPage</span><span class="p">,</span> <span class="n">exc</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">paginator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="n">page</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">start</span> <span class="o">=</span> <span class="n">page</span><span class="o">-</span><span class="n">range_gap</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="n">page</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="o">-</span><span class="n">range_gap</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">end</span> <span class="o">=</span> <span class="n">page</span><span class="o">+</span><span class="n">range_gap</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s">&#39;page_range&#39;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+</span><span class='line'>        <span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;num_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;has_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">context</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now, for a simple use case, let&#8217;s look at our <code>paginate()</code> template tag:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">paginate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">queryset_or_list</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">paginator_class</span><span class="o">=</span><span class="n">EndlessPaginator</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">paginator</span> <span class="o">=</span> <span class="n">paginator_class</span><span class="p">(</span><span class="n">queryset_or_list</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">query_dict</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span class='line'>    <span class="k">if</span> <span class="s">&#39;p&#39;</span> <span class="ow">in</span> <span class="n">query_dict</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">del</span> <span class="n">query_dict</span><span class="p">[</span><span class="s">&#39;p&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s">&#39;query_string&#39;</span><span class="p">:</span> <span class="n">query_dict</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;paginator&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">paging</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;bone/paging.html&#39;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">objects</span><span class="o">=</span><span class="n">context</span><span class="p">[</span><span class="s">&#39;paginator&#39;</span><span class="p">][</span><span class="s">&#39;objects&#39;</span><span class="p">],</span> <span class="n">paging</span><span class="o">=</span><span class="n">paging</span><span class="p">)</span>
+</span><span class='line'><span class="c"># We use Jinja, so this is just a normal function, and it&#39;s registered as an object.</span>
+</span><span class='line'><span class="n">register</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">paginate</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now with the above we&#8217;ve done two things. First, we have completely stripped out the need for the paging logic in every single view. This cuts down our code by an enormous amount. Secondly, we&#8217;ve allowed pagination via templates (or just by using paginate() in your view), and it gives us a generic paging template, as well as our list of objects.
+
+Let&#8217;s move on to what our template might look like:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='jinja'><span class='line'><span class="x">&amp;#123;% if paginator.has_pages %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;div class=&amp;quot;paging tr&amp;quot;&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% if paginator.num_pages %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;div class=&amp;quot;fl&amp;quot;&amp;gt;Page &amp;#123;&amp;#123; paginator.page &amp;#125;&amp;#125;&amp;#123;% if paginator.num_pages %&amp;#125; of &amp;#123;&amp;#123; paginator.num_pages &amp;#125;&amp;#125;&amp;#123;% endif %&amp;#125;&amp;lt;/div&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;ul&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if not paginator.is_first %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=1&amp;quot;&amp;gt;First&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;First&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if paginator.has_previous %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.previous_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Previous&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Previous&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% for p in paginator.page_range %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;#123;% if p == paginator.page %&amp;#125; class=&amp;quot;active&amp;quot;&amp;#123;% endif %&amp;#125;&amp;gt;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; p &amp;#125;&amp;#125;&amp;quot;&amp;gt;&amp;#123;&amp;#123; p &amp;#125;&amp;#125;&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endfor %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if paginator.has_next %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.next_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Next&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Next&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% if paginator.num_pages %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if not paginator.is_last %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.num_pages &amp;#125;&amp;#125;&amp;quot;&amp;gt;Last&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Last&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endif %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;/ul&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% else %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;ul class=&amp;quot;basic&amp;quot;&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li class=&amp;quot;fl&amp;quot;&amp;gt;&amp;#123;% if paginator.has_previous %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.previous_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Previous Page&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Previous Page&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li class=&amp;quot;fr&amp;quot;&amp;gt;&amp;#123;% if paginator.has_next %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.next_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Next Page&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Next Page&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;/ul&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endif %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;/div&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endif %&amp;#125;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you&#8217;ll see we have quite a bit of logic in here. This allows for two different scenarios: numeric paging, and what we call endless paging.
+
+Let&#8217;s talk a bit more about endless paging. In some of our use cases, we simply don&#8217;t want to count how many pages and entries there are in the database because it is just inefficient, and meaningless. When you have 100k pages (let&#8217;s take Google search for example), no one cares about what&#8217;s on the last page, unless it&#8217;s sorted. And even then, you can simply reverse the sort. So to compensate for this, we extend our <code>BetterPaginator</code> class and create <code>EndlessPaginator</code>.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">EndlessPage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>        <span class="nb">super</span><span class="p">(</span><span class="n">EndlessPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_has_next</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paginator</span><span class="o">.</span><span class="n">per_page</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_list</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">object_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_list</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">paginator</span><span class="o">.</span><span class="n">per_page</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">has_next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_next</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">EndlessPaginator</span><span class="p">(</span><span class="n">BetterPaginator</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+</span><span class='line'>    <span class="s">&quot;Returns a Page object for the given 1-based page number.&quot;</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">raise</span> <span class="n">PageNotAnInteger</span><span class="p">(</span><span class="s">&#39;That page number is not an integer&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">bottom</span> <span class="o">=</span> <span class="p">(</span><span class="n">number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_page</span>
+</span><span class='line'>    <span class="n">top</span> <span class="o">=</span> <span class="n">bottom</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_page</span> <span class="o">+</span> <span class="mi">5</span>
+</span><span class='line'>    <span class="n">_page</span> <span class="o">=</span> <span class="n">EndlessPage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_list</span><span class="p">[</span><span class="n">bottom</span><span class="p">:</span><span class="n">top</span><span class="p">],</span> <span class="n">number</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_page</span><span class="o">.</span><span class="n">object_list</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">number</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_empty_first_page</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">pass</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="n">EmptyPage</span><span class="p">(</span><span class="s">&#39;That page contains no results&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">_page</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="n">InvalidPage</span><span class="p">,</span> <span class="n">exc</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">paginator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;has_pages&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">()</span> <span class="ow">or</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="ow">not</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="n">context</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The endless paging simply tells us &#8220;is there a next page?&#8221;. It does this by selecting N+X on your result set. If there are additional entries not present on the page, it simply says &#8220;there are more results available&#8221;. It comes in handy when you simply want to show a &#8220;More results&#8221; on things such a search, or massive querysets.</p>
+
+<p>So to wrap it up, we introduced 2 major concepts. The first being adding context to pagination to decrease the amount of code we write, and the latter being endless pagination, allowing us to do much more efficient paging mechanisms.</p>
+
+<p>What have you done to simplify your pagination in Django?</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/06/29/chuggin-away">Chuggin Away</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-06-29T00:00:00-07:00" pubdate data-updated="true">Jun 29<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I haven&#8217;t made too many posts lately. Whether it&#8217;s been from lack of time, or simply nothing to write about who&#8217;s to say. That doesn&#8217;t mean I haven&#8217;t been keeping busy though.</p>
+
+<p>We&#8217;ve been hard at work over at <a href="http://www.ibegin.com/">iBegin</a> deploying some new architecture. It&#8217;s a pretty cool feat, but I can&#8217;t say too much about it at the moment. Recently we released an update to iBegin Share as well, which has been much needed. It adds in some more configuration, bug fixes, and overall appeal for the plugin. It also can be automatically updated through WP.org finally :)</p>
+
+<p>In Lifestream news there&#8217;s been a slew of updates. Not only have we been keeping them flowing for the <a href="http://www.wordpress.org/extend/plugins/lifestream/">plugin</a>, but we&#8217;re also getting much closer to opening up our service to users. The plugin itself has gained a ton of extensibility in the form of droppable themes, extensions, and even icon sets. It&#8217;s finally nearing that 1.0 mark, and about time if I may say so.</p>
+
+<p>As for the service we&#8217;ve been rewriting things (again) to bring it more in line with the <a href="http://activitystrea.ms/">Activity Streams</a> spec. This will make it much easier for existing sites to extend it, as well as making it easier for us to pull in activity streams. On top of that, we&#8217;ve got a brand new sexy design (you&#8217;ll see it soon) to go with it. Look more for this on the holiday weekend, as we begin to rollout <a href="http://www.lifestrm.com">lifestrm.com</a>.</p>
+
+<p>One last thing you&#8217;ll notice, is the changes on my blog. Below certain posts you&#8217;ll start seeing a blurb of events that have occurred around the time of that post. It&#8217;s a proof of concept I&#8217;m working on for tighter integration of Lifestream with the blog.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/06/03/the-ea-experience">The EA Experience (EA Store)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-06-03T00:00:00-07:00" pubdate data-updated="true">Jun 3<span>rd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>(My apologies this rant is long and should probably be called &#8220;The EA <strong>Nightmare</strong>&#8221;)</p>
+
+<p>As many of you are aware, yesterday was the launch of one of the more anticipated games this year: <strong>The Sims 3</strong>. So, being a typical gamer, I had to pick it up (and the fact that my girlfriend is nuts about Sims 2). I decided that I would be best served, by going straight to the source. Typically I purchased digital downloads through Steam or Direct2Drive, but since EA has its own digital service it just made sense to purchase from ea.com. Oh boy, was that a bad decision.</p>
+
+<p>To begin our story, lets take the setting back to about 3pm PST on June 2nd, launch day. I quickly pop into Steam to see that The Sims 3 is not available (not a surprise, really), so I head to ea.com to purchase it. I didn&#8217;t actually realize I would be unable to download the game for another 4 hours, but that wasn&#8217;t too much of a concern. I had no problems preordering the game, and EA had no problems charging me $50.</p>
+
+<p>After digging around, I came to the realization that I would not even be able to start my download until 7PM PST. Ok, that&#8217;s a little weird, Steam let&#8217;s you download the game ahead of time and it will just activate when the game is available. A bit annoying, but again, not a huge deal. So, I get back to work, and time passes.</p>
+
+<p>We&#8217;re now rolling up on 7PM, and I&#8217;m getting excited. It&#8217;s always amazing to see what they do with the new Sims games, and this one should be no different. The clock hits five after seven, and I am running around the EA.com store to find out how I download my pre-order. Nothing shows up in my download manager, so I assume that I must have to activate it in there somehow first. Fifteen minutes are wasted and I&#8217;m still unable to find a download link.</p>
+
+<p>Then, being the typical crazy smart computer person that I am, I go to Google and type &#8220;WHERE THE HELL IS MY SIMS 3 DOWNLOAD&#8221;. Ok, so that didn&#8217;t turn out too wel, let&#8217;s try again: &#8220;how to downloads sims 3 preorder ea store&#8221;. I end up at a <a href="http://www.gamespot.com/pc/strategy/thesims3/show_msgs.php?topic_id=m-1-49776326&pid=936498">thread on GameSpot</a>. Well, that was no help. In fact, not a single result showed any problems. So I&#8217;m out of luck on that matter.</p>
+
+<p>After a bit more searching, I find out that there should be an unlock code, and a download button. So I head to my view orders (which is difficult to find, really), and attempt to login. Wait, password invalid? How can my password be invalid I just logged in 5 minutes ago with the same time. So I try another 5 times to get my password to work. Nothing. I then proceed to reset my password, still confused, and it works.</p>
+
+<p>Now I&#8217;m in my order, and I see the title for &#8220;Unlock Code&#8221; but it&#8217;s empty below it, and I see no download link. Oh, there&#8217;s a &#8220;View Invoice&#8221; button, that must be where I go to download it! But wait, an internal server error, grrr. I sit confused, and decide that maybe EA is another amazing company who&#8217;s site only works in IE. A quick browser swap confirms they at least can write proper CSS.</p>
+
+<p>Being the persistent person that I am, I had yet another idea, to try it on Firefox on my Mac. I click through to Customer Support, and click View orders, time to login again. Invalid password, again!? It turns out there are a half dozen different login mechanisms on this site. One says my password is invalid, one logs me in, but redirects to a page which doesn&#8217;t load, and the other works, but I have no idea where it&#8217;s at. After another 15 minutes of hell, I manage to login and view my orders. Wooo, the page has an &#8220;Add extended download service&#8221; button.</p>
+
+<p>I proceed to purchase extended download service in the hopes that this may correct their amazing ordering system. After letting EA nickel and dime me some more, I still end up with no download link. I decide to give it time, since it&#8217;s launch day and might just be a bit behind. I go back to work for another hour and an email pops up, &#8220;Order confirmation &#8230;.&#8221;. I&#8217;m thinking, &#8220;Yes! It really was just taking a bit of time&#8221;. I hop over to my inbox and it tells me all about how I&#8217;m supposed to download the game and where to find it.</p>
+
+<p>So now that I&#8217;m assured there&#8217;s a way to download my game, I go through the 15 minute process of finding a way to login to the order history again. I finally manage to login, and my orders look exactly the same. Both charges have successfully been made on my PayPal account (paid through a CC, so there&#8217;s no delay), but I still see nothing new. I decide &#8220;hey, maybe EA just sucks, and the download link really does exist&#8221;. View Source quickly finds me a download header, but nothing in it, darn.</p>
+
+<p>It is now the next day, and I&#8217;m getting extremely frustrated with my lack of Sims. I decide it will be much easier to just call them and take out my anger on the unlucky support worker. Easy enough, right? Of course not! It takes me another 30 minutes of digging around their site, and eventually using Google just to find a page which actually has a REAL phone number I can call. Someone picks up the phone after a 30 minute wait, yes 30 minutes on a number which is <strong>not</strong> toll free (so its long distance). I hear what almost sounds like an Arabic accent, but wait, it&#8217;s not your typical hard to understand technical support person, they just have such amazing Mics that it muffles everything in the background!</p>
+
+<p>I proceed to give them my order number, and any other information they ask for. This takes me another 10 minutes or so. I&#8217;m getting excited simply due to the fact that it&#8217;s a real person, and they MUST have a solution for me. Well, that was another bad call. I&#8217;m told that &#8220;electronic orders take time to process&#8221;. Oh, do they? Maybe they did in 1980 before they were invented. I can wire enough money to fund development on The Sims 3 before they can process my $50 transaction.</p>
+
+<p>So it is now 24 hours after the fact, I still have no Sims 3, and I will never purchase another product through EA again. I&#8217;m hoping that my rant of frustration will also convince others to do the same. I&#8217;ll stick with <a href="http://www.direct2drive.com">Direct2Drive</a> and <a href="http://www.steampowered.com">Steam</a> in the future.</p>
+
+<p>Let&#8217;s throw in some Google love for EA here:</p>
+
+<p>- <strong>Electronic Arts is terrible</strong><br>- <strong>Ordering online from Electronic Arts</strong><br>- <strong>EA Store</strong></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/04/17/improving-gzipmiddleware-in-django">Improving GZipMiddleware in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-17T00:00:00-07:00" pubdate data-updated="true">Apr 17<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One issue we had come up over at iBegin lately, is the fact that GZipMiddleware tries to encode ALL responses (with a few minor exceptions). In our cases, we sometimes stream actual binary files over the response. Doing this with the standard middleware causes a unicode error as it&#8217;s trying to encode all of the information before gzipping it.</p>
+
+<p>So to fix this, we simply created a slightly improved middleware to handle the content types a bit better:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.middleware.gzip</span> <span class="kn">import</span> <span class="n">GZipMiddleware</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">ImprovedGZipMiddleware</span><span class="p">(</span><span class="n">GZipMiddleware</span><span class="p">):</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;Will GZip the content if it&#39;s not text/*, xml, or a javascript content type.&quot;&quot;&quot;</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+</span><span class='line'><span class="n">ctype</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span><span class='line'><span class="k">if</span> <span class="ow">not</span> <span class="n">ctype</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;text/&#39;</span><span class="p">)</span>\
+</span><span class='line'><span class="ow">or</span> <span class="s">&#39;javascript&#39;</span> <span class="ow">in</span> <span class="n">ctype</span>\
+</span><span class='line'><span class="ow">or</span> <span class="s">&#39;xml&#39;</span> <span class="ow">in</span> <span class="n">ctype</span><span class="p">:</span>
+</span><span class='line'><span class="k">return</span> <span class="n">response</span>
+</span><span class='line'><span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ImprovedGZipMiddleware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">process_response</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/04/14/cleaning-up-with-json-and-sql">Cleaning Up With JSON and SQL in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-14T00:00:00-07:00" pubdate data-updated="true">Apr 14<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Most of our projects lately are now using JSON data storage in the database. This makes it very efficient for storing additional data without having to run alters are gigantic data sets. It also allows us to store different data for different kinds of sets within the same table.</p>
+
+<p>Doing this in Django we originally created a JSONField. A simple custom field which would convert back and from from JSON to a Python object. Mostly this was going from a dictionary to a text-based form in the database (JSON). Recently in one project I took the time to update the field to fix a couple things as well as add support for it in the forms, and thus making it usable within the admin.</p>
+
+<p>So, for the wanting, here&#8217;s our updated JSONField and the related form field.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">simplejson</span> <span class="k">as</span> <span class="n">json</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">JSONWidget</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'><span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+</span><span class='line'><span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">JSONWidget</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">JSONFormField</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;widget&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">JSONWidget</span>
+</span><span class='line'><span class="nb">super</span><span class="p">(</span><span class="n">JSONFormField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'><span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span> <span class="k">return</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'><span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'><span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="s">u&#39;JSON decode error: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">unicode</span><span class="p">(</span><span class="n">exc</span><span class="p">),))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">JSONField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">):</span>
+</span><span class='line'><span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SubfieldBase</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">formfield</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'><span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">JSONField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">formfield</span><span class="p">(</span><span class="n">form_class</span><span class="o">=</span><span class="n">JSONFormField</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">to_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'><span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+</span><span class='line'><span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="n">value</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_db_prep_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'><span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+</span><span class='line'><span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">value_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+</span><span class='line'><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_val_from_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_prep_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/04/04/refactoring-lifestream">Refactoring Lifestream</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it comes to WordPress, but tutorials and what are not spread out so it took a bit of time.</p>
+
+<p>During the process, I also took the opportunity to speed up certain areas, such as option calls. Instead of storing options on a per-key basis, I changed it over to simply use a serialized arrays. In such, I added several new commands to the codebase:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="x">function _populate_option_cache()</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    if (!$this-&gt;_optioncache)</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $this-&gt;_optioncache = get_option(&#39;lifestream_options&#39;);</span>
+</span><span class='line'><span class="x">        if (!$this-&gt;_optioncache) $this-&gt;_optioncache = $this-&gt;_options;</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Fetches the value of an option. Returns `null` if the option is not set.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function get_option($option, $default=null)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option_cache();</span>
+</span><span class='line'><span class="x">    $value = $this-&gt;_optioncache[$option];</span>
+</span><span class='line'><span class="x">    if (!$value) {</span>
+</span><span class='line'><span class="x">        return $default;</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">    return $value;</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Removes an option.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function delete_option($option)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option-cache();</span>
+</span><span class='line'><span class="x">    unset($this-&gt;_optioncache[$option]);</span>
+</span><span class='line'><span class="x">    update_option(&#39;lifestream_options&#39;, $this-&gt;_optioncache);</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Updates the value of an option.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function update_option($option, $value)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option_cache();</span>
+</span><span class='line'><span class="x">    $this-&gt;_optioncache[$option] = $value;</span>
+</span><span class='line'><span class="x">    update_option(&#39;lifestream_options&#39;, $this-&gt;_optioncache);</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Sets an option if it doesn&#39;t exist.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function add_option($option, $value)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option_cache();</span>
+</span><span class='line'><span class="x">    if (!array_key_exists($option, $this-&gt;_optioncache))</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $this-&gt;_optioncache[$option] = $value;</span>
+</span><span class='line'><span class="x">        add_option(&#39;lifestream_options&#39;, serialize($this-&gt;_optioncache));</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+From here I moved on to change all the translation calls <code>__</code>, and <code>_e</code> into using a built-in version of which automatically handles the sprintf calls, and the namespace.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="x">function __($text, $params=null)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    if (!is_array($params))</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $params = func_get_args();</span>
+</span><span class='line'><span class="x">        $params = array_slice($params, 1);</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">    return vsprintf(__($text, &#39;lifestream&#39;), $params);</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">function _e($text, $params=null)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    if (!is_array($params))</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $params = func_get_args();</span>
+</span><span class='line'><span class="x">        $params = array_slice($params, 1);</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">    echo vsprintf(__($text, &#39;lifestream&#39;), $params);</span>
+</span><span class='line'><span class="x">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>These two things alone cleaned up a LOT of the plugin, and the efficiency gain from the options change is amazing.</p>
+
+<p>From there I decided to go all out, beyond just refactoring it into a class, I began adding some functionality from our upcoming service. Labels were moved out of the feed classes, and instead are now their own class. Each label is reusable, and controls how it&#8217;s events should be rendered. Doing this really opened the door to the possibilities of different styles of rendering for different media types.</p>
+
+<p>So after a nice days work, I&#8217;ve pushed out <a href="http://wordpress.org/extend/plugins/lifestream/">wp-lifestream 0.96</a>, which contains an enormous amount of bug fixes, optimizations, and best of all new features. You can see it running live on my blog, with the new display styles and all. Hopefully tomorrow I will be able to finish up the permalinks for events, which will also give the ability to attach comments to them.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/04/02/problems-uploading-packages-with-setuptools-on-os-x">Problems Uploading Packages With Setuptools on OS X</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-02T00:00:00-07:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This is mostly a note to myself, but also since my blog is very helpful to fellow Google-users I figured I&#8217;d throw it up here publicly.</p>
+
+<p>Today I needed to update a package on PyPi using setuptools:</p>
+
+<pre>python setup.py sdist register upload</pre>
+
+<p>The problem was, no matter what I did, I always seemed to get this error:</p>
+
+<pre><strong>Upload failed (401): You must be identified to edit package information</strong></pre>
+
+<p>I also noticed that while it was asking me to save my login information, and I hit Y everytime, it still asked me for the username and password. It turned out that it was saving the information incorrectly as follows:</p>
+
+<pre><br>[pypi]<br>username:dcramer<br>password:*******<br></pre>
+
+<p>Changing it out to this solved the problems:</p>
+
+<pre><br>[server-login]<br>username:dcramer<br>password:********<br></pre>
+
+<p>Can&#8217;t quite explain it, but as I&#8217;m sure other people have come across this same issue, maybe it will get resolved in the near future.</p></div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/5/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/3/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = ''
+        
+        var disqus_url = 'http://justcramer.com/blog/page/4/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

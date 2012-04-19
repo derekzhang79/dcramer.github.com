@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Database Routers in Django - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Whether you&#8217;re doing master / slave, or partitioning data, when your product gets large enough you&#8217;ll need the ability to route data to &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2010/12/30/database-routers-in-django">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Database Routers in Django</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-12-30T00:00:00-08:00" pubdate data-updated="true">Dec 30<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Whether you&#8217;re doing master / slave, or partitioning data, when your product gets large enough you&#8217;ll need the ability to route data to various nodes in your database. Django (as of 1.2) out of the box provides a pretty cool solution called a Database Router. Here at DISQUS we have a large set of data, and one this of course brings the need to implement some of these fairly standard solutions.</p>
+
+<p>The first solution that many companies will choose is a master / slave setup. This is the most common of all database scaling techniques and is very easy to setup in modern RDBMS solutions. In Django, this also comes very easy with a few lines of code:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">MasterSlaveRouter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="s">&quot;Sends reads to &#39;slave&#39; and writes to &#39;default&#39;.&quot;</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&#39;default&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&#39;slave&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now while this won&#8217;t scale very far (if you&#8217;re not using a proxy or bouncer, this is a single slave), it also brings a lot of other problems with it. The dreaded replication lag will hit you no matter your size (ever notice Facebook not being in &#8220;sync&#8221;), and can be fairly difficult to work around. Not going to dive into details here, but there are many ways to lessen visibility of this delay by using caching as well as doing some of your reads off your master nodes.</p>
+
+<p>The other solution I want to talk about is partitioning. We&#8217;re going to specifically talk about vertical partitioning, or the act of separating data by purpose. This is another very easy to implement solution which just requires you to move tables to other servers. Again, in Django this is very easy to implement with routers:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">PartitionByApp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="s">&quot;Send reads to an app-specific alias, and writes to the &#39;default&#39;.&quot;</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&#39;default&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">app_label</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>We&#8217;re currently working on splitting of a fairly large set of data over here, so we whipped up a little bit more flexible solution using routers. Our needs were simple: assign an app (or a model) to a separate database cluster. Here&#8217;s what we came up with:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">PrimaryRouter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">_lookup_cache</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">default_read</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>    <span class="n">default_write</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">get_db_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+</span><span class='line'>        <span class="s">&quot;Returns the database configuration for `model`&quot;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_cache</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">conf</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASE_CONFIG</span><span class="p">[</span><span class="s">&#39;routing&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">app_label</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">app_label</span>
+</span><span class='line'>            <span class="n">module_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">module_name</span>
+</span><span class='line'>            <span class="n">module_label</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">app_label</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">if</span> <span class="n">module_label</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">result</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="n">module_label</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">elif</span> <span class="n">app_label</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">result</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="n">app_label</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_cache</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_cache</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">db_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;read&#39;</span><span class="p">,</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_read</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">db_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_write</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">allow_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj1</span><span class="p">,</span> <span class="n">obj2</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="c"># Only allow relations if the models are on the same database</span>
+</span><span class='line'>        <span class="n">db_config_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">obj1</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">db_config_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">obj2</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">db_config_1</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">db_config_2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">allow_syncdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">db_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">allowed</span> <span class="o">=</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;syncdb&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="c"># defaults to both read and write servers</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">allowed</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">allowed</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">db_for_read</span><span class="p">(</span><span class="n">model</span><span class="p">),</span>
+</span><span class='line'>                                    <span class="bp">self</span><span class="o">.</span><span class="n">db_for_write</span><span class="p">(</span><span class="n">model</span><span class="p">)])</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">allowed</span><span class="p">:</span>
+</span><span class='line'>            <span class="c"># FIX: TEST_MIRROR passes the mirrored alias, and not the originating</span>
+</span><span class='line'>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">db</span> <span class="o">==</span> <span class="n">k</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="bp">True</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">db</span> <span class="o">==</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TEST_MIRROR&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="bp">True</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">False</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>To use this, we simply define a key called <code>routing</code> in our <code>DATABASE_CONFIG</code>.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># Note: this isn&#39;t how we partition our models, its just an example</span>
+</span><span class='line'><span class="n">DATABASE_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s">&#39;routing&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c"># defaults for all models in forums</span>
+</span><span class='line'>        <span class="s">&#39;forums&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;write&#39;</span><span class="p">:</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;read&#39;</span><span class="p">:</span> <span class="s">&#39;default.slave&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="c"># override for forums.Forum</span>
+</span><span class='line'>        <span class="s">&#39;forums.forum&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;write&#39;</span><span class="p">:</span> <span class="s">&#39;cluster2&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;read&#39;</span><span class="p">:</span> <span class="s">&#39;cluster2.slave&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="c"># override for forums.Post</span>
+</span><span class='line'>        <span class="s">&#39;forums.post&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;write&#39;</span><span class="p">:</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;read&#39;</span><span class="p">:</span> <span class="s">&#39;default.slave&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>A future post will cover how we&#8217;ve started moving to a <code>dictConfigurator</code> to make inheritance in many of our settings much easier.</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-12-30T00:00:00-08:00" pubdate data-updated="true">Dec 30<span>th</span>, 2010</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2010/12/30/database-routers-in-django" data-via="zeeg" data-counturl="http://justcramer.com/2010/12/30/database-routers-in-django" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2010/12/27/django-bitfield" title="Previous Post: BitField's in Django">&laquo; BitField's in Django</a>
+      
+      
+        <a class="basic-alignment right" href="/2011/01/04/how-to-actually-make-localsolr-work" title="next Post: How to actually make LocalSolr work">How to actually make LocalSolr work &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '/2010/12/30/database-routers-in-django'
+        
+        var disqus_url = 'http://justcramer.com/2010/12/30/database-routers-in-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '/2010/12/30/database-routers-in-django'
+        
+        var disqus_url = 'http://justcramer.com/2010/12/30/database-routers-in-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

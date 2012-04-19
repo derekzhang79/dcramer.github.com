@@ -1,0 +1,583 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="All the Mac fans can rejoice. The ever so popular browser seems to have finally made it to Windows to tag alongside Quicktime and iTunes. I&#8217;ve &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/blog/page/14">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/06/11/safari-now-on-windows">Safari; Now on Windows</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-06-11T00:00:00-07:00" pubdate data-updated="true">Jun 11<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>All the Mac fans can rejoice. The ever so popular browser seems to have finally made it to Windows to tag alongside Quicktime and iTunes.</p>
+
+<p>I&#8217;ve yet to try out the latest verison, but it seems promising. It delivers with several new features, and claims to be the fastest browser available, even on Windows.</p>
+
+<p>For more information, and to download Safari, head over to <a href="http://www.apple.com/safari/download/">Apple</a>.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/06/07/it-begins-cursecom">It Begins &#8211; Curse.com</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-06-07T00:00:00-07:00" pubdate data-updated="true">Jun 7<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>So we put up the splash page today and began giving some people beta access. So far everyone loves what we&#8217;re doing with the new site, and I think it&#8217;s going to go really well at release.</p>
+
+<p>We&#8217;ve got a several new, and many improved features we&#8217;ll be launching here next month. So keep your eye on <a href="http://www.curse.com/">Curse <strike>Gaming</strike></a> for your chance to test it out.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/05/24/what-powers-curse">What Powers Curse</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-05-24T00:00:00-07:00" pubdate data-updated="true">May 24<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Since we&#8217;re having some issues at Curse (hardware now :P) and because our technologies page doesnt explain everything, below are more technical details.</p>
+
+<p>Software:<br><ul><br><li>Apache2  + mod_python for the web servers</li><br><li>lighttpd + fcgi (mostly for static, we had SEVERE issues using fcgi for the entire Django site, weakref stuff, never found a solution)</li><br><li>memcached &#8211; every web server runs a copy and I believe we have 2gb allocated per-server</li><br><li>Squid + lighttpd for managing requests between anonymous and logged in users</li><br><li>Sphinx &#8211; our full-text search; the code may not reflect the current version (i&#8217;ll update it soon) but check out <a href="http://www.djangosnippets.org/snippets/231/">djangosnippets</a></li><br><li>MySQL &#8211; until someone can prove us wrong with facts saying PostgreSQL can scale better</li><br></ul><br>Hardware:<br><ul><br><li>5 web servers (8 yesterday): 4-8GB of memory, 2x intel core duos, memcached + apache2</li><br><li>2 static servers (one runs a small adserver script, another runs our sphinx search daemon): lighttpd + fcgi</li><br><li>2 media (download) server (running small python apps to generate images/similar): lighttpd + fcgi</li><br><li>2 cache servers: squid + lighttpd</li><br><li>2 sql servers (one is inactive but replicated): 2x intel core duos, MySQL, 6GB of memory (being upgraded :P)</li><br><li>1 dev/deployment server: the stats aren&#8217;t anything out of the ordinary &#8211; it runs various daemons as well as powering cursebeta.com</li><br></ul><br>What happens under the hood:<br><ul><br><li>The cache servers run both lighttpd and squid, forwarding requests to logged in users past the squid caches.</li><br><li>The squid caches then round robin to the web servers (which has caused extra stress due to the hardware not matching, we&#8217;re working on changing this now).</li><br><li>The web servers rely heavily on memcached for key components. We cache every django.contrib.contenttypes request, every django.contrib.sites request, etc..</li><br><li>We have modified various components of Django, with patches similar to what&#8217;s linked above, and with changes to select_related and some smaller systems (nothing major).</li><br><li>Most accessors to common are cached &#8211; the method we use is messy so I&#8217;ll post more when we change it.</li><br><li>Anonymous sessions are disabled &#8211; we&#8217;re still trying to manage a way to enable them and not destroy the website.</li><br><li>We use a lot of custom middleware, including a custom internationalization backend to handle our URL schemas + handle translations in the database (vs compiled files &#8211; yes, we know it&#8217;s slower)</li><br></ul></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/05/23/rapid-development-serving-500000-pageshour">Rapid Development Serving 500,000 Pages/hour</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-05-23T00:00:00-07:00" pubdate data-updated="true">May 23<span>rd</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>How do you keep things quick for development and streamlined for high-load? Using a Django and LAMP setup that&#8217;s how. We had a pretty busy couple of days over at Curse (<a href="http://www-en.curse-gaming.com/technology/">what powers curse</a>) and managed to keep a consistent 500,000+ page views per hour with our web servers only be minimally loaded on CPU and memory.</p>
+
+<p>For 6 months we had been struggling with the question &#8220;what happens next patch day&#8221;. That day was today. We managed to break 600,000 pages an hour last december, but immediately crashed afterwards due to the servers not being able to handle the load. This is partly due to optimizations on our end to Django&#8217;s ORM but also because of some major optimizations contributed by the community (<a href="http://code.djangoproject.com/ticket/17">thanks!</a>).</p>
+
+<p>So when you are thinking about that new website or application you&#8217;re about to build, think Python, and think Django. It has empowered us to deploy large-scale web applications in as little as a weekend, which would take a week or longer using Python or PHP by themselves.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/03/30/lord-of-the-rings-open-beta">Lord of the Rings Open Beta</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-03-30T00:00:00-07:00" pubdate data-updated="true">Mar 30<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>It&#8217;s Friday 30 March 2007, do you know where your Hobbits are? If you pre-ordered your copy of Lord of the Rings Online: Shadows of Angmar you do! Turbine has opened the flood-gates and the seven new servers are UP and available for play!<br/><br/><a href="http://lotro-en.curse-gaming.com/previews/beta-information/1339/open-beta-has-officially-begun/">read more</a> | <a href="http://digg.com/gaming_news/Lord_of_the_Rings_Open_Beta">digg story</a></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/01/31/ea-mythic-press-event-warhammer-online-unleashed">EA Mythic Press Event: Warhammer Online Unleashed!</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-01-31T00:00:00-08:00" pubdate data-updated="true">Jan 31<span>st</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>â€œYou lucky bastard!<br>â€ was what I was called when I told some friends I was going to get a chance to play Warhammer Online in person at the Mythic press event. In hindsight, they were right. Before I go into all the warm and fuzzy factual details that were learnt about the game at the conference, allow me to give some background information.<br/><br/><a href="http://www.curse-gaming.com/en/games/38/warhammer-online-age-of-reckoning/articles/745/ea-mythic-press-event-warhammer-online-unleashed/">read more</a>&nbsp;|&nbsp;<a href="http://digg.com/gaming_news/EA_Mythic_Press_Event_Warhammer_Online_Unleashed">digg story</a></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/01/15/announcing-the-burning-crusade-guides">Announcing the Burning Crusade Guides</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-01-15T00:00:00-08:00" pubdate data-updated="true">Jan 15<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In preparation for the launch of World of Warcraft: The Burning Crusade, Curse will be adding information guides on the zones of Outland. The first installment is the initial zone you&#8217;ll enter upon embarking on your journey into the expansion: Hellfire Peninsula. Follow the link to read about some of the pre-Outland preparations you&#8217;ll want to make<br/><br/><a href="http://wow.curse-gaming.com/en/general-news/533/announcing-the-burning-crusade-guides/">read more</a>&nbsp;|&nbsp;<a href="http://digg.com/gaming_news/Announcing_The_Burning_Crusade_Guides">digg story</a></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2006/11/15/passionate-webgraphics-designer-for-curse-gaming">Passionate Web/Graphics Designer for Curse Gaming</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-11-15T00:00:00-08:00" pubdate data-updated="true">Nov 15<span>th</span>, 2006</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>We&#8217;re looking to add a member to the team over at Curse. If you have a talent in web/graphics design I encourage you to check out the <a href="http://www.sitepoint.com/forums/showthread.php?threadid=438020">requirements</a>.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2006/10/29/a-better-object-tracking">A Better Object Tracking</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-10-29T00:00:00-07:00" pubdate data-updated="true">Oct 29<span>th</span>, 2006</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>After having built the system on our new CMS, and a couple suggestions from a friend, I came up with a better tracking system as I originally <a href="http://www.davidcramer.net/other/27/tracking-unread-objects.html">detailed on my blog</a>. The new system is combination of the second method detailed in the post, and a much more accurate solution.</p>
+
+<p>We continue to track the last login time in our session (and database, if they&#8217;re logged in), but we now also track a time for each object they have viewed. Whenever they view an object, you update a list in your session w/ that object&#8217;s key, and the current time. Now you simply compare the time they viewed that object (if it exists) with the last updated time, and you have a quick, database-free, tracking solution.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2006/10/23/curse-gaming-beta-tests-new-website">Curse Gaming Beta Tests New Website</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-10-23T00:00:00-07:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2006</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Curse Gaming is beta testing their new website. They are doing a stress test on the new platform which is running the Django framework.<br/><br/><a href="http://www.curse-gaming.com/en/news-394-1-curse-version-3.html">read more</a>&nbsp;|&nbsp;<a href="http://digg.com/gaming_news/Curse_Gaming_beta_tests_new_website">digg story</a></p></div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/15/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/13/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = ''
+        
+        var disqus_url = 'http://justcramer.com/blog/page/14/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

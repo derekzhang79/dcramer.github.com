@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: python | David Cramer's Blog]]></title>
+  <link href="http://justcramer.com/categories/python/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-18T17:12:54-07:00</updated>
+  <id>http://justcramer.com/</id>
+  <author>
+    <name><![CDATA[David Cramer]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
+    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
+    <updated>2011-08-05T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
+    <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django's test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I'm happy to say we're running (basically) Nose with some minor extensions, and it's working great.</p>
+
+
+
+
+<p>Getting Django running on Nose is no small feat. Luckily, someone else has already put in a lot of that effort, and packaged it up all nice and neat as <a href="http://pypi.python.org/pypi/django-nose">django-nose</a>. I won't go through setting up the package, but it's pretty straight forward. One thing that we quickly noticed however, was that it didnt quite fit our approach to testing, which was strictly unittest. After a couple days of going back and forth with some minor issues, we came up with a few pretty useful extensions to the platform.</p>
+
+
+
+
+<p>A few of the big highlights for us:</p>
+
+
+
+
+<ul>
+    <li>Xunit integration (XML output of test results)</li>
+    <li>Skipped and deprecated test hooks</li>
+    <li>The ability to organize tests outside of the Django standards</li>
+</ul>
+
+
+
+
+<p>I'm wanted to talk a bit about how we solved some of our problems, and the other benefits we've seen since adopting it.</p>
+
+
+
+
+<h3>Test Organization</h3>
+
+
+
+
+<p>The biggest win for us was definitely being able to reorganize our test suite. This took a bit of work, and I'll talk about this with some of the plugins we whipped up to solve the problems. We ended up with a nice extensible test structure, similar to Django's own test suite:</p>
+
+
+
+
+<pre>
+tests/
+tests/db/
+tests/db/connections/
+tests/db/connections/redis/
+tests/db/connections/redis/__init__.py
+tests/db/connections/redis/models.py
+tests/db/connections/redis/tests.py
+</pre>
+
+
+
+
+<p>We retained the ability to keep tests within the common <code>app/tests</code> convention, but we found that we were just stuffing too many tests into obscure application paths that it became unmaintainable after a while.</p>
+
+
+<h3>Unittest Compatibility</h3>
+
+
+
+
+<p>The first issue we hit was with test discovery. Nose has a pretty good default pattern for finding tests, but it had some behavior that didn't quite fit with all of our existing code. Mostly, it found random functions that were prefixed with <code>test_</code>, or things like <code>start_test_server</code> which weren't tests by themselves.</p>
+
+
+
+
+<p>After digging a bit into the API, it turned out to be a pretty easy problem to solve, and we came up with the following plugin:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">UnitTestPlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s">Enables unittest compatibility mode (dont test functions, only TestCase</span>
+</span><span class='line'><span class="s">subclasses, and only methods that start with [Tt]est).</span>
+</span><span class='line'><span class="s">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="n">enabled</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">wantClass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">wantMethod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="n">im_class</span><span class="p">,</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">method</span><span class="o">.</span><span class="n">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">wantFunction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Test Case Selection</h2>
+
+
+
+
+<p>To ensure compatibility with our previous unittest extensions, we needed a simple way to filter only selenium tests. We do this with the --selenium and --exclude-selenium flags.</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">disqus.tests.testcases</span> <span class="kn">import</span> <span class="n">DisqusSeleniumTest</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">nose.plugins.base</span> <span class="kn">import</span> <span class="n">Plugin</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">SeleniumSelector</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;--exclude-selenium&quot;</span><span class="p">,</span>
+</span><span class='line'>                      <span class="n">dest</span><span class="o">=</span><span class="s">&quot;selenium&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_false&quot;</span><span class="p">,</span>
+</span><span class='line'>                      <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;--selenium&quot;</span><span class="p">,</span>
+</span><span class='line'>                      <span class="n">dest</span><span class="o">=</span><span class="s">&quot;selenium&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+</span><span class='line'>                      <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">selenium</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">selenium</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">wantClass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">DisqusSeleniumTest</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">DisqusSeleniumTest</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Bisecting Tests</h2>
+
+
+
+
+<p>One feature I always thought was pretty useful in the Django test suite was their <code>--bisect</code> flag. Basically, given your test suite, and a failing test, it could help you find failures which were related to executing tests in say a specific order. This isn't actually made available to normal Django applications, but being a large codebase it's extremely useful for us.</p>
+
+
+
+
+<p><strong>I should note, this one adapted from Django and is very rough. It doesn't report a proper <code>TestResult</code>, but it's pretty close to where we want to get it.</strong></p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">_EmptyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">pass</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">make_bisect_runner</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bisect_label</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">split_tests</span><span class="p">(</span><span class="n">test_labels</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    Split tests in half, but keep children together.</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">chunked_tests</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">test_label</span> <span class="ow">in</span> <span class="n">test_labels</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">cls_path</span> <span class="o">=</span> <span class="n">test_label</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>        <span class="c"># filter out our bisected test</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">test_label</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">bisect_label</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">continue</span>
+</span><span class='line'>        <span class="n">chunked_tests</span><span class="p">[</span><span class="n">cls_path</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_label</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">chunk_a</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>    <span class="n">chunk_b</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>    <span class="n">midpoint</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">cls_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">n</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">midpoint</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">chunk_a</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">[</span><span class="n">cls_path</span><span class="p">])</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">chunk_b</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">[</span><span class="n">cls_path</span><span class="p">])</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">chunk_a</span><span class="p">,</span> <span class="n">chunk_b</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">BisectTestRunner</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    Based on Django 1.3&#39;s bisect_tests, recursively splits all tests that are discovered</span>
+</span><span class='line'><span class="sd">    into a bisect grid, grouped by their parent TestCase.</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="c"># TODO: potentially break things down further than class level based on whats happening</span>
+</span><span class='line'>    <span class="c"># TODO: the way we determine &quot;stop&quot; might need some improvement</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
+</span><span class='line'>        <span class="c"># find all test_labels grouped by base class</span>
+</span><span class='line'>        <span class="n">test_labels</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>        <span class="n">context_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">_tests</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">while</span> <span class="n">context_list</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">context</span> <span class="o">=</span> <span class="n">context_list</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+</span><span class='line'>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">test</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">test</span>
+</span><span class='line'>                <span class="n">test_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__module__</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+</span><span class='line'>                                                 <span class="n">test</span><span class="o">.</span><span class="n">_testMethodName</span><span class="p">))</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">context_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">subprocess_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;--bisect&#39;</span><span class="p">))]</span>
+</span><span class='line'>        <span class="n">iteration</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makeResult</span><span class="p">()</span>
+</span><span class='line'>        <span class="n">test_labels_a</span><span class="p">,</span> <span class="n">test_labels_b</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+</span><span class='line'>        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">chunk_a</span><span class="p">,</span> <span class="n">chunk_b</span> <span class="o">=</span> <span class="n">split_tests</span><span class="p">(</span><span class="n">test_labels</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">chunk_a</span> <span class="ow">and</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">chunk_b</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;Failure found somewhere in&quot;</span><span class="p">,</span> <span class="n">test_labels_a</span> <span class="o">+</span> <span class="n">test_labels_b</span>
+</span><span class='line'>                <span class="k">break</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">test_labels_a</span> <span class="o">=</span> <span class="n">chunk_a</span> <span class="o">+</span> <span class="p">[</span><span class="n">bisect_label</span><span class="p">]</span>
+</span><span class='line'>            <span class="n">test_labels_b</span> <span class="o">=</span> <span class="n">chunk_b</span> <span class="o">+</span> <span class="p">[</span><span class="n">bisect_label</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&#39;***** Pass </span><span class="si">%d</span><span class="s">a: Running the first half of the test suite&#39;</span> <span class="o">%</span> <span class="n">iteration</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&#39;***** Test labels:&#39;</span><span class="p">,</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_labels_a</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">failures_a</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">subprocess_args</span> <span class="o">+</span> <span class="n">test_labels_a</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&#39;***** Pass </span><span class="si">%d</span><span class="s">b: Running the second half of the test suite&#39;</span> <span class="o">%</span> <span class="n">iteration</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&#39;***** Test labels:&#39;</span><span class="p">,</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_labels_b</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">print</span>
+</span><span class='line'>            <span class="n">failures_b</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">subprocess_args</span> <span class="o">+</span> <span class="n">test_labels_b</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">if</span> <span class="n">failures_a</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">failures_b</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;***** Problem found in first half. Bisecting again...&quot;</span>
+</span><span class='line'>                <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'>                <span class="n">test_labels</span> <span class="o">=</span> <span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">elif</span> <span class="n">failures_b</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">failures_a</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;***** Problem found in second half. Bisecting again...&quot;</span>
+</span><span class='line'>                <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'>                <span class="n">test_labels</span> <span class="o">=</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">elif</span> <span class="n">failures_a</span> <span class="ow">and</span> <span class="n">failures_b</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;***** Multiple sources of failure found&quot;</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;***** test labels were:&quot;</span><span class="p">,</span> <span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>                <span class="n">result</span><span class="o">.</span><span class="n">addError</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="s">&#39;Failures found in multiple sets: </span><span class="si">%s</span><span class="s"> and </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="bp">None</span><span class="p">))</span>
+</span><span class='line'>                <span class="k">break</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;***** No source of failure found...&quot;</span>
+</span><span class='line'>                <span class="k">break</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">result</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">inst</span> <span class="o">=</span> <span class="n">_EmptyClass</span><span class="p">()</span>
+</span><span class='line'><span class="n">inst</span><span class="o">.</span><span class="n">__class__</span> <span class="o">=</span> <span class="n">BisectTestRunner</span>
+</span><span class='line'><span class="n">inst</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="n">inst</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">BisectTests</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;--bisect&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;bisect_label&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">bisect_label</span><span class="p">)</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">bisect_label</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">bisect_label</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">prepareTestRunner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">make_bisect_runner</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bisect_label</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Improvements to django-nose</h2>
+
+
+
+
+<p>Finally I wanted to talk about some of the things that we've been pushing back upstream. The first was support for discovery of models that were in non-app tests. This works the same way as Django in that it looks for <code>appname/models.py</code>, and if it's found, it adds it to the <code>INSTALLED_APPS</code> automatically.</p>
+
+
+
+
+<p>The second addition we've been working on allows you to run selective tests that dont require the database, and avoids actually building the database. It does this by looking for classes which inherit from <code>TransactionTestCase</code>, and if none are found, it skips database creation.</p>
+
+
+
+
+<p>I'm curious to here what others have for tips and tricks regarding Nose (or maybe just helpful strategies in your own test runner).</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Python and OS X Lion]]></title>
+    <link href="http://justcramer.com/2011/07/20/python-and-os-x-lion"/>
+    <updated>2011-07-20T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/07/20/python-and-os-x-lion</id>
+    <content type="html"><![CDATA[<p>Just a few quick tips that I've had to run through and discover today while upgrading to Lion.</p>
+
+
+
+
+<p>Start by <strong>installing Xcode 4</strong>, which is available via the App Store (for free now). This will fix your missing distutils package (which probably fixes a majority of your issues). You'll also need to <strong>reinstall all global site-packages</strong>, such as pip or virtualenvwrapper.</p>
+
+
+
+
+<p>The last one, which was luckily solved for me already, was hitting <strong>[Errno 32] Broken pipe</strong> on various things. One example was this:</p>
+
+
+
+
+<pre>  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/utils.py", line 145, in filter_js
+    return filter_common(js, verbosity, filters=settings.COMPRESS_JS_FILTERS, attr='filter_js', separator='', signal=js_filtered)
+  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/utils.py", line 136, in filter_common
+    output = getattr(get_class(f)(verbose=(verbosity >= 2)), attr)(output)
+  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/filters/yui/__init__.py", line 41, in filter_js
+    return self.filter_common(js, 'js', JS_ARGUMENTS)
+  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/filters/yui/__init__.py", line 20, in filter_common
+    p.stdin.write(content)
+TemplateSyntaxError: Caught IOError while rendering: [Errno 32] Broken pipe</pre>
+
+
+
+
+<p>It turns out that with Xcode 4 there were some changes to the way (something that I dont care about) is handled. To solve this, add the following to your .profile:</p>
+
+
+
+
+<pre>export ARCHFLAGS='-arch i386 -arch x86_64'</pre>
+
+
+
+
+<p>If you rely on <a href="https://github.com/apenwarr/sshuttle">sshuttle</a> be warned, it doesn't work currently on OS X Lion.</p>
+
+
+
+
+<p>I'll update this post if I hit any more issues, but so far everything else seems to be running smoothly.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[EuroPython]]></title>
+    <link href="http://justcramer.com/2011/06/24/europython"/>
+    <updated>2011-06-24T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/06/24/europython</id>
+    <content type="html"><![CDATA[<p>This last week I've been attending <a href="http://europython.eu">EuroPython</a> over here in Firenze (or as we Americans know it, Florence), Italy. It's been a pretty amazing time, visiting the beautiful city, putting faces to names, and seeing some great presentations. More importantly, and the main reason for my trip, was the two talks that I delivered here this week.</p>
+
+
+
+
+<p>The first was on Tuesday morning, titled "<strong><a href="http://www.slideshare.net/zeeg/building-scalable-web-apps" title="Building Scalable Web Apps">Building Scalable Web Apps</a></strong>". I tried to show how one might solve some problems building a real web app, so we built a little bit of a backend for a Twitter-like stream.</p>
+
+
+
+
+<p style="width:425px;" id="__ss_8376349"> <iframe src="http://www.slideshare.net/slideshow/embed_code/8376349" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe> </p>
+
+
+
+
+<p>I gave a second talk on Wednesday morning, "<strong><a href="http://www.slideshare.net/zeeg/pitfalls-of-continuous-deployment" title="Pitfalls of Continuous Deployment">Pitfalls of Continuous Deployment</a></strong>", which talks a little bit about the lessons we've learned during adoption of CD, as well as the value of integration and reporting systems</p>
+
+
+
+
+<p style="width:425px" id="__ss_8386947"> <iframe src="http://www.slideshare.net/slideshow/embed_code/8386947" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe> </p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting Up Your Own PyPi Server]]></title>
+    <link href="http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server"/>
+    <updated>2011-04-04T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server</id>
+    <content type="html"><![CDATA[<p>Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git repository? For a low low price of FREE, and an hour of labor, get your very own PyPi server and solve all of your worries!</p>
+
+
+
+
+<h3>Set up Chishop</h3>
+
+
+
+
+<p>We're going to jump right into this one. Start by setting up Chishop. Currently the best way is to do so using <a href="https://github.com/disqus/chishop">the DISQUS fork</a> as it contains several fixes. Expect to see all of the hard work in the various forks merged upstream as soon as we get some proper docs going. Follow the instructions in the README to configure Chishop, and your PyPi index.</p>
+
+
+
+
+<p>Now you're going to want to tweak some things that are on by default. For starters, you're probably going to want to proxy the official PyPi repository, and this can be done by enabling a simple flag in your newly created <code>settings.py</code>:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">DJANGOPYPI_PROXY_MISSING</span> <span class="o">=</span> <span class="bp">True</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>There are many other configuration options, but you're going to have to read the source for those.</p>
+
+
+
+
+<h3>Configure PIP/Setuptools/Buildout</h3>
+
+
+
+
+<p>Now that you've got a sexy PyPi server up and running, you'll probably want to configure the default index locations for your package managers. It took me a bit of Googling but then I stumpled upon an awesome post by Jacob Kaplan-Moss about <a href="http://jacobian.org/writing/when-pypi-goes-down/">dealing with PyPi when it goes down</a>, which describes procedures for configuring PyPi mirrors.</p>
+
+
+
+
+<p>Let's start with <strong>pip</strong>, which stores its configuration in <code>~/.pip/pip.conf</code>:</p>
+
+
+
+
+<pre>[global]
+index-url = http://my.chishop/simple</pre>
+
+
+
+
+<p>Next up, <strong>setuptools</strong>, located in <code>~/.pydistutils.cfg</code>:</p>
+
+
+
+
+<pre>[easy_install]
+index_url = http://my.chishop/simple</pre>
+
+
+
+
+<p>And finally, if you use <strong>buildout</strong>, tweak your <code>buildout.cfg</code>:</p>
+
+
+
+
+<pre>[buildout]
+index = http://my.chishop/simple</pre>
+
+
+
+
+<h3>Use It</h3>
+
+
+
+
+<p>Now that you have a fully functioning PyPi, kill off your requirements files and build a real setup.py. Hopefully as a bit of inspiration, here's a snippet from Sentry's:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="err">!</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">env</span> <span class="n">python</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">try</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kn">from</span> <span class="nn">ez_setup</span> <span class="kn">import</span> <span class="n">use_setuptools</span>
+</span><span class='line'><span class="n">use_setuptools</span><span class="p">()</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">tests_require</span> <span class="o">=</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&#39;django&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;django-celery&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;south&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;django-haystack&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;whoosh&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">setup</span><span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;django-sentry&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">version</span><span class="o">=</span><span class="s">&#39;1.6.8.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">author</span><span class="o">=</span><span class="s">&#39;David Cramer&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">author_email</span><span class="o">=</span><span class="s">&#39;dcramer@gmail.com&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">url</span><span class="o">=</span><span class="s">&#39;http://github.com/dcramer/django-sentry&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Exception Logging to a Database in Django&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="s">&quot;example_project&quot;</span><span class="p">),</span>
+</span><span class='line'><span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+</span><span class='line'><span class="n">install_requires</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;django-paging&amp;gt;=0.2.2&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;django-indexer==0.2.1&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;uuid&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">],</span>
+</span><span class='line'><span class="n">dependency_links</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;https://github.com/disqus/django-haystack/tarball/master#egg=django-haystack&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">],</span>
+</span><span class='line'><span class="n">tests_require</span><span class="o">=</span><span class="n">tests_require</span><span class="p">,</span>
+</span><span class='line'><span class="n">extras_require</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;test&#39;</span><span class="p">:</span> <span class="n">tests_require</span><span class="p">},</span>
+</span><span class='line'><span class="n">test_suite</span><span class="o">=</span><span class="s">&#39;sentry.runtests.runtests&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">include_package_data</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+</span><span class='line'><span class="n">classifiers</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;Framework :: Django&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;Intended Audience :: Developers&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;Intended Audience :: System Administrators&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;Operating System :: OS Independent&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;Topic :: Software Development&#39;</span>
+</span><span class='line'><span class="p">],</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,1020 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="A while back I posted a quick, and very simplistic guide to setting up django-sphinx within your project. Since that time we&#8217;ve gained a lot of &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/blog/page/5">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Setting Up Django and Sphinx Full-text Search (Django-sphinx)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-25T00:00:00-07:00" pubdate data-updated="true">Mar 25<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A while back I posted a quick, and very simplistic guide to setting up django-sphinx within your project. Since that time we&#8217;ve gained a lot of use of the platform. It came to my attention today that the <a href="http://groups.google.com/group/django-nyc">django-nyc</a> group was going to do a presentation on how to setup sphinx within your Django project. This, and many, many questions later, I&#8217;ve decided to rewrite my guide to setting up Sphinx with your project.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/03/14/scaling-your-frontend-far-futures-headers-and-template-tags">Scaling Your Frontend: Far-Futures Headers and Template Tags</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-14T00:00:00-07:00" pubdate data-updated="true">Mar 14<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the many things we do to help optimize our website load times is optimize the frontend by setting far-futures headers. This simply means that media has an Expires tag of sometime in the distant future (maybe a year), and when we make changes, the filename needs to change. The easiest way to do this, is by adding a simple GET parameter.</p>
+
+<p>To handle this, we had been using a simple revision system, where we just increment a number in a list of files, and it appends that number to the filename. After realizing how lazy we should have been, I quickly rewrote it to grab the file modification time and use that as the revision number.</p>
+
+<p>Anyways, we did this by using a simple template tag (or a global object as it&#8217;s known in Jinja), to output the URL to the file, as well as the revision.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">jinja.contrib.djangosupport</span> <span class="kn">import</span> <span class="n">register</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">mediaurl</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+</span><span class='line'><span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MEDIA_ROOT</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+</span><span class='line'><span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="p">):</span>
+</span><span class='line'><span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Media must be located within MEDIA_ROOT.&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s">?</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MEDIA_URL</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)))</span>
+</span><span class='line'><span class="n">register</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">mediaurl</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now to link our media files it&#8217;s quick and painless:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="c">&lt;!-- iBegin Stylesheets --&gt;</span>
+</span><span class='line'><span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type=</span><span class="s">&quot;text/css&quot;</span> <span class="na">media=</span><span class="s">&quot;screen&quot;</span> <span class="na">href=</span><span class="s">&quot;&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type=</span><span class="s">&quot;text/css&quot;</span> <span class="na">media=</span><span class="s">&quot;print&quot;</span> <span class="na">href=</span><span class="s">&quot;&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span><span class="c">&lt;!-- JavaScript --&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span><span class="nx">BASE_URL</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/03/12/mac-os-x-security-update-2009-01-perl-fix">Mac OS X Security Update 2009-01 Fix for Perl and Fink</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-12T00:00:00-07:00" pubdate data-updated="true">Mar 12<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>As many users like myself probably have noticed, Apple seriously fucked us with their latest security release. From what I&#8217;ve read, they reverted Perl to an older version which doesn&#8217;t support some common features.</p>
+
+<p>I began receiving errors such as the following with fink and other applications:</p>
+
+<ul><li><strong>IO object version 1.22 does not match bootstrap parameter 1.23</strong></li><li>Storable object version 2.15 does not match $Storable::VERSION 2.18</li><li>DB_File object version 1.814 does not match bootstrap parameter 1.817</li></ul>
+
+<p>After a bit of searching, and trying some various things, I&#8217;ve come up with the following solution (which may be specific to my problems):</p>
+
+<pre><br>mkdir -p /fixforperl<br>cd !$<br>curl -O http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/IO-1.2301.tar.gz<br>curl -O http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/DB_File-1.819.tar.gz<br>curl -O http://search.cpan.org/CPAN/authors/id/A/AM/AMS/Storable-2.18.tar.gz<br>tar xzf IO-1.2301.tar.gz<br>tar xzf DB_File-1.819.tar.gz<br>tar xzf Storable-2.18.tar.gz<br>cd IO-1.2301 && perl Makefile.PL && make && sudo make install && cd ..<br>cd DB_File-1.819 && perl Makefile.PL && make && sudo make install && cd ..<br>cd Storable-2.18 && perl Makefile.PL && make && sudo make install && cd ..<br></pre>
+
+<p>There may be other libraries which you need to update as well. These are just the ones I&#8217;ve encountered so far. The process is the same for each library. Simply grab the package off of CPAN, run the Makefile.PL, and make install.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/02/28/improved-uuidfield-in-django">Improved UUIDField in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-28T00:00:00-08:00" pubdate data-updated="true">Feb 28<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>So today I went ahead and cleaned up my UUIDField implementation. Originally it was just based off of a snippet. I wanted to swap it over to use a BINARY column in MySQL, after reading on how <a href="http://bret.appspot.com/entry/how-friendfeed-uses-mysql">FriendFeed had been using UUIDs</a>. Due to using Django however, you can&#8217;t use binary data or BLOB columns effectively. It tries to coerce everything to unicode so it ends up failing on any kind of binary data.</p>
+
+<p>Instead of using a BINARY(16) column, I just switched over to a CHAR(32) (previously a CHAR(36)). In doing this I also converted the field to keep everything in the UUID format (to better handle passing around the values, and converting to any format you want).</p>
+
+<p>All in all, the new UUIDField works as intended, and is a nice improvement over the simple &#8220;automatically insert a UUID here&#8221;, which is what it was before.</p>
+
+<p>Grab the code on <a href="https://github.com/dcramer/django-uuidfield">GitHub</a></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/02/22/javascript-widgets-on-nibbits">JavaScript Widgets on Nibbits</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-22T00:00:00-08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Quite a while back I introduced basic JavaScript widgets on Nibbits. These let site owners embed a simple box on their own site which shows basic information, as well as a download link for their maps.</p>
+
+<p>So, why am I posting about this? Simply to spread the word, and to demo it of course :)</p>
+
+<p><script src="http://www.nibbits.com/wc3/maps/view/125228/widget.js"></script></p>
+
+<p><script src="http://www.nibbits.com/sc/maps/view/125214/widget.js"></script></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/02/09/large-sql-result-sets-in-django">Large SQL Result Sets in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-09T00:00:00-08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the repetitive tasks that I always seem to have, is handling large amounts of data in chunks. That is, typically I loop through every row in the database, but the result set is too large, or too slow to take into memory all at once. After reading my code a few too many times, I realized how lazy I had been on the first iteration, and decided to dry it up.</p>
+
+<p>So, the result, is a couple of useful classes for managing large QuerySet&#8217;s, and cursors in Django.</p>
+
+<p>First let&#8217;s handle iterating over a large QuerySet. Let&#8217;s just say we have a million rows in our database, and need to write each one to the file. Now in some situations, this could be a locking query, which isn&#8217;t good. In others, it&#8217;s simply just too slow and network heavy to send all million rows over the network. What we do instead, which is a little bit slower (overall), is query for a chunk of data at a time, and simply yield the current results.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">IterableQuerySet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;Allows iteration over a QuerySet breaking it off into smaller chunks.&quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">at</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="p">[</span><span class="n">at</span><span class="p">:</span><span class="n">at</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">while</span> <span class="n">results</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">yield</span> <span class="n">result</span>
+</span><span class='line'>            <span class="n">at</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+</span><span class='line'>            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="p">[</span><span class="n">at</span><span class="p">:</span><span class="n">at</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now one of the other common tasks we had with similar applications, was doing something similar but with cursors. So instead of writing the same class, but for a cursor, we instead made a new class which would allow a cursor to easily act like a QuerySet. This one&#8217;s a bit more complex, but also allows you to use a Paginator class on it.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">re</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">CURSOR_UNION_REGEX</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^SELECT .*? FROM (.*)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">QuerySetCursor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[],</span> <span class="n">model_class</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">params</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">connection</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_sql</span> <span class="o">=</span> <span class="n">sql</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_model_class</span> <span class="o">=</span> <span class="n">model_class</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)):</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="ne">TypeError</span>
+</span><span class='line'>        <span class="k">assert</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">))</span> \
+</span><span class='line'>            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">stop</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)),</span> \
+</span><span class='line'>                <span class="s">&quot;Negative indexing is not supported.&quot;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">==</span> <span class="nb">slice</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">&lt;</span> <span class="n">k</span><span class="o">.</span><span class="n">start</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">stop</span><span class="o">-</span><span class="n">k</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">:</span>
+</span><span class='line'>                <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">):</span>
+</span><span class='line'>                    <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">==</span> <span class="nb">slice</span><span class="p">:</span>
+</span><span class='line'>                <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">start</span>
+</span><span class='line'>                <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">stop</span><span class="o">-</span><span class="n">k</span><span class="o">.</span><span class="n">start</span>
+</span><span class='line'>                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results</span><span class="p">()</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="n">k</span>
+</span><span class='line'>                <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">())</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">())</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_results</span><span class="p">())</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_cache</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">_get_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql</span> <span class="o">+</span> <span class="s">&#39; LIMIT </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&#39;</span>
+</span><span class='line'>            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span>
+</span><span class='line'>            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">results</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+</span><span class='line'>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_class</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_class</span><span class="p">(</span><span class="o">*</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">finally</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">results</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">statements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sql</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; UNION &#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">prepared</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">statement</span> <span class="ow">in</span> <span class="n">statements</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">end_of_stmt</span> <span class="o">=</span> <span class="n">CURSOR_UNION_REGEX</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">if</span> <span class="ow">not</span> <span class="n">end_of_stmt</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Error getting SQL&quot;</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">prepared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;SELECT COUNT(1) FROM </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">end_of_stmt</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),))</span>
+</span><span class='line'>        <span class="n">query</span> <span class="o">=</span> <span class="s">&#39;SELECT (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;) + (&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prepared</span><span class="p">),)</span>
+</span><span class='line'>        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">results</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">finally</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">results</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Want to combine both results?
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">IterableQuerySet</span><span class="p">(</span><span class="n">QuerySetCursor</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">MyModelClass</span><span class="p">)):</span>
+</span><span class='line'>    <span class="k">print</span> <span class="n">r</span>
+</span></code></pre></td></tr></table></div></figure>
+<p>I believe there&#8217;s also some optimization that can be doing with <code>cursor.fetchmany()</code> to also chunk the SQL in memory, but I&#8217;ve yet to research how the cursor classes work internally.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/02/05/lifestreams-evolution-into-a-platform">Lifestream&#8217;s Evolution Into a Platform</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-05T00:00:00-08:00" pubdate data-updated="true">Feb 5<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the big things I&#8217;ve been talking about, and working on over the past couple of months (although I haven&#8217;t been working much on it), is our new Lifestream service. The goal is to simply create an open platform. A place where a user can sign up and add their feeds much like on FriendFeed, or one of those hundred clones. However, we have a slightly different vision from the limited scope that is FriendFeed.</p>
+
+<p>We want to create a platform where this data is open to the user. A platform where they can use this data whenever, wherever, and however they want. Breaking down barriers between the data providers, and the user is not our only goal, but we also want to bring you a platform which goes above and beyond what the others offer. Allowing you to group and tweak your feeds (which are being relabled as sources) to your hearts desire.</p>
+
+<p>Let&#8217;s take an example. In the current Lifestream plugin, you have a &#8220;Digg&#8221; extension. This is a chunk of actual code, which lets you say &#8220;I want to show my Digg submissions, Digg favorites, and other Diggness, and group them all together.&#8221;. This by itself is fairly powerful, and gives the user some choice.</p>
+
+<p>There is no more code which powers Digg, instead we have a simply &#8220;Feed&#8221; extension which can power any RSS/Atom based feed. Instead, Digg exists as a virtual extension, which requires very little configuration, and can be used, and reused, by any user, as well as created very easily without much of a learning curve.</p>
+
+<p>Even more so, we have completely scrapped our previous grouping concept. Instead of restricting groups to simply being media types from the same source, we now allow you to group ANY source together as long as it&#8217;s the same media type (images can&#8217;t be grouped with messages). This opens up some very cool possibilities like being able to group all of your trendy news sites together (Digg, Reddit), or group all your bookmark posts together (Delicious, Google).</p>
+
+<p>Beyond just the technical details, we&#8217;re launching this as a service oriented platform. What this means is that you have a one-stop-shop to do whatever you want with your Lifestream, and then you can reuse that data on a variety of sources. Our initial release will include not only a WordPress plugin, but extensions for vBulletin, Blogger, and MediaWiki as well (pending time).</p>
+
+<p>Not only are we launching with several extensions, but we will also provide a very simple, themeable homepage for the user much like Pownce or Tumblr. This will allow you to post directly to your Lifestream, but also give you the ability to pull in information like your tweets. Essentially, this opens up an entire new blogging approach which hasn&#8217;t been very well explored.</p>
+
+<p>To the point. The service will be slowly opening up to users over the next month, and we hope to launch a fully open beta within the next 3-6 months. If you&#8217;re an extreme Lifestream fan, and you think you can really contribute in terms of feedback, and quality testing, we&#8217;re looking for you. Simply send me an <a href="mailto:dcramer@gmail.com/">email</a> letting me know that you are interested.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/29/denormalizing-model-abstraction-in-django">Denormalizing Model Abstraction in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-29T00:00:00-08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In the Lifestream service I&#8217;ve been working on, I presented myself with the need to have some class abstraction, but not in the fashion which is available in Django models. I wanted to achieve a base class, which is stored in the database, and then child classes which simply override some methods. It turned out this would be a lot more complex than anticipated.</p>
+
+<p>This is a fairly common approach to class abstraction, especially in Python. It&#8217;s used all over the place in your daily code. Whether you are overriding the save() method on your model, or creating your own admin form by subclassing ModelAdmin. I wanted to accomplish a similar task, but doing so on a model. Let&#8217;s call it backwards abstraction (since abstraction works the other direction in Django). We create a single table, which houses many classes, and possibly even some denormalization for additional data on these classes.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">TemplateModel</span><span class="p">):</span>
+</span><span class='line'><span class="nb">id</span>              <span class="o">=</span> <span class="n">UUIDField</span><span class="p">(</span><span class="n">auto</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'><span class="n">plugin</span>          <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span><span class='line'><span class="n">title</span>           <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="n">options</span>         <span class="o">=</span> <span class="n">JSONField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Tell the TemplateModel class what we have called our field.</span>
+</span><span class='line'><span class="n">__template_key__</span> <span class="o">=</span> <span class="s">&#39;plugin&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'><span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see in the above, we have our base class. It&#8217;s extending from the TemplateModel class (more on this further in), and contains some basic information. We have a <code>plugin</code> field which is the name of the class which is extending the instance, and an <code>options</code> field for storing some extra information based on that class. There is also a <code>render()</code> method for the extension which should be handled by the subclass.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">TwitterExtension</span><span class="p">(</span><span class="n">FeedExtension</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span class='line'><span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">title</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Our Twitter extension, for this sample, is very simple. All it does it say &#8220;Use the base Source class, and render the title of the event&#8221;. Now while this may not seem all that useful, it begins to be when we do even more complex development. To backtrack things a bit, <code>TwitterExtension</code> extends from the <code>FeedExtension</code>, which is where we are handling most of the logic.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">FeedExtension</span><span class="p">(</span><span class="n">Source</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span class='line'><span class="k">return</span> <span class="s">&#39;&lt;a href=&quot;</span><span class="si">%s</span><span class="s">&quot;&gt;</span><span class="si">%s</span><span class="s">&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">fetch_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+</span><span class='line'><span class="n">feed</span> <span class="o">=</span> <span class="n">feedparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</span><span class='line'><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">feed</span><span class="p">[</span><span class="s">&#39;entries&#39;</span><span class="p">]:</span>
+</span><span class='line'><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+</span><span class='line'><span class="n">data</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_media_type_for_url</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+</span><span class='line'><span class="n">data</span><span class="p">[</span><span class="s">&#39;signature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature_for_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+</span><span class='line'><span class="k">yield</span> <span class="n">data</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see here, we&#8217;re simply changing how the Twitter events are rendered. So simple example, complex to build. Even more so, we want these classes to automatically be delivered whenever we access the base Source class, as well as being able to use the classes directly.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># The instance becomes a &lt;TwitterExtension: TwitterExtensionobject&gt; on creation.</span>
+</span><span class='line'><span class="n">twitter</span> <span class="o">=</span> <span class="n">Source</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">plugin</span><span class="o">=</span><span class="s">&#39;TwitterExtension&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c"># And it saves into the Source model.</span>
+</span><span class='line'><span class="n">twitter</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+<p>To do this I created a class which I&#8217;ve randomly described as <code>TemplateModel</code>. It does exactly what is talked about above. It stores references to each child class within the parent, and upon instantiation, if it can, it returns the child class instead of the parent.</p>
+
+<p>So without further delay, <strong><a href="http://www.pastethat.com/ta5U1">view the source for TemplateModel</a></strong>.</p>
+
+<p>I&#8217;d be interested in hearing if anyone else has come up with their own solutions, and if you use something like this in your project how well its working for you.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/02/singletons-in-django">An Identity Mapper in Django (Formerly Django Singletons)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-02T00:00:00-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>As a sort of challenge to myself, I once again attempted to recreate <a href="http://code.djangoproject.com/ticket/17">ticket #17</a> as a standalone component. After a few hours, and some previous code I had written as a good guide, it seems to be working. So I&#8217;d like to announce <a href="http://github.com/dcramer/django-idmapper/tree/master">django-idmapper</a>.</p>
+
+<p>The goal of the project is a simple plug-and-play system for integrating the identity mapper into the ORM components. It allows you it simply define as a model with a different base class (via the SharedMemoryModel class), and all queries against this model (yes even from non-singleton models) are directed through the unique instance cache.</p>
+
+<p>In many cases, this can provide a nice decrease of memory usage, and you may even see a nice speed bonus (as we did with Curse).</p>
+
+<p>Here is a nice and dirty quick example of a situation which would gain from this benefit:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">idmapper</span> <span class="kn">import</span> <span class="n">models</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Category</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">SharedMemoryModel</span><span class="p">):</span>
+</span><span class='line'><span class="c"># We have 5 categories</span>
+</span><span class='line'><span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">Article</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">SharedMemoryModel</span><span class="p">):</span>
+</span><span class='line'><span class="c"># And 100 articles</span>
+</span><span class='line'><span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span><span class='line'><span class="n">category</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Category</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now in a (sort of) typical query, maybe we want to show every article (or 100, which isn&#8217;t too unreasonable). We also want to show the category they are in:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">article_list</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s">&#39;category&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+<p>What we have achieved here, is only having a maximum of N (where N is the number of categories) unique instances of category in memory here. Since we only have five, this means that we only created five category instances. This gives us a savings of the time it takes to create the additional 95 category objects, as well as the memory they would have consumed.</p>
+
+<p>Please let me know if you run in to any problems, but so far, the tests are passing :)</p>
+
+<p><strong>Note: I&#8217;ve renamed the project due to the incorrect terminology. My apologies :)</strong></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/01/spaceless-html-in-django">Spaceless HTML in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-01T00:00:00-08:00" pubdate data-updated="true">Dec 1<span>st</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the optimizations (if you want to call it that) that can be done for decreased load-time on a web page, is removing excess white space. In many of our pages at <a href="http://www.ibegin.com">iBegin</a> this saved as much as 100kb. While not every site has some of the 300kb pages that we have, it can still add up very quickly.</p>
+
+<p>Django by default provides a <code>&#123;% spaceless %&#125;</code> tag in your templates which will allow you to achieve this effect, but we don&#8217;t use Django&#8217;s template engine (<a href="http://jinja.pocoo.org">Hooray, Jinja!</a>). The tag approach also seemed fairly inappropriate, as we just want to do it across the entire site, no matter what. Instead, we moved it into a middleware, which simply strips all whitespace (using the same method as the built-in tag) from any HTML page.</p>
+
+<p>While this makes some pages unreadable, the time it saves downloading the page for the average user (See Steve Souders&#8217; tips) is well worth the trouble it causes a few people.</p>
+
+<p><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># Aliasing it for the sake of page size.</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">strip_spaces_between_tags</span> <span class="k">as</span> <span class="n">short</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">SpacelessMiddleware</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+</span><span class='line'><span class="k">if</span> <span class="s">&#39;text/html&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;Content-Type&#39;</span><span class="p">]:</span>
+</span><span class='line'><span class="n">response</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="n">short</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="n">response</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Note, that if you use page caching middleware, placing this in the appropriate place will also allow you to save space in your cache.</p>
+
+<p>Enjoy!</p></div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/6/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/4/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = ''
+        
+        var disqus_url = 'http://justcramer.com/blog/page/5/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

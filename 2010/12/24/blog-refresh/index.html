@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Blog Refresh - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2010/12/24/blog-refresh">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Blog Refresh</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
+
+<p>The new blog is powered off of <a href="https://github.com/mojombo/jekyll">Jekyll</a> and is running off of the <a href="http://pages.github.com">GitHub Pages technology</a>. I decided to use the <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a> project as a starter for the new design, and it&#8217;s turned out pretty well. If you&#8217;re curious, the source is available on <a href="https://github.com/dcramer/dcramer.github.com">GitHub</a> as always.</p>
+
+<p>Importing posts from WordPress turned out to be quite the challenge. Jekyll included a tool to translate the posts (for the most part) to HTML pages, and it worked decently. Though there were a few hurdles to overcome.</p>
+
+<p>The first problem was I had been using a syntax highlighting plugin in WordPress that worked by using <code>pre</code> tags with a <code>lang</code> attribute. For example, <code>&lt;pre lang="python"&gt;</code>. These all had to be translated to the <code>&#123;% highlight %&#125;</code> tags supported by Jekyll (on top of Pygments).</p>
+
+<p>Next up we actually had to deal with outputting &#123; and &#125; characters without Liquid (the template language Jekyll uses) parsing them. Just like Django, it seems they didn&#8217;t see the need to have some kind of raw escape tag (don&#8217;t get me started on the <code>templatetag</code> template tag in Django). After a bit of Googling I discovered the entities for these characters were <code>&amp;#123;</code> and <code>&amp;#125;</code>.</p>
+
+<p>After getting the pages mostly working, I realized they were all in .markdown. While I have nothing against markdown, it didn&#8217;t seem to play nice with some of my html. For example, it didn&#8217;t like lines that started with HTML tags. Not caring to figure out how to work around this, I decided I&#8217;d try to convert all HTML to Markdown. I attempted with both <a href="http://milianw.de/projects/markdownify/">Markdownify</a> (PHP) and a project called <a href="http://www.aaronsw.com/2002/html2text/">html2text</a> (Python). Both projects didn&#8217;t work out.In the end I decided I would just swap all pages over to HTML. </p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">for </span>x in *.dot;
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'><span class="k">  </span>mv <span class="s2">&quot;$x&quot;</span> <span class="s2">&quot;${x%.markdown}.html&quot;</span>;
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now that I had renamed all of the files, it quickly came to my attention that I was going to have to deal with paragraphs. To do this I wrote a quick script that would iterate all of the files and replace lines which appeared to be actual paragraphs, with paragraph tags. If you&#8217;re curious about this script, you can find it <a href="https://github.com/dcramer/dcramer.github.com/blob/master/_import/fix-linebreaks.py">in the source</a>.</p>
+
+<p>The last big hurdle I had to deal with was rewriting permalinks. This was a bigger challenge that I expected. My entire goal here was to be based on free services and handling redirects requires some logic. By suggestion of <a href="http://anton.kovalyov.net">Anton Kovalyov</a> I reluctantly decided I would write a quick AppEngine app.</p>
+
+<p>After a few wacky ideas I decided that the simplest solution would just be to write a URL mapper using origin and destination columns. With this in mind, I quickly whipped up a PHP script to dump my entire database of posts into a CSV file. The file converted the old permalinks (on davidcramer.net) to the new style. Finishing up the AppEngine app was fairly straight forward after this was ready. It included a CSV importer (to throw data into my datastore model), and handling the redirect part was painless. Again, if you&#8217;re curious, the <a href="https://github.com/dcramer/davidcramer-redirect">source</a> is on GitHub.</p>
+
+<p>I still have to deal with migrating URLs for Disqus, but let me know if you have any feedback on the new blog, it&#8217;s design, or just anything in general. Thanks!</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2010</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2010/12/24/blog-refresh" data-via="zeeg" data-counturl="http://justcramer.com/2010/12/24/blog-refresh" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2010/12/21/feature-switches-in-django-with-gargoyle" title="Previous Post: Feature Switches in Django with Gargoyle">&laquo; Feature Switches in Django with Gargoyle</a>
+      
+      
+        <a class="basic-alignment right" href="/2010/12/27/django-bitfield" title="next Post: BitField's in Django">BitField's in Django &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '/2010/12/24/blog-refresh'
+        
+        var disqus_url = 'http://justcramer.com/2010/12/24/blog-refresh';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '/2010/12/24/blog-refresh'
+        
+        var disqus_url = 'http://justcramer.com/2010/12/24/blog-refresh';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

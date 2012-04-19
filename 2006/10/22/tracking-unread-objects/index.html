@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Tracking Unread Objects - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Recently I&#8217;ve had to develop forum software for a website, and one problem we ran into was the most robust way to track unread posts. After &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2006/10/22/tracking-unread-objects">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Tracking Unread Objects</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-10-22T00:00:00-07:00" pubdate data-updated="true">Oct 22<span>nd</span>, 2006</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Recently I&#8217;ve had to develop forum software for a website, and one problem we ran into was the most robust way to track unread posts.</p>
+
+<p>After giving this some thought, I came up with two feasable options. We&#8217;ll start by taking a look at the first.</p>
+
+<p><strong>Pure Post Tracking</strong></p>
+
+<p>Method one is to create a table:<br><blockquote>&#8220;forum_views&#8221;<br>postID (IntegerField)<br>userID (IntegerField)<br>Index (postID, userID)</blockquote><br>Everytime a user would view a post (that was marked as unread) we would insert a row into the table. To output the list of posts, or threads, we would be join the thread with this table.</p>
+
+<p>Cons:<br><ul><br><li>In order to show the list of threads, or forums, you have to use a LEFT JOIN with the Thread and Views table (even on the forum index) which can be extremely slow on high load websites.</li><br><li>A different queryset is used for each user, so there&#8217;s no worthwhile caching for this method.</li><br><li>Upon viewing a thread you have to perform a query for each post that is marked as unread.</li><br></ul><br>Pros:<br><ul><br><li>It gives exact tracking on if a user has viewed a post.</li><br></ul><br>Obviously, the pros do NOT outweigh the cons, so let&#8217;s move on to the other method:</p>
+
+<p><strong>Session Time Tracking</strong></p>
+
+<p>The idea of this is simple, and extremely quick. Our first step is to modify our User table if it&#8217;s not already setup properly. We need to add one field:<br><blockquote>&#8220;users&#8221;<br>lastVisitTime (DateTimeField)</blockquote><br>Ok now we have a field in our users table, which tracks the last time they visited the website. Now, obviously, the first obstacle is keeping the last visit time, as the time they last visisted the site, and not the last time they viewed a page. The way we will do this is quite simple:<br><ol><br><li>First and foremost, we validate their login details, if they&#8217;re not anonymous.</li><br><li>Next we check for a session variable, let&#8217;s call it &#8220;user_lastvisit&#8221;.</li><br><li>If this variable does not exist, we will set it to the data in our table for lastVisitTime, or -1 (if they&#8217;re anonymous, or have no lastVisitTime)</li><br><li>If they are not anonymous, we now need to update our User table lastVisitTime with the current time.</li><br></ol><br>Now, as you can see, we have the session variable, user_lastvisit, and we can use this in our template, or view, in a loop over all of the <strong>cached</strong> query results, to see if the last reply time is greater than the last visit time.</p>
+
+<p>Cons:<br><ul><br><li>It&#8217;s generic tracking; the minute the session is destroyed it marks all threads as read.</li><br><li>It does not track on a per-thread basis, although it could be combined with example #1 to do so.</li><br></ul><br>Pros:<br><ul><br><li>Extremely robust and quick, works well with caching solutions.</li><br><li>No large database overhead for tracking views.</li><br><li>No added database load for marking threads as read.</li><br></ul><br>If you want accurate tracking, I would recommend tracking views as said in example #1, with the views table, and then using example #2 for tracking on lists. The accurate tracking is most notably usable in search results.</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-10-22T00:00:00-07:00" pubdate data-updated="true">Oct 22<span>nd</span>, 2006</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2006/10/22/tracking-unread-objects" data-via="zeeg" data-counturl="http://justcramer.com/2006/10/22/tracking-unread-objects" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2006/09/19/avast-me-hearties" title="Previous Post: Avast, me hearties!">&laquo; Avast, me hearties!</a>
+      
+      
+        <a class="basic-alignment right" href="/2006/10/23/curse-gaming-beta-tests-new-website" title="next Post: Curse Gaming beta tests new website">Curse Gaming beta tests new website &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '27 http://www.davidcramer.net/other/27/tracking-unread-objects.html';
+        
+        var disqus_url = 'http://justcramer.com/2006/10/22/tracking-unread-objects';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '27 http://www.davidcramer.net/other/27/tracking-unread-objects.html';
+        
+        var disqus_url = 'http://justcramer.com/2006/10/22/tracking-unread-objects';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

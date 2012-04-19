@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: git | David Cramer's Blog]]></title>
+  <link href="http://justcramer.com/categories/git/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-18T17:12:54-07:00</updated>
+  <id>http://justcramer.com/</id>
+  <author>
+    <name><![CDATA[David Cramer]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Creating a Read-only Mirror for your GitHub Server]]></title>
+    <link href="http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
+    <updated>2011-05-09T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
+    <content type="html"><![CDATA[<p>Recently we've been transitioning our git repositories to GitHub. We chose to go this route for a variety of reasons, but mostly
+because they have kickass pull requests, which we're going to test run as code reviews. However, one of the requirements of this process was that
+our original git-server still remain functional, in at least a read-only state. This saves us the time of having to update deploy and
+other scripts which read from this mirror and perform various tasks.</p>
+
+
+
+
+<p>I was a bit surprised when I originally searched around for this, as I was either failing horribly at Google (granted, my queries were "how to setup git-server mirror"), or there just wasn't much information out there on it. After a bit of crawling I found what seems to be a pretty easy way to get the behavior we wanted. For a recap, here's a checklist of what we needed:</p>
+
+
+
+
+<ul>
+    <li>Read-only git server</li>
+    <li>One-way mirror from our new server to the legacy server.</li>
+    <li>Mirror all branches</li>
+    <li>Updated near real-time</li>
+</ul>
+
+
+
+
+<p>So, given this, we created a simple bash script that runs on a 1 minute cron timer (it's as close to real-time as we needed):</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;!/bin/bash&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;mkdir -p  /var/git/mirrors/&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;cd /var/git/mirrors/&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;clone our newly acquired GitHub mirror&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;git clone --mirror git@github.com:organization/repo-name.git&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;cd disqus.git&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;Add our <span class="nb">local </span>remote&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;git remote add <span class="nb">local</span> /var/git/repositories/repo-name.git&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;Unsure <span class="k">if </span>we need to fetch from <span class="nb">local</span>, but <span class="nb">let</span><span class="err">&#39;</span>s <span class="k">do </span>it anyways&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;git fetch origin
+</span><span class='line'>git fetch <span class="nb">local</span>&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;push all changes to <span class="nb">local </span>using --mirror <span class="o">(</span>ensures all refs in remotes are pushed<span class="o">)</span>&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;git push <span class="nb">local</span> --mirror
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Since we were already using gitosis for permissions, it was easy for us to deprecate the legacy repo by simply moving everyone into a readable group that lacks write privileges.</p>
+
+
+
+
+<p>Would love to hear some feedback from avid git users if there's a better way to do this.</p>
+
+]]></content>
+  </entry>
+  
+</feed>

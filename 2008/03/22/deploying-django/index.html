@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>How to Deploy Django with Subversion and mod_wsgi - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Today a question was raised on how to deploy Django on your server. I figured it&#8217;d be useful to put together a quick how-to for deploying &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2008/03/22/deploying-django">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">How to Deploy Django With Subversion and Mod_wsgi</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-22T00:00:00-07:00" pubdate data-updated="true">Mar 22<span>nd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Today a question was raised on how to deploy Django on your server. I figured it&#8217;d be useful to put together a quick how-to for deploying Django on your standard LAMP infrastructure. I&#8217;m not going to say the way we&#8217;ve done things is the best, or if it&#8217;s even common, but it&#8217;s the way we&#8217;ve handled it.<br><!--more--><br><h2>Choosing the Right Software</h2><br>Most importantly when deploying Django you want to use the right architecture for the server. After a lot of trial and error, with much software, I&#8217;ve been pretty happy with what I&#8217;ve setup on my local server.<br><ul><li>Apache 2.x + mod_wsgi<br />You can <a href="http://www.davidcramer.net/code/django/108/setup-mod_wsgi-for-django-and-shared-hosting.html">see my configuration example</a>.</li><li>MySQL 5.0.x (or Postgre 8.2.x if you&#8217;re a fan)</li><li>Python 2.5<br/>If you have a choice, there&#8217;s no reason to use old software.</li><li>Django (trunk)<br/>I suggest you start with trunk. It&#8217;s very stable and you won&#8217;t have to deal with backwards incompatibility.</li><li>(Optional) <a href="http://www.danga.com/memcached/">memcache</a><br/>If you need caching, don&#8217;t waste your time with anything other than memcache.</li><li>(Optional) <a href="http://jinja.pocoo.org/">Jinja Template Engine</a><br/>If you prefer more logic and speed in your templates, I highly recommend the Jinja Template Engine.</li></ul></p>
+
+<p><h2>Project Structure</h2><br>This is one area, which is still up for heavy debate. It seems to be done in a multitude of ways, and even I myself seem to do it in such. iBegin we&#8217;ve set up each project in idea that the python code should not be in the same base directory as the templates and media. So for iBegin we end up with a project structure like so:</p>
+
+<pre><br>/project_name/<br>/project_name/templates/<br>/project_name/media/<br>/project_name/project_name/<br>/project_name/project_name/manage.py<br></pre>
+
+<p>Now to take a step back, in PHP I learned to separate includes (templates and media) from my codebase, to prevent them from being web accessible. This concept comes from that learning. The main issue I&#8217;ve seen arise from this is that the pathing can be very confusing, especially when checking python paths. For iBegin Places we actually have <code>/places/</code> and then inside of that we have another project, called zillow, so <code>/places/zillow/</code>. This gets to be pretty hectic when you&#8217;re trying to solve <code>PYTHONPATH</code> issues.</p>
+
+<p>On my local server (which hosts this blog), I&#8217;ve setup things a bit differently:<br><pre><br>/project_name/<br>/project_name/templates/<br>/project_name/media/<br>/project_name/manage.py<br></pre></p>
+
+<p>This concept came from the idea of keeping everything simple, and having an easy <code>PYTHONPATH</code> (the user&#8217;s base directory for example).</p>
+
+<p><h2>local_settings.py</h2><br>First things first, before deploying anything, let&#8217;s talk about local_settings vs settings. One of the biggest issues with deployment, on any kind of website, is that your settings differ from developing, to staging, to live. There&#8217;s a pretty good snippet that I grabbed a while back from <a href="http://www.djangosnippets.org/">djangosnippets.org</a> for this.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">local_settings</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">pass</span>
+</span></code></pre></td></tr></table></div></figure>
+<p>You would place this within your <code>settings.py</code> near the end of the file. What this does is look for a file called <code>local_settings.py</code> in the same directory as settings, and if it exists, and causes no errors, will import all of the settings in there.</p>
+
+<p>If you are using subversion you&#8217;re also going to want to <code>svn:ignore</code> on <code>local_settings.py</code>. I would also recommend versioning a <code>local_settings.tpl</code>, and using a symlink for your local_settings.py rather than keeping it in the project directory.</p>
+
+<p><h2>Managing Subversion</h2><br>One of the biggest changes I&#8217;ve made lately to the way we deploy projects is relying heavily on subversion. Over at Curse we started by having a live branch, and merging into that, and then rsync&#8217;ing that to the servers. While this worked fairly well and all, it was a pretty tedious approach to deal with merging in SVN.</p>
+
+<p>Eventually at Curse we switched over to using tags, which is what we&#8217;ve been doing lately over at iBegin, is using tags pretty strictly. We tag every single release, and for the most part, you&#8217;ll always find a specific tagged version on the live website. In my opinion, this was the most concise and easiest solution for <em>making subversion work</em>.</p>
+
+<p><h2>Setup Staging</h2><br>For staging we keep it pretty simple, and just have a svn checkout for the current project where it needs to be. Being that staging is usually right before you release it to the live site, this works very good for making sure trunk is fit. A simple example of how we update staging (this is contained within scripts to be precise):<br><pre>ssh dev.ibegin.com<br># updatesite.sh &lt;project&gt;<br>svn up /home/ibegin/$1<br>sudo apachectl graceful</pre></p>
+
+<p>Or if you were using mod_wsgi:<br><pre>svn up /home/ibegin/$1<br>killall -u $1 apache2</pre></p>
+
+<p><h2>Releasing Versions</h2><br>The biggest issue then comes with when you want to update your website. Previous methods I&#8217;ve used would be to SCP the contents of the site over, or have an SVN checkout on the actual live server which then does some kind of update. This time around I decided on a much more sane solution: <code>svn export</code>.</p>
+
+<p>It made it extremely simple for updating the website, as all you would do is call an <code>svn export --force</code> and an apache graceful (or kill the procs with mod_wsgi). This doesn&#8217;t solve the multiple server aspect, but you could run a script to <code>svn export</code> and then rsync similarly to how we did it on Curse. So here&#8217;s an example push (using iBegin&#8217;s logic):<br><pre>ssh ibegin.com<br># /home/ibegin/places is where our checkout would be<br># If you weren't using tags, you could replace this with your trunk<br>svn export https://svn.ibegin.com/ibegin/places/tags/0.3 /home/ibegin/ --force</pre></p>
+
+<p>This is pretty self explanatory, but here&#8217;s the steps involved:<br><ol><li>First we SSH into our live web server<br><code>ssh.ibegin.com</code></li><li>Once we&#8217;re in the server; we do an svn export on our branch, tag, or trunk, and a force update into the live directory. Without the force tag it would throw an error because the directory already exists.</li><br><code>svn export https://svn.ibegin.com/ibegin/places/tags/0.3 /home/ibegin/ --force</pre><br></code></li><br></ol></p>
+
+<p>That&#8217;s all there is to it. It sounds complicated at first (if you&#8217;re unfamiliar), but it&#8217;s really simple to deploy Django and release your project.</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-22T00:00:00-07:00" pubdate data-updated="true">Mar 22<span>nd</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2008/03/22/deploying-django" data-via="zeeg" data-counturl="http://justcramer.com/2008/03/22/deploying-django" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/03/21/pastethat-ideas" title="Previous Post: PasteThat Ideas">&laquo; PasteThat Ideas</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/03/22/setup-mod_wsgi-for-django-and-shared-hosting" title="next Post: Setup mod_wsgi for Django and Shared Hosting">Setup mod_wsgi for Django and Shared Hosting &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '107 http://www.davidcramer.net/?p=107';
+        
+        var disqus_url = 'http://justcramer.com/2008/03/22/deploying-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '107 http://www.davidcramer.net/?p=107';
+        
+        var disqus_url = 'http://justcramer.com/2008/03/22/deploying-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

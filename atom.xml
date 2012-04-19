@@ -1,0 +1,1716 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[David Cramer's Blog]]></title>
+  <link href="http://justcramer.com/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-18T17:12:54-07:00</updated>
+  <id>http://justcramer.com/</id>
+  <author>
+    <name><![CDATA[David Cramer]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
+    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
+    <updated>2012-04-08T16:52:00-07:00</updated>
+    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
+    <content type="html"><![CDATA[<p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>.</p>
+
+<p>For some background, our first implementation is very similar to how <a href="http://reddit.com">Reddit</a> and many other systems work. It generally looks something like this:</p>
+
+<ol>
+    <li>Fetch all children for a tree</li>
+    <li>Resort them in memory</li>
+    <li>Return the N entry result set</li>
+</ol>
+
+<p>While fairly easy to implement, this has the enormous cost of pulling down every single child and resorting it at an application level. There are various ways to optimize this, and we even attempted doing it <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">within the database</a> itself. In the end, none of our solutions worked at scale. They would either be too write heavy, or they&#8217;d move too much of the logic (read: CPU usage) to the database servers. That said, they led to something great, and in the end we settled on a solution that&#8217;s neither too write or read heavy. That solution was materialized paths, but not in your typical way.</p>
+
+<p>A materialized path generally is represented as a serialization of all parents. So in a simple case, it might be a simple delimited list of id values. As an example, let&#8217;s say that we have a list of comments that are guaranteed to only be less than 1000 for their identifying value:</p>
+
+<pre>
+001
+001002
+001002003
+001002007
+001004
+001005
+001005006
+</pre>
+
+<p>In this case we&#8217;ve managed to stuff all of this into a sortable numeric value. Unfortunately, in the real world, it&#8217;s never this easy, so we looked for existing solutions to solve this problem. We&#8217;ll skip all of the bikeshedding here, and jump straight to our solution: Arrays.</p>
+
+<p>Arrays are quite an interesting feature in Postgresql. They&#8217;re a native data type, indexable, sortable, and contain a variety of operators and functions (and even more so in 8.4+). They also fit in nicely with our previous solution, with the caveat that we had to write to the arrays rather than generate them at execution time. In fact, they fit so well that we were able to directly translate a majority of the effort we spent while toying with CTEs.</p>
+
+<p>What we finally settled on was a schema which looks something like this:</p>
+
+<pre>
+\d postsort
+
+  Column   |   Type    | Modifiers 
+-----------+-----------+-----------
+ tree_id   | integer   | not null
+ child_id  | integer   | not null
+ value     | numeric[] | not null
+
+Indexes:
+    "postsort_pkey" PRIMARY KEY, btree (tree_id, child_id)
+    "postsort_path" btree (tree_id, value)
+</pre>
+
+<p>A simple three-column schema gives us:</p>
+
+<ul>
+    <li><code>tree_id</code> The root node for this tree (for us, this is a comment thread)</li>
+    <li><code>child_id</code> A child contained within this tree. There&#8217;s a row for every child</li>
+    <li><code>value</code> Our materialized path, implemented as an array</li>
+</ul>
+
+<p>The most important bit here is the <code>value</code>, and even more so what that array contains. Let&#8217;s take a look at our previous example of simple numeric IDs, and how that&#8217;d be represented in this table:</p>
+
+<pre>
+child_id | value
+----------------
+1        | [1.0]
+2        | [1.0, 2.0]
+3        | [1.0, 2.0, 3.0]
+7        | [1.0, 2.0, 7.0]
+4        | [1.0, 4.0]
+5        | [1.0, 5.0]
+6        | [1.0, 5.0, 6.0]
+</pre>
+
+<p>You&#8217;ll notice that the value always contains the id of the child as the last element, and is prefixed parents value. The child&#8217;s ID <strong>must</strong> be present in order to guarantee sortability in conditions where these values are not unique. More specifically, in a real world scenario, you&#8217;ll probably have some kind of <code>score</code> that you&#8217;d be including. As a demonstration of this eventual conflict, take the following values:</p>
+
+<pre>
+child_id | value
+----------------
+1        | [0.9134834, 1.0]
+2        | [0.9134834, 1.0, 0.149341, 2.0]
+3        | [0.9134834, 1.0, 0.149341, 2.0, 0.14123434, 3.0]
+4        | [0.9134834, 1.0, 0.149341, 2.0, 0.14123434, 7.0]
+5        | [0.9134834, 1.0, 0.149341, 5.0]
+6        | [0.9134834, 1.0, 0.149341, 5.0, 0.601343, 5.0]
+</pre>
+
+<p>You&#8217;ll see that we had a conflicting score for two children. If we always include the <strong>unique identifying numeric value</strong> we&#8217;ll never have to worry about rows shifting into parents which they&#8217;re not a part of. You will also see that we&#8217;ve prefixed each child&#8217;s value with the score. This again gives us the numeric sorting order which we&#8217;re looking for and allows us to sort by any arbitrary score. This could be anything from a timestamp to a completely custom scoring algorithm based on something like up and down votes on a child.</p>
+
+<p>The schema and data storage is pretty straightforward, the bigger challenge is actually implementing the logic in your application (or if you&#8217;re insane, within SQL triggers). We end up with a mess of SQL statements, with a singular goal to bring everything down to an atomic, transactionless nature. As an example, creating a new child probably resemebles something like the following:</p>
+
+<pre>
+INSERT INTO postsort (
+    tree_id,
+    child_id,
+    value
+)
+SELECT t2.tree_id,
+       %(child_id)d as child_id,
+       (t2.value || %(value)s::numeric[]) as value
+FROM postsort as t2
+WHERE t2.tree_id = %(tree_id)d
+  AND t2.child_id = %(parent_child_id)d
+</pre>
+
+<p>Once you&#8217;ve populated the table, queries become amazingly simple:</p>
+
+<pre>
+SELECT child_id
+FROM postsort
+WHERE tree_id = %(tree_id)s
+ORDER BY value
+</pre>
+
+<p>We&#8217;ve just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, as well as some other things we&#8217;ve been doing. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
+
+<p>If Disqus sounds interesting to you, and you think you&#8217;re a good fit and we&#8217;re looking for passionate people to <a href="http://disqus.com/jobs/">join our team</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Scaling Schema Changes]]></title>
+    <link href="http://justcramer.com/2011/11/10/scaling-schema-changes"/>
+    <updated>2011-11-10T16:06:00-08:00</updated>
+    <id>http://justcramer.com/2011/11/10/scaling-schema-changes</id>
+    <content type="html"><![CDATA[<p>I frequently get asked how Disqus deals with schema changes. It&#8217;s a fair question, since we operate a fairly large amount of servers, but I also tend to think the answer is somewhat obvious. So let&#8217;s start with the problem of schema changes at scale (in PostgreSQL).</p>
+
+<p>Generally you have some table, let&#8217;s call it a profile (since people seem to enjoy changing those). Well today, a new service has launched called Twooter, and we want to denormalize the user&#8217;s Twooter name into their profile. To do this we need to add a new field, <code>twooter_username</code>.</p>
+
+<h2>DDL First</h2>
+
+<p>The first thing we have to realize, is that <strong>everyone will not have <code>twooter_username</code></strong>. Now even if that weren&#8217;t true, it needs to be to maintain compatibility, and efficiency. For us, this means that <strong>all additions must be made as NULLable columns</strong>. This means that the old code can stay in place whether the schema change has been made or not, and more importantly, NULLable ALTERs are <strong>much</strong> quicker in Postgres.</p>
+
+<p>It&#8217;s very important that the schema change is made <strong>before</strong> the application&#8217;s new version is deployed. Ideally you want to do the change as soon as the schema is finalized. I&#8217;ll talk more a bit about the reasons for that later.</p>
+
+<h2>Application Changes</h2>
+
+<p>The second thing we need to concern ourselves with is our application logic. As I said before you <strong>must</strong> do the DDL before deploying your code changes. For us, this means all <strong>DDL happens in a branch</strong>, and can be merged once the change is completed. I also mentioned that additions must be NULLable, which not only means we can do the schema change before updating our application, but we also ensure forwards <strong>and</strong> backwards compatibility.</p>
+
+<p>In addition to waiting for the schema change to complete before deploying your application, some changes may require several other steps along the release process. As an example, maybe we already had <code>twooter_username</code> stored in a different table, and we were literally just moving it to optimize our data access. This happens with a two things:</p>
+
+<ul>
+    <li>A write-through cache in the application to ensure <strong>new</strong> data is stored.</li>
+    <li>A backfill operation to ensure old data is stored (this also must be idempotent).</li>
+</ul>
+
+<p>Once we&#8217;ve taken care of the above steps, only then can we actually utilize read operations on this new data. What this generally means is multi-step process to add a new data pattern:</p>
+
+<ol>
+    <li>Perform DDL.</li>
+    <li>Deploy write-through cache code.</li>
+    <li>Run backfill operation.</li>
+    <li>Run sanity checks (verify the data is correct, and exists).</li>
+    <li>Deploy code which utilizes new data.</li>
+</ol>
+
+<h2>DDL on a Cluster</h2>
+
+<p>I&#8217;ve mostly been talking about how we scale the application side (read: code) for our DDL changes, but it&#8217;s also important to note how we do no-downtime schema changes. For this there are two important concepts we utilize: platform-wide read-only mode, and enough capacity to remove a node from the cluster. The last part is important: <strong>enough capacity to remove a node from the cluster</strong>.</p>
+
+<p>Now let&#8217;s say this <code>twooter_username</code> is going to be added to a table which is so large, that even a fast NULLable ALTER cannot be run in production. In this case we&#8217;re actually going to need to swap out our master PG node to ensure we don&#8217;t hit any downtime, or slowness while making these changes. This is where read-only mode comes into play. It looks something like this:</p>
+
+<ol>
+    <li>Take a slave out of the pool.</li>
+    <li>Run DDL on slave.</li>
+    <li>Put it back into the pool.</li>
+    <li>(repeat on all slaves)</li>
+    <li>Turn on read-only.</li>
+    <li>Promote a slave to master.</li>
+    <li>(repeat DDL operation on former-master)</li>
+</ol>
+
+<p>And that&#8217;s all there is to it. I&#8217;d be curious to hear if anyone else is doing things differently.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
+    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
+    <updated>2011-08-05T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
+    <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django&#8217;s test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I&#8217;m happy to say we&#8217;re running (basically) Nose with some minor extensions, and it&#8217;s working great.</p>
+
+<p>Getting Django running on Nose is no small feat. Luckily, someone else has already put in a lot of that effort, and packaged it up all nice and neat as <a href="http://pypi.python.org/pypi/django-nose">django-nose</a>. I won&#8217;t go through setting up the package, but it&#8217;s pretty straight forward. One thing that we quickly noticed however, was that it didnt quite fit our approach to testing, which was strictly unittest. After a couple days of going back and forth with some minor issues, we came up with a few pretty useful extensions to the platform.</p>
+
+<p>A few of the big highlights for us:</p>
+
+<ul>
+    <li>Xunit integration (XML output of test results)</li>
+    <li>Skipped and deprecated test hooks</li>
+    <li>The ability to organize tests outside of the Django standards</li>
+</ul>
+
+<p>I&#8217;m wanted to talk a bit about how we solved some of our problems, and the other benefits we&#8217;ve seen since adopting it.</p>
+
+<h3>Test Organization</h3>
+
+<p>The biggest win for us was definitely being able to reorganize our test suite. This took a bit of work, and I&#8217;ll talk about this with some of the plugins we whipped up to solve the problems. We ended up with a nice extensible test structure, similar to Django&#8217;s own test suite:</p>
+
+<pre>
+tests/
+tests/db/
+tests/db/connections/
+tests/db/connections/redis/
+tests/db/connections/redis/__init__.py
+tests/db/connections/redis/models.py
+tests/db/connections/redis/tests.py
+</pre>
+
+<p>We retained the ability to keep tests within the common <code>app/tests</code> convention, but we found that we were just stuffing too many tests into obscure application paths that it became unmaintainable after a while.</p>
+<h3>Unittest Compatibility</h3>
+
+<p>The first issue we hit was with test discovery. Nose has a pretty good default pattern for finding tests, but it had some behavior that didn&#8217;t quite fit with all of our existing code. Mostly, it found random functions that were prefixed with <code>test_</code>, or things like <code>start_test_server</code> which weren&#8217;t tests by themselves.</p>
+
+<p>After digging a bit into the API, it turned out to be a pretty easy problem to solve, and we came up with the following plugin:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">UnitTestPlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    Enables unittest compatibility mode (dont test functions, only TestCase</span>
+</span><span class='line'><span class="sd">    subclasses, and only methods that start with [Tt]est).</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">enabled</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">wantClass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">wantMethod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="n">im_class</span><span class="p">,</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="n">method</span><span class="o">.</span><span class="n">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">False</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">wantFunction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">False</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2>Test Case Selection</h2>
+
+<p>To ensure compatibility with our previous unittest extensions, we needed a simple way to filter only selenium tests. We do this with the &#8211;selenium and &#8211;exclude-selenium flags.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">disqus.tests.testcases</span> <span class="kn">import</span> <span class="n">DisqusSeleniumTest</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">nose.plugins.base</span> <span class="kn">import</span> <span class="n">Plugin</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">SeleniumSelector</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;--exclude-selenium&quot;</span><span class="p">,</span>
+</span><span class='line'>                          <span class="n">dest</span><span class="o">=</span><span class="s">&quot;selenium&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_false&quot;</span><span class="p">,</span>
+</span><span class='line'>                          <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;--selenium&quot;</span><span class="p">,</span>
+</span><span class='line'>                          <span class="n">dest</span><span class="o">=</span><span class="s">&quot;selenium&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+</span><span class='line'>                          <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">selenium</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">selenium</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">wantClass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">DisqusSeleniumTest</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">DisqusSeleniumTest</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">False</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2>Bisecting Tests</h2>
+
+<p>One feature I always thought was pretty useful in the Django test suite was their <code>--bisect</code> flag. Basically, given your test suite, and a failing test, it could help you find failures which were related to executing tests in say a specific order. This isn&#8217;t actually made available to normal Django applications, but being a large codebase it&#8217;s extremely useful for us.</p>
+
+<p><strong>I should note, this one adapted from Django and is very rough. It doesn&#8217;t report a proper <code>TestResult</code>, but it&#8217;s pretty close to where we want to get it.</strong></p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">_EmptyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">pass</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">make_bisect_runner</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bisect_label</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">split_tests</span><span class="p">(</span><span class="n">test_labels</span><span class="p">):</span>
+</span><span class='line'>        <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">        Split tests in half, but keep children together.</span>
+</span><span class='line'><span class="sd">        &quot;&quot;&quot;</span>
+</span><span class='line'>        <span class="n">chunked_tests</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">test_label</span> <span class="ow">in</span> <span class="n">test_labels</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">cls_path</span> <span class="o">=</span> <span class="n">test_label</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>            <span class="c"># filter out our bisected test</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">test_label</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">bisect_label</span><span class="p">):</span>
+</span><span class='line'>                <span class="k">continue</span>
+</span><span class='line'>            <span class="n">chunked_tests</span><span class="p">[</span><span class="n">cls_path</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_label</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">chunk_a</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>        <span class="n">chunk_b</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>        <span class="n">midpoint</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">cls_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">midpoint</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">chunk_a</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">[</span><span class="n">cls_path</span><span class="p">])</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">chunk_b</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">chunked_tests</span><span class="p">[</span><span class="n">cls_path</span><span class="p">])</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">chunk_a</span><span class="p">,</span> <span class="n">chunk_b</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">class</span> <span class="nc">BisectTestRunner</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
+</span><span class='line'>        <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">        Based on Django 1.3&#39;s bisect_tests, recursively splits all tests that are discovered</span>
+</span><span class='line'><span class="sd">        into a bisect grid, grouped by their parent TestCase.</span>
+</span><span class='line'><span class="sd">        &quot;&quot;&quot;</span>
+</span><span class='line'>        <span class="c"># TODO: potentially break things down further than class level based on whats happening</span>
+</span><span class='line'>        <span class="c"># TODO: the way we determine &quot;stop&quot; might need some improvement</span>
+</span><span class='line'>        <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
+</span><span class='line'>            <span class="c"># find all test_labels grouped by base class</span>
+</span><span class='line'>            <span class="n">test_labels</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>            <span class="n">context_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">_tests</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">while</span> <span class="n">context_list</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">context</span> <span class="o">=</span> <span class="n">context_list</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+</span><span class='line'>                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+</span><span class='line'>                    <span class="n">test</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">test</span>
+</span><span class='line'>                    <span class="n">test_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__module__</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+</span><span class='line'>                                                     <span class="n">test</span><span class="o">.</span><span class="n">_testMethodName</span><span class="p">))</span>
+</span><span class='line'>                <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                    <span class="n">context_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">subprocess_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;--bisect&#39;</span><span class="p">))]</span>
+</span><span class='line'>            <span class="n">iteration</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makeResult</span><span class="p">()</span>
+</span><span class='line'>            <span class="n">test_labels_a</span><span class="p">,</span> <span class="n">test_labels_b</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+</span><span class='line'>            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">chunk_a</span><span class="p">,</span> <span class="n">chunk_b</span> <span class="o">=</span> <span class="n">split_tests</span><span class="p">(</span><span class="n">test_labels</span><span class="p">)</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">chunk_a</span> <span class="ow">and</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">chunk_b</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">print</span> <span class="s">&quot;Failure found somewhere in&quot;</span><span class="p">,</span> <span class="n">test_labels_a</span> <span class="o">+</span> <span class="n">test_labels_b</span>
+</span><span class='line'>                    <span class="k">break</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="n">test_labels_a</span> <span class="o">=</span> <span class="n">chunk_a</span> <span class="o">+</span> <span class="p">[</span><span class="n">bisect_label</span><span class="p">]</span>
+</span><span class='line'>                <span class="n">test_labels_b</span> <span class="o">=</span> <span class="n">chunk_b</span> <span class="o">+</span> <span class="p">[</span><span class="n">bisect_label</span><span class="p">]</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&#39;***** Pass </span><span class="si">%d</span><span class="s">a: Running the first half of the test suite&#39;</span> <span class="o">%</span> <span class="n">iteration</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&#39;***** Test labels:&#39;</span><span class="p">,</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_labels_a</span><span class="p">)</span>
+</span><span class='line'>                <span class="n">failures_a</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">subprocess_args</span> <span class="o">+</span> <span class="n">test_labels_a</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&#39;***** Pass </span><span class="si">%d</span><span class="s">b: Running the second half of the test suite&#39;</span> <span class="o">%</span> <span class="n">iteration</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&#39;***** Test labels:&#39;</span><span class="p">,</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_labels_b</span><span class="p">)</span>
+</span><span class='line'>                <span class="k">print</span>
+</span><span class='line'>                <span class="n">failures_b</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">subprocess_args</span> <span class="o">+</span> <span class="n">test_labels_b</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="k">if</span> <span class="n">failures_a</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">failures_b</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">print</span> <span class="s">&quot;***** Problem found in first half. Bisecting again...&quot;</span>
+</span><span class='line'>                    <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'>                    <span class="n">test_labels</span> <span class="o">=</span> <span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>                <span class="k">elif</span> <span class="n">failures_b</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">failures_a</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">print</span> <span class="s">&quot;***** Problem found in second half. Bisecting again...&quot;</span>
+</span><span class='line'>                    <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'>                    <span class="n">test_labels</span> <span class="o">=</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>                <span class="k">elif</span> <span class="n">failures_a</span> <span class="ow">and</span> <span class="n">failures_b</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">print</span> <span class="s">&quot;***** Multiple sources of failure found&quot;</span>
+</span><span class='line'>                    <span class="k">print</span> <span class="s">&quot;***** test labels were:&quot;</span><span class="p">,</span> <span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>                    <span class="n">result</span><span class="o">.</span><span class="n">addError</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="s">&#39;Failures found in multiple sets: </span><span class="si">%s</span><span class="s"> and </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_labels_a</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">test_labels_b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="bp">None</span><span class="p">))</span>
+</span><span class='line'>                    <span class="k">break</span>
+</span><span class='line'>                <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">print</span> <span class="s">&quot;***** No source of failure found...&quot;</span>
+</span><span class='line'>                    <span class="k">break</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">result</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">inst</span> <span class="o">=</span> <span class="n">_EmptyClass</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">inst</span><span class="o">.</span><span class="n">__class__</span> <span class="o">=</span> <span class="n">BisectTestRunner</span>
+</span><span class='line'>    <span class="n">inst</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">inst</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">BisectTests</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;--bisect&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;bisect_label&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">bisect_label</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">bisect_label</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">bisect_label</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">prepareTestRunner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">make_bisect_runner</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bisect_label</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2>Improvements to django-nose</h2>
+
+<p>Finally I wanted to talk about some of the things that we&#8217;ve been pushing back upstream. The first was support for discovery of models that were in non-app tests. This works the same way as Django in that it looks for <code>appname/models.py</code>, and if it&#8217;s found, it adds it to the <code>INSTALLED_APPS</code> automatically.</p>
+
+<p>The second addition we&#8217;ve been working on allows you to run selective tests that dont require the database, and avoids actually building the database. It does this by looking for classes which inherit from <code>TransactionTestCase</code>, and if none are found, it skips database creation.</p>
+
+<p>I&#8217;m curious to here what others have for tips and tricks regarding Nose (or maybe just helpful strategies in your own test runner).</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Python and OS X Lion]]></title>
+    <link href="http://justcramer.com/2011/07/20/python-and-os-x-lion"/>
+    <updated>2011-07-20T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/07/20/python-and-os-x-lion</id>
+    <content type="html"><![CDATA[<p>Just a few quick tips that I&#8217;ve had to run through and discover today while upgrading to Lion.</p>
+
+<p>Start by <strong>installing Xcode 4</strong>, which is available via the App Store (for free now). This will fix your missing distutils package (which probably fixes a majority of your issues). You&#8217;ll also need to <strong>reinstall all global site-packages</strong>, such as pip or virtualenvwrapper.</p>
+
+<p>The last one, which was luckily solved for me already, was hitting <strong>[Errno 32] Broken pipe</strong> on various things. One example was this:</p>
+
+<pre>  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/utils.py", line 145, in filter_js
+    return filter_common(js, verbosity, filters=settings.COMPRESS_JS_FILTERS, attr='filter_js', separator='', signal=js_filtered)
+  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/utils.py", line 136, in filter_common
+    output = getattr(get_class(f)(verbose=(verbosity >= 2)), attr)(output)
+  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/filters/yui/__init__.py", line 41, in filter_js
+    return self.filter_common(js, 'js', JS_ARGUMENTS)
+  File "/Users/dcramer/.virtualenvs/disqus/lib/python2.6/site-packages/compress/filters/yui/__init__.py", line 20, in filter_common
+    p.stdin.write(content)
+TemplateSyntaxError: Caught IOError while rendering: [Errno 32] Broken pipe</pre>
+
+<p>It turns out that with Xcode 4 there were some changes to the way (something that I dont care about) is handled. To solve this, add the following to your .profile:</p>
+
+<pre>export ARCHFLAGS='-arch i386 -arch x86_64'</pre>
+
+<p>If you rely on <a href="https://github.com/apenwarr/sshuttle">sshuttle</a> be warned, it doesn&#8217;t work currently on OS X Lion.</p>
+
+<p>I&#8217;ll update this post if I hit any more issues, but so far everything else seems to be running smoothly.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[EuroPython]]></title>
+    <link href="http://justcramer.com/2011/06/24/europython"/>
+    <updated>2011-06-24T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/06/24/europython</id>
+    <content type="html"><![CDATA[<p>This last week I&#8217;ve been attending <a href="http://europython.eu">EuroPython</a> over here in Firenze (or as we Americans know it, Florence), Italy. It&#8217;s been a pretty amazing time, visiting the beautiful city, putting faces to names, and seeing some great presentations. More importantly, and the main reason for my trip, was the two talks that I delivered here this week.</p>
+
+<p>The first was on Tuesday morning, titled &#8221;<strong><a href="http://www.slideshare.net/zeeg/building-scalable-web-apps" title="Building Scalable Web Apps">Building Scalable Web Apps</a></strong>&#8221;. I tried to show how one might solve some problems building a real web app, so we built a little bit of a backend for a Twitter-like stream.</p>
+
+<p style="width:425px;" id="__ss_8376349"> <iframe src="http://www.slideshare.net/slideshow/embed_code/8376349" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe> </p>
+
+<p>I gave a second talk on Wednesday morning, &#8221;<strong><a href="http://www.slideshare.net/zeeg/pitfalls-of-continuous-deployment" title="Pitfalls of Continuous Deployment">Pitfalls of Continuous Deployment</a></strong>&#8221;, which talks a little bit about the lessons we&#8217;ve learned during adoption of CD, as well as the value of integration and reporting systems</p>
+
+<p style="width:425px" id="__ss_8386947"> <iframe src="http://www.slideshare.net/slideshow/embed_code/8386947" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe> </p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Creating a Read-only Mirror for your GitHub Server]]></title>
+    <link href="http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
+    <updated>2011-05-09T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
+    <content type="html"><![CDATA[<p>Recently we&#8217;ve been transitioning our git repositories to GitHub. We chose to go this route for a variety of reasons, but mostly
+because they have kickass pull requests, which we&#8217;re going to test run as code reviews. However, one of the requirements of this process was that
+our original git-server still remain functional, in at least a read-only state. This saves us the time of having to update deploy and
+other scripts which read from this mirror and perform various tasks.</p>
+
+<p>I was a bit surprised when I originally searched around for this, as I was either failing horribly at Google (granted, my queries were &#8220;how to setup git-server mirror&#8221;), or there just wasn&#8217;t much information out there on it. After a bit of crawling I found what seems to be a pretty easy way to get the behavior we wanted. For a recap, here&#8217;s a checklist of what we needed:</p>
+
+<ul>
+    <li>Read-only git server</li>
+    <li>One-way mirror from our new server to the legacy server.</li>
+    <li>Mirror all branches</li>
+    <li>Updated near real-time</li>
+</ul>
+
+<p>So, given this, we created a simple bash script that runs on a 1 minute cron timer (it&#8217;s as close to real-time as we needed):</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'>
+</span><span class='line'>mkdir -p  /var/git/mirrors/
+</span><span class='line'>
+</span><span class='line'><span class="nb">cd</span> /var/git/mirrors/
+</span><span class='line'>
+</span><span class='line'><span class="c"># clone our newly acquired GitHub mirror</span>
+</span><span class='line'>git clone --mirror git@github.com:organization/repo-name.git
+</span><span class='line'>
+</span><span class='line'><span class="nb">cd </span>disqus.git
+</span><span class='line'>
+</span><span class='line'><span class="c"># Add our local remote</span>
+</span><span class='line'>git remote add <span class="nb">local</span> /var/git/repositories/repo-name.git
+</span><span class='line'>
+</span><span class='line'><span class="c"># Unsure if we need to fetch from local, but let&#39;s do it anyways</span>
+</span><span class='line'>git fetch origin
+</span><span class='line'>git fetch <span class="nb">local</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># push all changes to local using --mirror (ensures all refs in remotes are pushed)</span>
+</span><span class='line'>git push <span class="nb">local</span> --mirror
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Since we were already using gitosis for permissions, it was easy for us to deprecate the legacy repo by simply moving everyone into a readable group that lacks write privileges.</p>
+
+<p>Would love to hear some feedback from avid git users if there&#8217;s a better way to do this.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting Up Your Own PyPi Server]]></title>
+    <link href="http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server"/>
+    <updated>2011-04-04T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server</id>
+    <content type="html"><![CDATA[<p>Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git repository? For a low low price of FREE, and an hour of labor, get your very own PyPi server and solve all of your worries!</p>
+
+<h3>Set up Chishop</h3>
+
+<p>We&#8217;re going to jump right into this one. Start by setting up Chishop. Currently the best way is to do so using <a href="https://github.com/disqus/chishop">the DISQUS fork</a> as it contains several fixes. Expect to see all of the hard work in the various forks merged upstream as soon as we get some proper docs going. Follow the instructions in the README to configure Chishop, and your PyPi index.</p>
+
+<p>Now you&#8217;re going to want to tweak some things that are on by default. For starters, you&#8217;re probably going to want to proxy the official PyPi repository, and this can be done by enabling a simple flag in your newly created <code>settings.py</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">DJANGOPYPI_PROXY_MISSING</span> <span class="o">=</span> <span class="bp">True</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>There are many other configuration options, but you&#8217;re going to have to read the source for those.</p>
+
+<h3>Configure PIP/Setuptools/Buildout</h3>
+
+<p>Now that you&#8217;ve got a sexy PyPi server up and running, you&#8217;ll probably want to configure the default index locations for your package managers. It took me a bit of Googling but then I stumpled upon an awesome post by Jacob Kaplan-Moss about <a href="http://jacobian.org/writing/when-pypi-goes-down/">dealing with PyPi when it goes down</a>, which describes procedures for configuring PyPi mirrors.</p>
+
+<p>Let&#8217;s start with <strong>pip</strong>, which stores its configuration in <code>~/.pip/pip.conf</code>:</p>
+
+<pre>[global]
+index-url = http://my.chishop/simple</pre>
+
+<p>Next up, <strong>setuptools</strong>, located in <code>~/.pydistutils.cfg</code>:</p>
+
+<pre>[easy_install]
+index_url = http://my.chishop/simple</pre>
+
+<p>And finally, if you use <strong>buildout</strong>, tweak your <code>buildout.cfg</code>:</p>
+
+<pre>[buildout]
+index = http://my.chishop/simple</pre>
+
+<h3>Use It</h3>
+
+<p>Now that you have a fully functioning PyPi, kill off your requirements files and build a real setup.py. Hopefully as a bit of inspiration, here&#8217;s a snippet from Sentry&#8217;s:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">ez_setup</span> <span class="kn">import</span> <span class="n">use_setuptools</span>
+</span><span class='line'>    <span class="n">use_setuptools</span><span class="p">()</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">tests_require</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;django&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;django-celery&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;south&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;django-haystack&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;whoosh&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">setup</span><span class="p">(</span>
+</span><span class='line'>    <span class="n">name</span><span class="o">=</span><span class="s">&#39;django-sentry&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">version</span><span class="o">=</span><span class="s">&#39;1.6.8.1&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author</span><span class="o">=</span><span class="s">&#39;David Cramer&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author_email</span><span class="o">=</span><span class="s">&#39;dcramer@gmail.com&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">url</span><span class="o">=</span><span class="s">&#39;http://github.com/dcramer/django-sentry&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Exception Logging to a Database in Django&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="s">&quot;example_project&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">install_requires</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>        <span class="s">&#39;django-paging&gt;=0.2.2&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;django-indexer==0.2.1&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;uuid&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'>    <span class="n">dependency_links</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>        <span class="s">&#39;https://github.com/disqus/django-haystack/tarball/master#egg=django-haystack&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'>    <span class="n">tests_require</span><span class="o">=</span><span class="n">tests_require</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">extras_require</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;test&#39;</span><span class="p">:</span> <span class="n">tests_require</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">test_suite</span><span class="o">=</span><span class="s">&#39;sentry.runtests.runtests&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">include_package_data</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">classifiers</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>        <span class="s">&#39;Framework :: Django&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Intended Audience :: Developers&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Intended Audience :: System Administrators&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Operating System :: OS Independent&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Topic :: Software Development&#39;</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Building Cursors for the Disqus API]]></title>
+    <link href="http://justcramer.com/2011/03/08/building-cursors-for-the-disqus-api"/>
+    <updated>2011-03-08T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2011/03/08/building-cursors-for-the-disqus-api</id>
+    <content type="html"><![CDATA[<p>This last week we&#8217;ve been implementing cursors for the Disqus API (3.0). If you&#8217;re not familiar, the concept is like cursors in your database: create a marker for where you are with your result set so you can iterate through a large set of results efficiently. Think of it like a snapshot. A marker that lets us retrieve the results you were previously looking for, and return a subset of those results.</p>
+
+<h3>LIMIT/OFFSET is Bad</h3>
+
+<p>One of the big questions I&#8217;ve seen come up, is &#8220;Why not just use LIMIT and OFFSET?&#8221; To answer this, you must understand how LIMIT/OFFSET actually works. For this we&#8217;ll use your typical database example. You come in, request all results that rhyme with RICK, and there are approximately 1000 results. You first ask it for the first 100, which is very easy, as it can yield one row as it gets it, which means it just returns the first 100 rows that match the result set. Fast forward, and now you are asking it for rows 900-1000. The database now must iterate through the first 900 results before it can start returning a row (since it doesnt have a pointer to tell it how to get to result 900). In summary, LIMIT/OFFSET is VERY slow on large result sets.</p>
+
+<h3>Range Selectors</h3>
+
+<p>The typical solution to avoiding the above pattern is to switch to range selectors. Using some kind of index, you tell it exactly where you need to start and stop. Using the above example, we would say &#8220;I want RICK results that have an ID greater than 900 and less than 1000&#8221;, which will get you approximately the same thing. With this solution, however, you have to worry about gaps in your ranges. The result set, 900 to 1000, could have anywhere between 0 and 100 rows, which isn&#8217;t what you really want.</p>
+
+<h3>Non-Unique Ranges</h3>
+
+<p>There is one final thing we had to take into account when designing our cursors. We use them for both timestamp and incremental ID sorting (ideally timestamp-only), which works great, but presents the problem of conflicts. It&#8217;s very unlikely that two sets of data will have the exact datetime (down to the microsecond), but it happens, especially on very large data sets (like ours). To combat this, we have to actually combine range offsets with row offsets.</p>
+
+<pre>
+id  | timestamp         | title
+-------------------------------
+1   | 1299061169.043267 | foo
+2   | 1299061169.043267 | bar
+3   | 1299061170.034193 | baz
+</pre>
+
+<h3>Combining Selectors</h3>
+
+<p>Our final result consists of generating range offsets with row offsets. We start by generating the absolute highest range identifier we can from a result set (typically the last row in the result), and then we append a row offset on to this (usually 0). In the case where the last row is identical to one or more rows (from end to start) we just increment this offset number. The resulting database logic turns into something like <code>SELECT FROM posts WHERE timestamp > 2012-10-12T08:12:56.34153 LIMIT 50 OFFSET 5</code>. Remember, the key here is that the &#8220;timestamp&#8221; value we&#8217;re sending is continually changing as we paginate through the cursor, which allows us to keep these queries very efficient.</p>
+
+<p>I should note, that we also had to deal with doing the opposite operation of paginating forward, being the obvious &#8220;previous results&#8221;. This had its own set of problems that we basically had to reverse all of our operations. Given that we are at the cursor we see above, we need to generate a &#8220;previous cursor&#8221; object. To do this, we just take the first row in the series (again, doing the same offset calculations), and set a directional flag. The result is almost more documentation than code, just because of how complicated the logic can appear.</p>
+
+<p>The end result of our cursors in the API, looks a little bit like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="s2">&quot;cursor&quot;</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s2">&quot;prev&quot;</span><span class="o">:</span> <span class="s2">&quot;1299061169043267:0:1&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;hasNext&quot;</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;next&quot;</span><span class="o">:</span> <span class="s2">&quot;1299061158809627:0:0&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;hasPrev&quot;</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;total&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+</span><span class='line'>      <span class="p">},</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The logic is a bit fuzzy, and we have to do some best guesses in places (such as determining if there is actually a valid previous cursor), but the database queries end up about as efficient as we can hope for. We end up with <code>(N results + 1)</code> rows when we&#8217;re paginating forward, and <code>(N results + 2)</code> when pulling up previous cursors. To avoid confusion, this is literally <strong>one</strong> query for every request, period. There&#8217;s no additional overhead for doing counts or determining what your next or previous cursors are. That&#8217;s one optimized SQL statement to fetch your results, calculate your next, and previous cursors.</p>
+
+<p>Since I feel bad for not leaving you all with much code, check out some of the <a href="https://github.com/disqus/django-db-utils">database utilities that we use at Disqus</a> to make life with Django QuerySets a bit easier.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Using OS X Media Keys in Rdio]]></title>
+    <link href="http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop"/>
+    <updated>2011-02-08T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop</id>
+    <content type="html"><![CDATA[<p><strong>Update:</strong> Use <a href="http://fluidapp.com/">Fluid</a>, with <a href="http://media.wilsonminer.com/share/shrapnel/fluid/rdio-fluid.png">this awesome icon by Wilson Miner</a>, and name it &#8220;Rdio Desktop&#8221; and follow these same instructions for a much better experience. You will also need to edit the macros and change Next/Previous track to use arrow keys instead of ctrl+arrow.</p>
+
+<p>I&#8217;m not going into much details, as it&#8217;s been a <strong>long frustrating day</strong> dealing with a number of things today, but I wanted to share how I managd to actually get Rdio Desktop to not suck (well, more like make it bearable). What do I mean by this? After many hours I discovered how I could <strong>remap the media keys on my OS X keyboard to work with Rdio Desktop</strong>. Ugh.</p>
+
+<h4>Remapping media keys to function keys</h4>
+
+<p>To get us started, you&#8217;ll want to install <a href="http://pqrs.org/macosx/keyremap4macbook/">KeyRemap4MacBook</a> will allow you to use your existing function keys, and simple swap the media keys so that they actually send normal function keypresses. This is needed because Apple doesn&#8217;t feel it nescesary to allow you to remap them otherwise.</p>
+
+<p>Pop it open and search for <strong>media</strong>. Tick the box next to whichever setting applies to your keyboard.</p>
+
+<p><img src="http://dl.dropbox.com/u/116385/Screenshots/keyremap4macbook.png"/></p>
+
+<h4>Creating macros for Rdio Desktop</h4>
+
+<p>Now that we can actually bind go the media keys, you&#8217;re going to need to create some macros to work with the Air app. Why do you have to do this? Because <strong>Adobe Air is a crappy framework that no one should ever build apps with</strong>. To do this you&#8217;re going to need to install <a href="http://www.keyboardmaestro.com/main/">KeyboardMaestro</a>. Now while I had to follow a <a href="http://benwyrosdick.com/post/3168861463/rdio-macro-keys">guide to creating these macros</a>, I find that a pretty big waste of time. So save yourself some time, and download and run the macros I created via the aforementioned guide over at <a href="http://dl.dropbox.com/u/116385/Rdio%20Macros.kmmacros">DropBox</a>, and you&#8217;re good to go.
+
+<h4>Complain to developers</h4>
+
+<p>Hopefully you found this guide very quickly and didn&#8217;t waste time digging for solutions. However, many people didn&#8217;t have it so easy. I encourage you to complain to any developer you ever meet who thinks its a good idea to build an Adobe <strong>{Air,Flash,Anything else that sucks}</strong> application and explain to them how much hell they put people through.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Error Tracing in Sentry]]></title>
+    <link href="http://justcramer.com/2011/01/25/error-tracing-in-sentry"/>
+    <updated>2011-01-25T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2011/01/25/error-tracing-in-sentry</id>
+    <content type="html"><![CDATA[<p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
+
+<h4>Exposing Sentry ID</h4>
+
+<p>The new IDs are generated automatically when a message is processed (by the client), so you won&#8217;t need to make any changes on that end. Likely, however, you&#8217;re going to want to expose these at your application level for a couple of different reasons. The first one we&#8217;re going to cover is your customer&#8217;s experience.</p>
+
+<p>The easiest way to expose this information in a useful manner, is by <strong>creating a modified 500.html</strong>. In DISQUS&#8217; case, we mention the error reference ID to the end-user, so that when they&#8217;re reporting a problem they can pass along this information.</p>
+
+<h5>Create a custom 500 handler</h5>
+
+<p>The first thing you&#8217;re going to need to do is to create a custom 500 handler. This defined in <code>urls.py</code>, so we&#8217;re just going to go ahead and create the view in-place.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">handler500</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    An error handler which exposes the request object to the error template.</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">loader</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseServerError</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">disqus.context_processors</span> <span class="kn">import</span> <span class="n">default</span>
+</span><span class='line'>    <span class="kn">import</span> <span class="nn">logging</span>
+</span><span class='line'>    <span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="n">default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">(),</span> <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span><span class="p">[</span><span class="s">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">t</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;500.html&#39;</span><span class="p">)</span> <span class="c"># You need to create a 500.html template.</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">HttpResponseServerError</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">Context</span><span class="p">(</span><span class="n">context</span><span class="p">)))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>We&#8217;re going to expose the request object to our 500.html in the above. Keep in mind, that doing this allows you to add some logic into your template, and you&#8217;re going to need to be very careful that this logic can&#8217;t raise a new exception.</p>
+
+<h5>Tweaking your 500.html</h5>
+
+<p>The next thing you&#8217;ll need to do is to tweak your 500.html template to actually show the Sentry ID. Assuming the request object was passed into Sentry, it will attach the last error seen under <code>request.sentry['id']</code>. Given this, we can easily report it to the end-user in our template:</p>
+
+<pre>
+&lt;p&gt;The Disqus team has been alerted and we're on the case. For more information, check out &lt;a href="http://status.disqus.com"&gt;Disqus Status &raquo;&lt;/a&gt;&lt;/p&gt;
+&#123;% if request.sentry.id %&#125;
+    &lt;p&gt;If you need assistance, you may reference this error as &lt;strong&gt;&#123;&#123; request.sentry.id &#125;&#125;&lt;/strong&gt;.&lt;/p&gt;
+&#123;% endif %&#125;
+</pre>
+
+<h4>Sentry ID as a response header</h4>
+
+<p>The other quick solution to get access to this variable is simply by enabling an included response middleware, <code>SentryResponseErrorIdMiddleware</code>. Just pop open your <code>settings.py</code> and append it to your <code>MIDDLEWARE_CLASSES</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span>
+</span><span class='line'>    <span class="o">...</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;sentry.client.middleware.SentryResponseErrorIdMiddleware&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now if you check your response headers after hitting an error, you should see <code>X-Sentry-ID</code>.</p>
+
+<h4>Find errors by ID</h4>
+
+<p>Sentry makes it very easy to pull up error messages by ID. The one requirement is that you&#8217;re going to need to ensure <code>sentry.filters.SearchFilter</code> is included within <code>SENTRY_FILTERS</code> (it&#8217;s enabled by default). Once done, Sentry will discover if you&#8217;re entering a UUID hex value (the Sentry ID) in the search box, and it will jump directly to that error&#8217;s page.</p>
+
+<p><img src="http://f.cl.ly/items/2f1s1X0J231F2F3u0V0d/sentry-id.png"/></p>
+
+<p>You&#8217;ll also notice that all messages are now tagged with their unique Sentry ID as well (per the screenshot).</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Settings in Django]]></title>
+    <link href="http://justcramer.com/2011/01/13/settings-in-django"/>
+    <updated>2011-01-13T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2011/01/13/settings-in-django</id>
+    <content type="html"><![CDATA[<p>I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a hundred different ways that you can manage it. While I&#8217;m not going to say ours is the best way, it has allowed us a very flexible application config under our varying situations.</p>
+
+<h4>Managing Local Settings</h4>
+
+<p>First off, we all know how Django does this by default. A simple settings.py file which is loaded at runtime. It works fairly well in very basic apps, until you start relying on a database, or some other configuration value which changes between production and development. Typically, once you&#8217;ve hit this, the first thing you do is add a <code>local_settings</code>. This generally is not part of our VCS and contains any settings specific to your environment. To achieve this, you simply need to adjust your <code>settings.py</code> to include the following (at the end of the file, ideally):</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">local_settings</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">ImportError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">print</span> <span class="s">&#39;Unable to load local_settings.py:&#39;</span><span class="p">,</span> <span class="n">e</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4>Refactoring Settings</h4>
+
+<p>Now we&#8217;ve solved the very basic case, and this tends to get you quite a bit of breathing room. Eventually you may get to the point where you&#8217;re wanting some sort of globalized settings, generic development settings, or you just want to tweak settings based on their defaults. To achieve this we&#8217;re going to re architect settings as a whole. For starters, let&#8217;s move everything into a <code>conf</code> module in your python app. Try something like the following:</p>
+
+<pre>
+project/conf/__init__.py
+project/conf/settings/__init__.py
+project/conf/settings/default.py
+project/conf/settings/dev.py
+</pre>
+
+<p>To make all this play nice, you&#8217;re going to want to shift all of your current <code>settings.py</code> code into <code>project/conf/settings/default.py</code>. This will give your basis to work from, and allow you to easily inherit from it (think OO). Once this is moved, let&#8217;s refactor our new <code>settings.py</code>. Bear with me, as we&#8217;re going to throw a lot out you all at once now:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">os</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">## Import our defaults (globals)</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">disqus.conf.settings.default</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">## Inherit from environment specifics</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">DJANGO_CONF</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;DJANGO_CONF&#39;</span><span class="p">,</span> <span class="s">&#39;default&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="k">if</span> <span class="n">DJANGO_CONF</span> <span class="o">!=</span> <span class="s">&#39;default&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">module</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">DJANGO_CONF</span><span class="p">,</span> <span class="nb">globals</span><span class="p">(),</span> <span class="nb">locals</span><span class="p">(),</span> <span class="p">[</span><span class="s">&#39;*&#39;</span><span class="p">])</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+</span><span class='line'>        <span class="nb">locals</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">## Import local settings</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">local_settings</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">traceback</span>
+</span><span class='line'>    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;Warning: Can&#39;t find the file &#39;local_settings.py&#39; in the directory containing </span><span class="si">%r</span><span class="s">. It appears you&#39;ve customized things.</span><span class="se">\n</span><span class="s">You&#39;ll have to run django-admin.py, passing it your settings module.</span><span class="se">\n</span><span class="s">(If the file settings.py does indeed exist, it&#39;s causing an ImportError somehow.)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">__file__</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">For debugging purposes, the exception was:</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">## Remove disabled apps</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="s">&#39;DISABLED_APPS&#39;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+</span><span class='line'>    <span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">INSTALLED_APPS</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DISABLED_APPS</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">MIDDLEWARE_CLASSES</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">DATABASE_ROUTERS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">DATABASE_ROUTERS</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">TEMPLATE_CONTEXT_PROCESSORS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">TEMPLATE_CONTEXT_PROCESSORS</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">DISABLED_APPS</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">MIDDLEWARE_CLASSES</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">MIDDLEWARE_CLASSES</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">TEMPLATE_CONTEXT_PROCESSORS</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">TEMPLATE_CONTEXT_PROCESSORS</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">DATABASE_ROUTERS</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">DATABASE_ROUTERS</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Let&#8217;s try to cover a bit of what we&#8217;ve achieved with our new <code>settings.py</code>. First, we&#8217;re inheriting from <code>conf/settings/default.py</code>, followed up by the ability to specify an additional set of overrides using the <code>DJANGO_CONF</code> environment variable (this would work much like DJANGO_SETTINGS_MODULE). Next we&#8217;re again pulling in our <code>local_settings.py</code>, and finally, we&#8217;re pulling in a setting called <code>DISABLED_APPS</code>. This final piece let&#8217;s us (within local_settings and all) specify applications which should be disabled in our environment. We found it useful to pull things like <a href="http://github.com/dcramer/django-sentry">Sentry</a> out of our tests and development environments.</p>
+
+<h4>Improving Local Settings</h4>
+
+<p>Now that we&#8217;ve got a nice basic setup for our application configuration, let&#8217;s talk about a few other nice-to-haves that we can pull off with this. Remember how we mentioned it would be nice to inherit from defaults, even in local settings? Well now you can do this, as your settings are stored elsewhere (likely in <code>default.py</code>). Take this piece of code as an example:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">project.conf.settings.dev</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># See the above file for various settings which you shouldn&#39;t need to modify :)</span>
+</span><span class='line'><span class="c"># Adjust them by placing the new values in this file</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># enable solr</span>
+</span><span class='line'><span class="n">SOLR_ENABLED</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># disable sentry</span>
+</span><span class='line'><span class="n">DISABLED_APPS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sentry&#39;</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>We also recommend taking your <code>local_settings.py</code> and making a copy as <code>example_local_settings.py</code> within your repository.</p>
+
+<h4>Development Settings</h4>
+
+<p>You&#8217;ll see we recommended a <code>dev.py</code> settings module above, and again reference it here in our <code>local_settings.py</code>. Taking some examples of how we achieve a standardized setup at DISQUS, here&#8217;s something to get you started:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># Development environment settings</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">project.conf.settings.default</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">getpass</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">TEMPLATE_LOADERS</span> <span class="o">=</span> <span class="p">(</span>
+</span><span class='line'>    <span class="c"># Remove cached template loader</span>
+</span><span class='line'>    <span class="s">&#39;django.template.loaders.filesystem.Loader&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;django.template.loaders.app_directories.Loader&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">DISABLED_APPS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sentry.client&#39;</span><span class="p">,</span> <span class="s">&#39;sentry&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">DEBUG</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">DATABASE_PREFIX</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+</span><span class='line'><span class="n">DATABASE_USER</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span>
+</span><span class='line'><span class="n">DATABASE_PASSWORD</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+</span><span class='line'><span class="n">DATABASE_HOST</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+</span><span class='line'><span class="n">DATABASE_PORT</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">DATABASES</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+</span><span class='line'>    <span class="n">DATABASES</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+</span><span class='line'>        <span class="s">&#39;NAME&#39;</span><span class="p">:</span> <span class="n">DATABASE_PREFIX</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="s">&#39;NAME&#39;</span><span class="p">],</span>
+</span><span class='line'>        <span class="s">&#39;HOST&#39;</span><span class="p">:</span> <span class="n">DATABASE_HOST</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;PORT&#39;</span><span class="p">:</span> <span class="n">DATABASE_PORT</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;USER&#39;</span><span class="p">:</span> <span class="n">DATABASE_USER</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;PASSWORD&#39;</span><span class="p">:</span> <span class="n">DATABASE_PASSWORD</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;OPTIONS&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;autocommit&#39;</span><span class="p">:</span> <span class="bp">False</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">})</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># django-devserver: http://github.com/dcramer/django-devserver</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">import</span> <span class="nn">devserver</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">pass</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="n">INSTALLED_APPS</span> <span class="o">+</span> <span class="p">(</span>
+</span><span class='line'>        <span class="s">&#39;devserver&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">)</span>
+</span><span class='line'>    <span class="n">DEVSERVER_IGNORED_PREFIXES</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;/media&#39;</span><span class="p">,</span> <span class="s">&#39;/uploads&#39;</span><span class="p">]</span>
+</span><span class='line'>    <span class="n">DEVSERVER_MODULES</span> <span class="o">=</span> <span class="p">(</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.sql.SQLRealTimeModule&#39;,</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.sql.SQLSummaryModule&#39;,</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.profile.ProfileSummaryModule&#39;,</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.request.SessionInfoModule&#39;,</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.profile.MemoryUseModule&#39;,</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.profile.LeftOversModule&#39;,</span>
+</span><span class='line'>        <span class="c"># &#39;devserver.modules.cache.CacheSummaryModule&#39;,</span>
+</span><span class='line'>    <span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+</span><span class='line'>    <span class="s">&#39;south&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span> <span class="o">+</span> <span class="n">INSTALLED_APPS</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="n">MIDDLEWARE_CLASSES</span> <span class="o">+</span> <span class="p">(</span>
+</span><span class='line'>    <span class="s">&#39;disqus.middleware.profile.ProfileMiddleware&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">CACHE_BACKEND</span> <span class="o">=</span> <span class="s">&#39;locmem://&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Hopefully this will save you as much time as it&#8217;s saved us. Simplifying settings like above has made it so a new developer, or a new development machine can be up and running with little to no changes to the application configuration itself.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[How to actually make LocalSolr work]]></title>
+    <link href="http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work"/>
+    <updated>2011-01-04T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work</id>
+    <content type="html"><![CDATA[<p>Today I&#8217;ve been working on integrating geospatial search with our upcoming DISQUS Search product, which happens to rely on Solr. It didn&#8217;t take much work before I stumbled upon <a href="http://www.gissearch.com/localsolr">LocalSolr</a>, which seems to be the defacto gis implementation. The docs were fairly brief, but it <em>seemed</em> easy to get up and running. It just so happens that it wasnt <em>that</em> easy after all. Hoping that this helps someone else out, here&#8217;s my step by step to getting it setup (locally, at least):</p>
+
+<p>First up, you&#8217;re going to need to grab the localsolr libraries in some form or another. Hidden obscurely on a &#8220;Quick Start&#8221; link, is a tgz of an <a href="http://www.nsshutdown.com/solr-example.tgz">example project</a>. It&#8217;s much like example project included with the actual Solr package, so it should be fairly straightforward. Once I had this, I pulled in my existing configuration to replace the example&#8217;s, and updating it per the docs.</p>
+
+<p>The first set of changes needed to be made in <code>solrconfig.xml</code>. You&#8217;re going to need to add the <code>localsolr</code> component, and optionally the geofaceting component. You&#8217;ll also need to create a separate handler for geo searches (unless you plan to use longitude and latitude with every single search to Solr).</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;searchComponent</span> <span class="na">name=</span><span class="s">&quot;geofacet&quot;</span>
+</span><span class='line'>                 <span class="na">class=</span><span class="s">&quot;com.pjaol.search.solr.component.LocalSolrFacetComponent&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;searchComponent</span> <span class="na">name=</span><span class="s">&quot;localsolr&quot;</span>
+</span><span class='line'>                 <span class="na">class=</span><span class="s">&quot;com.pjaol.search.solr.component.LocalSolrQueryComponent&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;str</span> <span class="na">name=</span><span class="s">&quot;latField&quot;</span><span class="nt">&gt;</span>lat<span class="nt">&lt;/str&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;str</span> <span class="na">name=</span><span class="s">&quot;lngField&quot;</span><span class="nt">&gt;</span>lng<span class="nt">&lt;/str&gt;</span>
+</span><span class='line'><span class="nt">&lt;/searchComponent&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;requestHandler</span> <span class="na">name=</span><span class="s">&quot;geo&quot;</span> <span class="na">class=</span><span class="s">&quot;org.apache.solr.handler.component.SearchHandler&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;arr</span> <span class="na">name=</span><span class="s">&quot;components&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;str&gt;</span>localsolr<span class="nt">&lt;/str&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;str&gt;</span>geofacet<span class="nt">&lt;/str&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;str&gt;</span>mlt<span class="nt">&lt;/str&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/arr&gt;</span>
+</span><span class='line'><span class="nt">&lt;/requestHandler&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Once done, you can move on to altering your <code>schema.xml</code>. It&#8217;s very important, that if you had used the examples on the LocalSolr site and already begun indexing, that you obliterate your index completely, as it will contain invalid data. This presents itself with an ugly, misleading (at least to Python folk) <a href="http://dl.dropbox.com/u/116385/Screenshots/esgkn9qh6o8m.png">error</a>: <strong>Invalid shift value in prefixCoded string</strong>. It turns out that you actually need to <strong>use <code>tdouble</code> instead of <code>sdouble</code> on all field types</strong>. Don&#8217;t ask me why, as I don&#8217;t care to know. So, on to the schema changes:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="c">&lt;!-- local lucene field types - ensure these are tdouble! --&gt;</span>
+</span><span class='line'><span class="nt">&lt;field</span> <span class="na">name=</span><span class="s">&quot;lat&quot;</span> <span class="na">type=</span><span class="s">&quot;tdouble&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;false&quot;</span> <span class="na">required=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;field</span> <span class="na">name=</span><span class="s">&quot;lng&quot;</span> <span class="na">type=</span><span class="s">&quot;tdouble&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;false&quot;</span> <span class="na">required=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;field</span> <span class="na">name=</span><span class="s">&quot;geo_distance&quot;</span> <span class="na">type=</span><span class="s">&quot;tdouble&quot;</span> <span class="na">required=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;dynamicField</span> <span class="na">name=</span><span class="s">&quot;_local*&quot;</span> <span class="na">type=</span><span class="s">&quot;tdouble&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now just reindex your data and enjoy. You&#8217;ll need to pass the <code>qt</code> parameter when searching, and set it to <strong>geo</strong> (or whatever you named your requestHandler above).</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Database Routers in Django]]></title>
+    <link href="http://justcramer.com/2010/12/30/database-routers-in-django"/>
+    <updated>2010-12-30T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/12/30/database-routers-in-django</id>
+    <content type="html"><![CDATA[<p>Whether you&#8217;re doing master / slave, or partitioning data, when your product gets large enough you&#8217;ll need the ability to route data to various nodes in your database. Django (as of 1.2) out of the box provides a pretty cool solution called a Database Router. Here at DISQUS we have a large set of data, and one this of course brings the need to implement some of these fairly standard solutions.</p>
+
+<p>The first solution that many companies will choose is a master / slave setup. This is the most common of all database scaling techniques and is very easy to setup in modern RDBMS solutions. In Django, this also comes very easy with a few lines of code:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">MasterSlaveRouter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="s">&quot;Sends reads to &#39;slave&#39; and writes to &#39;default&#39;.&quot;</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&#39;default&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&#39;slave&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now while this won&#8217;t scale very far (if you&#8217;re not using a proxy or bouncer, this is a single slave), it also brings a lot of other problems with it. The dreaded replication lag will hit you no matter your size (ever notice Facebook not being in &#8220;sync&#8221;), and can be fairly difficult to work around. Not going to dive into details here, but there are many ways to lessen visibility of this delay by using caching as well as doing some of your reads off your master nodes.</p>
+
+<p>The other solution I want to talk about is partitioning. We&#8217;re going to specifically talk about vertical partitioning, or the act of separating data by purpose. This is another very easy to implement solution which just requires you to move tables to other servers. Again, in Django this is very easy to implement with routers:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">PartitionByApp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="s">&quot;Send reads to an app-specific alias, and writes to the &#39;default&#39;.&quot;</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&#39;default&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">app_label</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>We&#8217;re currently working on splitting of a fairly large set of data over here, so we whipped up a little bit more flexible solution using routers. Our needs were simple: assign an app (or a model) to a separate database cluster. Here&#8217;s what we came up with:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">PrimaryRouter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">_lookup_cache</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">default_read</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'>    <span class="n">default_write</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">get_db_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+</span><span class='line'>        <span class="s">&quot;Returns the database configuration for `model`&quot;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_cache</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">conf</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASE_CONFIG</span><span class="p">[</span><span class="s">&#39;routing&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">app_label</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">app_label</span>
+</span><span class='line'>            <span class="n">module_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">module_name</span>
+</span><span class='line'>            <span class="n">module_label</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">app_label</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">if</span> <span class="n">module_label</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">result</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="n">module_label</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">elif</span> <span class="n">app_label</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">result</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="n">app_label</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_cache</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_cache</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">db_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;read&#39;</span><span class="p">,</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_read</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">db_for_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">db_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_write</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">allow_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj1</span><span class="p">,</span> <span class="n">obj2</span><span class="p">,</span> <span class="o">**</span><span class="n">hints</span><span class="p">):</span>
+</span><span class='line'>        <span class="c"># Only allow relations if the models are on the same database</span>
+</span><span class='line'>        <span class="n">db_config_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">obj1</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">db_config_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">obj2</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">db_config_1</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">db_config_2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;write&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">allow_syncdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">db_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">allowed</span> <span class="o">=</span> <span class="n">db_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;syncdb&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="c"># defaults to both read and write servers</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">allowed</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">allowed</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">db_for_read</span><span class="p">(</span><span class="n">model</span><span class="p">),</span>
+</span><span class='line'>                                    <span class="bp">self</span><span class="o">.</span><span class="n">db_for_write</span><span class="p">(</span><span class="n">model</span><span class="p">)])</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">allowed</span><span class="p">:</span>
+</span><span class='line'>            <span class="c"># FIX: TEST_MIRROR passes the mirrored alias, and not the originating</span>
+</span><span class='line'>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">db</span> <span class="o">==</span> <span class="n">k</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="bp">True</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">db</span> <span class="o">==</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TEST_MIRROR&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="bp">True</span>
+</span><span class='line'>            <span class="k">return</span> <span class="bp">False</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>To use this, we simply define a key called <code>routing</code> in our <code>DATABASE_CONFIG</code>.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># Note: this isn&#39;t how we partition our models, its just an example</span>
+</span><span class='line'><span class="n">DATABASE_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s">&#39;routing&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c"># defaults for all models in forums</span>
+</span><span class='line'>        <span class="s">&#39;forums&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;write&#39;</span><span class="p">:</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;read&#39;</span><span class="p">:</span> <span class="s">&#39;default.slave&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="c"># override for forums.Forum</span>
+</span><span class='line'>        <span class="s">&#39;forums.forum&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;write&#39;</span><span class="p">:</span> <span class="s">&#39;cluster2&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;read&#39;</span><span class="p">:</span> <span class="s">&#39;cluster2.slave&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="c"># override for forums.Post</span>
+</span><span class='line'>        <span class="s">&#39;forums.post&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;write&#39;</span><span class="p">:</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;read&#39;</span><span class="p">:</span> <span class="s">&#39;default.slave&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>A future post will cover how we&#8217;ve started moving to a <code>dictConfigurator</code> to make inheritance in many of our settings much easier.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[BitField's in Django]]></title>
+    <link href="http://justcramer.com/2010/12/27/django-bitfield"/>
+    <updated>2010-12-27T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/12/27/django-bitfield</id>
+    <content type="html"><![CDATA[<p>Today we&#8217;re releasing another heavily used component from the DISQUS code base, <a href="https://github.com/disqus/django-bitfield">our BitField class</a>. While not a true BIT field (it uses a BIGINT), it still allows you the convenience of accessing the values as if they were bit flags.</p>
+
+<p>When I joined DISQUS about 7 months ago, we were using a Q-like object class to do checks against our BigIntegerField&#8217;s. It worked fairly well, but was just too verbose. To add to that, we had a function which would attach callables to the instance for each flag. This let us do things like <code>instance.FLAG_NAME()</code> to check if it was set, and <code>intance.FLAG_NAME(True)</code> to set the flag. This worked well, but, like many things, we wanted to improve on it. </p>
+
+<p>So we ended up building out <code>BitField</code>. We modeled it off of the concept of a simple attribute key store. The idea was to keep it dead simple to add flags, but also allow easy access and querying on those flags. A complete guide is available on the <a href="https://github.com/disqus/django-bitfield">GitHub project page</a>, so we&#8217;re just going to highlight usage of it.</p>
+
+<p>First things first, defining your BitField. All you have to do is pass it a list of keys as the <code>flags</code> kwarg:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">bitfield</span> <span class="kn">import</span> <span class="n">BitField</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">flags</span> <span class="o">=</span> <span class="n">BitField</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="p">(</span>
+</span><span class='line'>        <span class="s">&#39;awesome_flag&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;flaggy_foo&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;baz_bar&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now reading and writing bits is very pythonic:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># Create the model</span>
+</span><span class='line'><span class="n">o</span> <span class="o">=</span> <span class="n">MyModel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Add awesome_flag (does not work in SQLite)</span>
+</span><span class='line'><span class="n">MyModel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">o</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">MyModel</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">awesome_flag</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Set flags manually to [awesome_flag, flaggy_foo]</span>
+</span><span class='line'><span class="n">MyModel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">o</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Remove awesome_flag (does not work in SQLite)</span>
+</span><span class='line'><span class="n">MyModel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">o</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">flags</span><span class="o">=~</span><span class="n">MyModel</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">awesome_flag</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Test awesome_flag</span>
+</span><span class='line'><span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">awesome_flag</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">print</span> <span class="s">&quot;Happy times!&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># List all flags on the field</span>
+</span><span class='line'><span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">flags</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">print</span> <span class="n">f</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Let us know if you have any feedback, and make sure you <a href="http://feeds.feedburner.com/DisqusCode">subscribe to updates</a> from our code blog.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Blog Refresh]]></title>
+    <link href="http://justcramer.com/2010/12/24/blog-refresh"/>
+    <updated>2010-12-24T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/12/24/blog-refresh</id>
+    <content type="html"><![CDATA[<p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="http://justcramer.com/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
+
+<p>The new blog is powered off of <a href="https://github.com/mojombo/jekyll">Jekyll</a> and is running off of the <a href="http://pages.github.com">GitHub Pages technology</a>. I decided to use the <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a> project as a starter for the new design, and it&#8217;s turned out pretty well. If you&#8217;re curious, the source is available on <a href="https://github.com/dcramer/dcramer.github.com">GitHub</a> as always.</p>
+
+<p>Importing posts from WordPress turned out to be quite the challenge. Jekyll included a tool to translate the posts (for the most part) to HTML pages, and it worked decently. Though there were a few hurdles to overcome.</p>
+
+<p>The first problem was I had been using a syntax highlighting plugin in WordPress that worked by using <code>pre</code> tags with a <code>lang</code> attribute. For example, <code>&lt;pre lang="python"&gt;</code>. These all had to be translated to the <code>&#123;% highlight %&#125;</code> tags supported by Jekyll (on top of Pygments).</p>
+
+<p>Next up we actually had to deal with outputting &#123; and &#125; characters without Liquid (the template language Jekyll uses) parsing them. Just like Django, it seems they didn&#8217;t see the need to have some kind of raw escape tag (don&#8217;t get me started on the <code>templatetag</code> template tag in Django). After a bit of Googling I discovered the entities for these characters were <code>&amp;#123;</code> and <code>&amp;#125;</code>.</p>
+
+<p>After getting the pages mostly working, I realized they were all in .markdown. While I have nothing against markdown, it didn&#8217;t seem to play nice with some of my html. For example, it didn&#8217;t like lines that started with HTML tags. Not caring to figure out how to work around this, I decided I&#8217;d try to convert all HTML to Markdown. I attempted with both <a href="http://milianw.de/projects/markdownify/">Markdownify</a> (PHP) and a project called <a href="http://www.aaronsw.com/2002/html2text/">html2text</a> (Python). Both projects didn&#8217;t work out.In the end I decided I would just swap all pages over to HTML. </p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">for </span>x in *.dot;
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'><span class="k">  </span>mv <span class="s2">&quot;$x&quot;</span> <span class="s2">&quot;${x%.markdown}.html&quot;</span>;
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now that I had renamed all of the files, it quickly came to my attention that I was going to have to deal with paragraphs. To do this I wrote a quick script that would iterate all of the files and replace lines which appeared to be actual paragraphs, with paragraph tags. If you&#8217;re curious about this script, you can find it <a href="https://github.com/dcramer/dcramer.github.com/blob/master/_import/fix-linebreaks.py">in the source</a>.</p>
+
+<p>The last big hurdle I had to deal with was rewriting permalinks. This was a bigger challenge that I expected. My entire goal here was to be based on free services and handling redirects requires some logic. By suggestion of <a href="http://anton.kovalyov.net">Anton Kovalyov</a> I reluctantly decided I would write a quick AppEngine app.</p>
+
+<p>After a few wacky ideas I decided that the simplest solution would just be to write a URL mapper using origin and destination columns. With this in mind, I quickly whipped up a PHP script to dump my entire database of posts into a CSV file. The file converted the old permalinks (on davidcramer.net) to the new style. Finishing up the AppEngine app was fairly straight forward after this was ready. It included a CSV importer (to throw data into my datastore model), and handling the redirect part was painless. Again, if you&#8217;re curious, the <a href="https://github.com/dcramer/davidcramer-redirect">source</a> is on GitHub.</p>
+
+<p>I still have to deal with migrating URLs for Disqus, but let me know if you have any feedback on the new blog, it&#8217;s design, or just anything in general. Thanks!</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Feature Switches in Django with Gargoyle]]></title>
+    <link href="http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle"/>
+    <updated>2010-12-21T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle</id>
+    <content type="html"><![CDATA[<p>A while back we talked about using <a href="http://blog.disqus.com/post/789540337/partial-deployment-with-feature-switches">feature switches</a> to deal with partial deployment. This allows you to easily deploy to portions of your audience, or bring out less finalized features without hiding them behind branches and the likes. This last week we hosted a company hack day here at DISQUS, and myself and <a href="http://anton.kovalyov.net/">Anton Kovalyov</a> decided we&#8217;d open source our switches platform. So the idea was that everyone here had a whole day to work on their projects. We figured that&#8217;d leave us plenty of time left over. In the end it turned out that creating an extensible platform was a bit more work than we had hoped.</p>
+
+<p>After hack day, and some sparse hours of finalizing things, we&#8217;re proud to be announcing <a href="https://github.com/disqus/gargoyle">Gargoyle</a> today.</p>
+
+<p><img src="http://dl.dropbox.com/u/116385/Screenshots/-egenorlfjki.png" style="max-width:100%;" alt="gargoyle"/></p>
+
+<p>So out of the box, here&#8217;s what you get:</p>
+
+<ul><li>Support for IP address (by percent and IP)</li><li>Support for User (by percent, username, is_staff, is_superuser, and is_anonymous)</li><li>Integration using <a href="http://github.com/dcramer/nexus">Nexus</a> (post incoming later this week)</li><li>Easily extensible form-like condition sets for adding your own</li></ul>
+
+<p>Check out the <a href="https://github.com/disqus/gargoyle">README</a> and let us know what you think!</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Announcing the DISQUS Code Blog]]></title>
+    <link href="http://justcramer.com/2010/12/10/announcing-the-disqus-code-blog"/>
+    <updated>2010-12-10T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/12/10/announcing-the-disqus-code-blog</id>
+    <content type="html"><![CDATA[<p>Yesterday we semi-silently launched our <a href="http://code.disqus.com/">engineering blog and project site</a> over at DISQUS. We&#8217;re going to be aggregating posts from all of the engineering team&#8217;s personal blogs, as well as putting all of our open source projects and conference coverage over there. Look for all of the juicy details with what we&#8217;re building in Python and Django, and how we scale those apps.</p>
+
+<p>As I&#8217;m sure many will ask what we&#8217;re using to power that site, the answer is GitHub. We originally had looked at using Tumblr to aggregate RSS feeds into a new blog, but their existing tools werent powerful enough. By the time we had written our own (to import a post and tag it appropriately), we realized that their API just wasn&#8217;t responsive (or available) enough. In the end we decided to use <a href="http://github.com">GitHub</a> and the <a href="https://github.com/mojombo/jekyll">Jekyll blog application</a>. Being that this is GitHub, you can also check out the <a href="https://github.com/disqus/disqus.github.com">source to our blog</a> if you dare. We&#8217;re still fairly new to Jekyll, so don&#8217;t use us as best practices just yet.</p>
+
+<p>Oh, and don&#8217;t forget to <a href="http://feeds.feedburner.com/DisqusCode">subscribe</a> to updates :)</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Tracking changes to fields in Django]]></title>
+    <link href="http://justcramer.com/2010/12/06/tracking-changes-to-fields-in-django"/>
+    <updated>2010-12-06T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/12/06/tracking-changes-to-fields-in-django</id>
+    <content type="html"><![CDATA[<p>A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine if certain actions need to take place when that instance is updated. We tend to use it like &#8220;if changed&#8221; database triggers. This has been very useful in situations like marking a comment as visible. In many areas this data is denormalized and we need to somehow propagate changes to counters or other similar structures.</p>
+
+<p>What we ended up doing was building a class decorator. This was my first time using such a technique, and it turned out really well. If you&#8217;re not familiar, they work almost identically to function decorators. You might even consider them a class factory, if that better helps you understand whats happening.</p>
+
+<p>So, what we came up with was a decorator we&#8217;ve defined as <code>@track_data</code>. It allows us, at runtime, to specify which attributes we want to maintain history of on a model. This history is available from initialization, and reset whenever the model instance is saved (whether its via .save() or .update()).</p>
+
+<p><script src="https://gist.github.com/730765.js"> </script></p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Integrating PyFlakes Into TextMate]]></title>
+    <link href="http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate"/>
+    <updated>2010-11-30T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate</id>
+    <content type="html"><![CDATA[<p>One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve is showing a tooltip, and only when you save the file. There&#8217;s been a few attempts at doing this with things like JSLint and PyLint, but most of them fall short. Today I decided to correct that.</p>
+
+<p>A great bundle out there for JavaScript developers exists already, <a href="https://github.com/johnmuhl/javascript-tools-tmbundle">JavaScript Tools TextMate Bundle</a>. I&#8217;m not entirely sure who the original author is, but all in all, the bundle does its job well. It hooks the save hotkey and runs JSLint on your file, and gives you a bunch of other shiny tools as well. With Python there&#8217;s a few out there, but none really fit the workflow that I think is ideal: automation.</p>
+
+<p>So based off the amazing JS tools bundle, I created a similar setup to use my <a href="https://github.com/dcramer/pyflakes">PyFlakes fork</a>. It hooks the save command, just like the JSLint bundle, and also gives you a quick lint HTML output by using Command + Shift + V (I&#8217;m not a big fan of the Control and Option keys, they dont feel right).</p>
+
+<p>Upon saving, you get a nice tooltip describing the error, and whether its a <strong>W</strong>arning or <strong>E</strong>rror:</p>
+
+<p><img src="http://dl.dropbox.com/u/116385/Screenshots/pzu3w~8_dtjp.png"/></p>
+
+<p>If for some reason you have too many errors, or you want to bring this up in a more visible fashion, it also gives you the ability to render the results in a new window:</p>
+
+<p><img src="http://dl.dropbox.com/u/116385/Screenshots/arlbt8ptszvb.png"/></p>
+
+<p>Anyways, without further adieu, check out the <a href="https://github.com/dcramer/python-tools-tmbundle">Python Tools TextMate Bundle</a> on GitHub.</p>]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Stop with the ponies]]></title>
+    <link href="http://justcramer.com/2010/10/21/stop-with-the-fucking-ponies"/>
+    <updated>2010-10-21T00:00:00-07:00</updated>
+    <id>http://justcramer.com/2010/10/21/stop-with-the-fucking-ponies</id>
+    <content type="html"><![CDATA[<p>Someone stirred this up today, so I wanted to publicly rant about how much <strong>I hate the Django pony</strong>, and I&#8217;m not alone.</p>
+
+<p>First off, this thing started as a joke, and it was funny&#8230; as a one-liner. Since then it&#8217;s been turned in to a Mascot of sorts, and we were all gifted with My Little Pony toys at DjangoCon.</p>
+
+<p><img src="http://www.davidcramer.net/wp-content/uploads/2010/10/fuckingponies.png" alt="" title="fuckingponies" width="500" class="aligncenter size-full wp-image-36317" /></p>
+
+<p>I don&#8217;t want a toy pony, I don&#8217;t want to see a flying pony representing a brand, and<strong> I definitely dont want to see grown men running around with a stuffed pony</strong>.</p>]]></content>
+  </entry>
+  
+</feed>

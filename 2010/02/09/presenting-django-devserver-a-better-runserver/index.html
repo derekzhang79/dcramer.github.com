@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Presenting django-devserver, a better runserver. - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Today I&#8217;m going to talk (rant) about runserver, a great inclusion of the Django software package. It&#8217;s designed to help you easily run a &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2010/02/09/presenting-django-devserver-a-better-runserver">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Presenting Django-devserver, a Better Runserver.</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-02-09T00:00:00-08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Today I&#8217;m going to talk (rant) about runserver, a great inclusion of the Django software package. It&#8217;s designed to help you easily run a Django project in a local (development) environment. Well, like many people, I have Rails in my background, and I miss certain things from it. One of those things, is the shiny SQL output in your terminal while running Mongrel.</p>
+
+<p>Since I don&#8217;t have enough open source projects to maintain, I decided today that I needed this. It turned out to be extraordinarily easy even. I just ripped out my code from django-debug-toolbar (SQL and Cache tracking), flipped up a generic framework, and voila, <a href="http://github.com/dcramer/django-devserver">django-devserver</a> was born.</p>
+
+<p>Now let&#8217;s get down to it. django-devserver provides a simple drop-in runserver replacement. It allows you to run a command, <code>python manage.py rundevserver</code>, and to get some additional information. As of writing, that additional information includes real-time SQL logging (aka mass query spam in your terminal), and a summary of cache calls.</p>
+
+<p>Let&#8217;s take a look at some of our sample output:</p>
+
+<p><a href="http://www.davidcramer.net/wp-content/uploads/2010/02/Screen-shot-2010-02-09-at-4.03.11-PM1.png"><img src="http://www.davidcramer.net/wp-content/uploads/2010/02/Screen-shot-2010-02-09-at-4.03.11-PM1.png" alt="" title="Screen shot 2010-02-09 at 4.03.11 PM" width="476" height="97" class="alignnone size-full wp-image-1181" /></a></p>
+
+<p>While the syntax coloring still has a lot to be desired, it&#8217;s definitely a nice usable output. The SQL module, at the moment, simply outputs the query pre-execution, and post-execution outputs the time taken. The cache module outputs some generic stats, such as total time taken, # of calls, and hits vs misses.</p>
+
+<p>The beautiful thing about the solution is how extensible it came out, for example, our cache module is only a few lines of code:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">simplejson</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.core.cache</span> <span class="kn">import</span> <span class="n">cache</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">devserver.modules</span> <span class="kn">import</span> <span class="n">DevServerModule</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">CacheSummaryModule</span><span class="p">(</span><span class="n">DevServerModule</span><span class="p">):</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">Outputs a summary of cache events once a response is ready.</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">logger_name</span> <span class="o">=</span> <span class="s">&#39;cache&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">attrs_to_track</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;set&#39;</span><span class="p">,</span> <span class="s">&#39;get&#39;</span><span class="p">,</span> <span class="s">&#39;delete&#39;</span><span class="p">,</span> <span class="s">&#39;add&#39;</span><span class="p">,</span> <span class="s">&#39;get_many&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">process_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">devserver.utils.stats</span> <span class="kn">import</span> <span class="n">track</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># save our current attributes</span>
+</span><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">old</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_to_track</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_to_track</span><span class="p">:</span>
+</span><span class='line'><span class="nb">setattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">track</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="s">&#39;cache&#39;</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">process_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">devserver.utils.stats</span> <span class="kn">import</span> <span class="n">stats</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;total time </span><span class="si">%(time)s</span><span class="s"> - </span><span class="si">%(calls)s</span><span class="s"> calls; </span><span class="si">%(hits)s</span><span class="s"> hits; </span><span class="si">%(misses)s</span><span class="s"> misses&#39;</span> <span class="o">%</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span class='line'><span class="n">calls</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="n">time</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_time</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="n">hits</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_hits</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="n">misses</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_misses_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">)</span> <span class="o">+</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_misses_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_many</span><span class="p">),</span>
+</span><span class='line'><span class="n">gets</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">),</span>
+</span><span class='line'><span class="n">sets</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">),</span>
+</span><span class='line'><span class="n">get_many</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_many</span><span class="p">),</span>
+</span><span class='line'><span class="n">deletes</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">delete</span><span class="p">),</span>
+</span><span class='line'><span class="c">#cache_calls_list = [(c[&#39;time&#39;], c[&#39;func&#39;].__name__, c[&#39;args&#39;], c[&#39;kwargs&#39;], simplejson.dumps(c[&#39;stack&#39;])) for c in stats.get_calls(&#39;cache&#39;)],</span>
+</span><span class='line'><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c"># set our attributes back to their defaults</span>
+</span><span class='line'><span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">old</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+</span><span class='line'><span class="nb">setattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The entire thing supports all of the typical middleware processing, as well as the two additional methods: <code>process_init()</code> and <code>process_complete()</code>.</p>
+
+<p>I&#8217;m hoping to pull all of my usable work on the django-debug-toolbar into the devserver, but right now the two main additions I have planned are an SQLSummaryModule, and a ProcessTimeModule.</p>
+
+<p>Hope you all enjoy, and get busy <a href="http://github.com/dcramer/django-devserver">forking over at GitHub</a>.</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-02-09T00:00:00-08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2010</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2010/02/09/presenting-django-devserver-a-better-runserver" data-via="zeeg" data-counturl="http://justcramer.com/2010/02/09/presenting-django-devserver-a-better-runserver" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2010/01/06/debugging-django-errors" title="Previous Post: Debugging Django Errors">&laquo; Debugging Django Errors</a>
+      
+      
+        <a class="basic-alignment right" href="/2010/02/18/starcraft-2-is-here" title="next Post: StarCraft 2 is here">StarCraft 2 is here &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '1174 http://www.davidcramer.net/?p=1174';
+        
+        var disqus_url = 'http://justcramer.com/2010/02/09/presenting-django-devserver-a-better-runserver';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '1174 http://www.davidcramer.net/?p=1174';
+        
+        var disqus_url = 'http://justcramer.com/2010/02/09/presenting-django-devserver-a-better-runserver';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

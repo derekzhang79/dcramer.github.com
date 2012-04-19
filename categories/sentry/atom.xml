@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
+  <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-18T17:12:54-07:00</updated>
+  <id>http://justcramer.com/</id>
+  <author>
+    <name><![CDATA[David Cramer]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Error Tracing in Sentry]]></title>
+    <link href="http://justcramer.com/2011/01/25/error-tracing-in-sentry"/>
+    <updated>2011-01-25T00:00:00-08:00</updated>
+    <id>http://justcramer.com/2011/01/25/error-tracing-in-sentry</id>
+    <content type="html"><![CDATA[<p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it's version to 1.6.0. Among the changes was a new "Sentry ID" value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
+
+
+
+
+<h4>Exposing Sentry ID</h4>
+
+
+
+
+<p>The new IDs are generated automatically when a message is processed (by the client), so you won't need to make any changes on that end. Likely, however, you're going to want to expose these at your application level for a couple of different reasons. The first one we're going to cover is your customer's experience.</p>
+
+
+
+
+<p>The easiest way to expose this information in a useful manner, is by <strong>creating a modified 500.html</strong>. In DISQUS' case, we mention the error reference ID to the end-user, so that when they're reporting a problem they can pass along this information.</p>
+
+
+
+
+<h5>Create a custom 500 handler</h5>
+
+
+
+
+<p>The first thing you're going to need to do is to create a custom 500 handler. This defined in <code>urls.py</code>, so we're just going to go ahead and create the view in-place.</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">handler500</span><span class="p">(</span><span class="n">request</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s">An error handler which exposes the request object to the error template.</span>
+</span><span class='line'><span class="s">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">loader</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseServerError</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">disqus.context_processors</span> <span class="kn">import</span> <span class="n">default</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">logging</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="n">default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">(),</span> <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">context</span><span class="p">[</span><span class="s">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">t</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;500.html&#39;</span><span class="p">)</span> <span class="c"># You need to create a 500.html template.</span>
+</span><span class='line'><span class="k">return</span> <span class="n">HttpResponseServerError</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">Context</span><span class="p">(</span><span class="n">context</span><span class="p">)))</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>We're going to expose the request object to our 500.html in the above. Keep in mind, that doing this allows you to add some logic into your template, and you're going to need to be very careful that this logic can't raise a new exception.</p>
+
+
+
+
+<h5>Tweaking your 500.html</h5>
+
+
+
+
+<p>The next thing you'll need to do is to tweak your 500.html template to actually show the Sentry ID. Assuming the request object was passed into Sentry, it will attach the last error seen under <code>request.sentry['id']</code>. Given this, we can easily report it to the end-user in our template:</p>
+
+
+
+
+<pre>
+&lt;p&gt;The Disqus team has been alerted and we're on the case. For more information, check out &lt;a href="http://status.disqus.com"&gt;Disqus Status &raquo;&lt;/a&gt;&lt;/p&gt;
+&#123;% if request.sentry.id %&#125;
+    &lt;p&gt;If you need assistance, you may reference this error as &lt;strong&gt;&#123;&#123; request.sentry.id &#125;&#125;&lt;/strong&gt;.&lt;/p&gt;
+&#123;% endif %&#125;
+</pre>
+
+
+
+
+<h4>Sentry ID as a response header</h4>
+
+
+
+
+<p>The other quick solution to get access to this variable is simply by enabling an included response middleware, <code>SentryResponseErrorIdMiddleware</code>. Just pop open your <code>settings.py</code> and append it to your <code>MIDDLEWARE_CLASSES</code>:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;...</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;sentry.client.middleware.SentryResponseErrorIdMiddleware&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now if you check your response headers after hitting an error, you should see <code>X-Sentry-ID</code>.</p>
+
+
+
+
+<h4>Find errors by ID</h4>
+
+
+
+
+<p>Sentry makes it very easy to pull up error messages by ID. The one requirement is that you're going to need to ensure <code>sentry.filters.SearchFilter</code> is included within <code>SENTRY_FILTERS</code> (it's enabled by default). Once done, Sentry will discover if you're entering a UUID hex value (the Sentry ID) in the search box, and it will jump directly to that error's page.</p>
+
+
+
+
+<p><img src="http://f.cl.ly/items/2f1s1X0J231F2F3u0V0d/sentry-id.png"/></p>
+
+
+
+
+<p>You'll also notice that all messages are now tagged with their unique Sentry ID as well (per the screenshot).</p>
+
+]]></content>
+  </entry>
+  
+</feed>

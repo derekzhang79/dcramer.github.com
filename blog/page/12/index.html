@@ -1,0 +1,861 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="I&#8217;ve finally completed what I&#8217;ll call &#8220;phase 1&#8221; of the caching layer. It handles the easiest, and for my cases, the most &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/blog/page/12">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/21/caching-layer-for-django-orm">Caching Layer for Django ORM</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-21T00:00:00-08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&#8217;ve finally completed what I&#8217;ll call &#8220;phase 1&#8221; of the caching layer. It handles the easiest, and for my cases, the most useful level of cache invalidation: removing objects.</p>
+
+<p><strong>&#8220;Phase 1&#8221; Features:</strong><br><ul><li>Automatic caching of querysets.</li><li>Invalidating querysets when an object is removed.</li><li>Caching querysets objects in a key by key basis (per-object caching).</li><li>Automatic invalidation of per-object caches.</li></ul></p>
+
+<p><a href="http://code.google.com/p/django-orm-cache/">Grab the code from Google</a> and look it over if you&#8217;re interested. This is still very much in a &#8220;It probably doesn&#8217;t work correctly&#8221; phase, and the code will have a lot of cleanup and structure changes before it&#8217;s done.</p>
+
+<p>Here&#8217;s a quick rundown of the intended functionality and SQL usage:</p>
+
+<pre>
+class MyModel(CachedModel): [...]
+
+MyModel.objects.create(name="Test") [1 query]
+
+MyModel.objects.all() [1 query ]
+[Test,]
+
+MyModel.objects.create(name="Test2") [1 query]
+
+MyModel.objects.all() [no queries]
+[Test,]
+
+MyModel.objects.create(name="Test3") [1 query]
+
+MyModel.objects.all().reset() [1 query]
+>>> [Test, Test2, Test3]
+
+MyModel.objects.get(name="Test2").delete() [1 query]
+
+MyModel.objects.all() [2 queries]
+[Test, Test3]
+
+z = MyModel.objects.get(name="Test")
+z.name = "Test Changed"
+z.save() [1 query]
+
+MyModel.objects.all() [no queries]
+[Test Changed, Test3]
+</pre>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/19/firefox-extension-version-changer">Firefox Extension Version Changer</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-19T00:00:00-08:00" pubdate data-updated="true">Jan 19<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>(Because I didn&#8217;t know what else to call it).</p>
+
+<p>Anyways, I updated to Firefox 3 when RC1 came out. I figure, &#8220;hey, it&#8217;s about to be released, extensions will work soon&#8221;. Then they go and back down. Me being as a developer as I am (generally lazy), I didn&#8217;t want to uninstall. Plus there&#8217;s the fact that the new autocomplete is pretty shiny.</p>
+
+<p>I quickly learned that you could simply swap out the version number in the manifest to allow the addon to load. Granted, this can cause problems, but I&#8217;m willing to face problems as long as I can at least *try* to use Firebug :)</p>
+
+<p>So this morning I drafted up a quick Python script which will actually run through a list of files and update the min/maxVersion fields as needed. I plan to throw up a quick web form this weekend to let you do it by simply pointing to the URL or uploading the .XPI and then installing the updated one.</p>
+
+<p><strong>Update:</strong> I went ahead and created a little webpage which executes the Python script and feeds the updated extension back to you. Check out the <a href="http://www.davidcramer.net/firefox-addons">Firefox Addon Version Converter</a>.</p>
+
+<p>Source: <a href="http://www.pastethat.com/RW7JR">Firefox Extension Version Changer</a></p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">Firefox Addon Version Updater</span>
+</span><span class='line'><span class="sd">Created by David Cramer (http://www.davidcramer.net/)</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">Use this to update the minVersion and/or maxVersion fields in the firefox</span>
+</span><span class='line'><span class="sd">extension manifest files.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">e.g. convert extension to 3.x</span>
+</span><span class='line'><span class="sd">python convert.py &lt;file.xpi&gt; --max-version=3.*</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">zipfile</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">re</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">MIN_VERSION</span> <span class="o">=</span> <span class="bp">False</span>
+</span><span class='line'><span class="n">MAX_VERSION</span> <span class="o">=</span> <span class="s">&#39;3.*&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">regexp</span> <span class="o">=</span> <span class="s">r&#39;(?m)&lt;em:id&gt;&amp;#123;</span><span class="si">%(target_id)s</span><span class="s">&amp;#125;&lt;/em:id&gt;\s*&lt;em:minVersion&gt;(.+)&lt;/em:minVersion&gt;\s*&lt;em:maxVersion&gt;(.+)&lt;/em:maxVersion&gt;&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">tweak_addon_version_reqs</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">min_version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_version</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">min_version</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">min_version</span> <span class="o">=</span> <span class="n">MIN_VERSION</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">max_version</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">max_version</span> <span class="o">=</span> <span class="n">MAX_VERSION</span>
+</span><span class='line'>    <span class="n">archive</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">archive</span><span class="o">.</span><span class="n">namelist</span><span class="p">():</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s">&#39;.rdf&#39;</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">data</span> <span class="o">=</span> <span class="n">archive</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+</span><span class='line'>            <span class="c"># FireFox</span>
+</span><span class='line'>            <span class="n">target_id</span> <span class="o">=</span> <span class="s">&#39;ec8030f7-c20a-464f-9b0e-13a3a9e97384&#39;</span>
+</span><span class='line'>            <span class="n">opts</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>                <span class="s">&#39;target_id&#39;</span><span class="p">:</span> <span class="n">target_id</span><span class="p">,</span>
+</span><span class='line'>                <span class="s">&#39;min_version&#39;</span><span class="p">:</span> <span class="n">min_version</span> <span class="ow">or</span> <span class="s">&#39;\g&lt;1&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>                <span class="s">&#39;max_version&#39;</span><span class="p">:</span> <span class="n">max_version</span> <span class="ow">or</span> <span class="s">&#39;\g&lt;2&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>            <span class="n">data</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">regexp</span> <span class="o">%</span> <span class="n">opts</span><span class="p">,</span> <span class="s">r&#39;&lt;em:id&gt;&amp;#123;</span><span class="si">%(target_id)s</span><span class="s">&amp;#125;&lt;/em:id&gt;&#39;</span> \
+</span><span class='line'>                            <span class="s">&#39;&lt;em:minVersion&gt;</span><span class="si">%(min_version)s</span><span class="s">&lt;/em:minVersion&gt;&#39;</span> \
+</span><span class='line'>                            <span class="s">&#39;&lt;em:maxVersion&gt;</span><span class="si">%(max_version)s</span><span class="s">&lt;/em:maxVersion&gt;&#39;</span> <span class="o">%</span> <span class="n">opts</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">archive</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">break</span>
+</span><span class='line'>    <span class="n">archive</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">OptionParser</span>
+</span><span class='line'>    <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;usage: %prog [options] files&quot;</span>
+</span><span class='line'>    <span class="n">parser</span> <span class="o">=</span> <span class="n">OptionParser</span><span class="p">(</span><span class="n">usage</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;-b&quot;</span><span class="p">,</span> <span class="s">&quot;--min-version&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;min_version&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">help</span><span class="o">=</span><span class="s">&quot;modify minVersion field&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;-e&quot;</span><span class="p">,</span> <span class="s">&quot;--max-version&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;max_version&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">help</span><span class="o">=</span><span class="s">&quot;modify maxVersion field&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">options</span><span class="p">,</span> <span class="n">files</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;you must specify at least one file&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">tweak_addon_version_reqs</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">min_version</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">max_version</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">main</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/17/using-locks-in-mysql">Using LOCKs in MySQL</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-17T00:00:00-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>We ran across a fun gotcha today while performance testing some code. The issue was originally discovered when we noticed a 300ms query taking 20 seconds. After about an hour of debugging we found the issue to be with aliases in table locks.</p>
+
+<p>Here&#8217;s what our original SQL looked like:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">LOCK</span> <span class="kp">TABLES</span> <span class="n">files_versiondownloadcount</span> <span class="k">WRITE</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">UPDATE</span> <span class="n">files_version</span> <span class="k">AS</span> <span class="n">version</span><span class="p">,</span> <span class="n">files_versiondownloadcount</span> <span class="k">AS</span> <span class="n">count</span>
+</span><span class='line'><span class="kt">SET</span> <span class="n">version</span><span class="p">.</span><span class="n">downloads</span> <span class="o">=</span> <span class="n">version</span><span class="p">.</span><span class="n">downloads</span> <span class="o">+</span> <span class="n">count</span><span class="p">.</span><span class="n">downloads</span><span class="p">,</span> <span class="n">count</span><span class="p">.</span><span class="n">downloads</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'><span class="k">WHERE</span> <span class="n">version</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">count</span><span class="p">.</span><span class="n">version_id</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">UNLOCK</span> <span class="kp">TABLES</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Our first idea was to add locking into the files_version table as well. Doing this caused MySQL to error due to syntax. So we then added the aliases to both tables. Voila, back to a 300ms query.
+
+We run one more queryset almost identical to this, and found out that mislabeling the table alias in the lock (not using the same alias in the query) caused the same performance impact we had seen originally, with the 20s query.
+
+Here is the SQL with the updated LOCK statement:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">LOCK</span> <span class="kp">TABLES</span> <span class="n">files_versiondownloadcount</span> <span class="k">as</span> <span class="n">count</span> <span class="k">WRITE</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">files_version</span> <span class="k">as</span> <span class="n">version</span> <span class="k">WRITE</span><span class="p">;</span>
+</span><span class='line'><span class="k">UPDATE</span> <span class="n">files_version</span> <span class="k">AS</span> <span class="n">version</span><span class="p">,</span> <span class="n">files_versiondownloadcount</span> <span class="k">AS</span> <span class="n">count</span>
+</span><span class='line'>    <span class="kt">SET</span> <span class="n">version</span><span class="p">.</span><span class="n">downloads</span> <span class="o">=</span> <span class="n">version</span><span class="p">.</span><span class="n">downloads</span> <span class="o">+</span> <span class="n">count</span><span class="p">.</span><span class="n">downloads</span><span class="p">,</span> <span class="n">count</span><span class="p">.</span><span class="n">downloads</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>    <span class="k">WHERE</span> <span class="n">version</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">count</span><span class="p">.</span><span class="n">version_id</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">UNLOCK</span> <span class="kp">TABLES</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/03/trim-in-javascript">Trim() in JavaScript</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-03T00:00:00-08:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>So today I went searching for a trim() method in JavaScript. Much to my suprise, one didn&#8217;t exist. We actually had one locally that another developer had written, but it was only trimming whitespace (no optional argument to trim a certain character). So today, I went ahead and wrote one.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/01/03/trim-in-javascript">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/03/setting-up-django-with-sphinx">Setting Up Django With Sphinx Full-text Search</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-03T00:00:00-08:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>It seems I suck at documentation (yes, It&#8217;s very true), so here&#8217;s a quick How-to on using the <a href="http://code.google.com/p/django-sphinx/">Sphinx ORM for Django</a> we created:</p>
+
+<ol>
+    <li>Download and install Sphinx (you&#8217;re on your own here): <a href="http://www.sphinxsearch.com/">http://www.sphinxsearch.com/</a></li>
+    <li>Download and install the Django Sphinx package: <a href="http://django-sphinx.googlecode.com/">http://django-sphinx.googlecode.com/</a> (again, on your own)</li>
+    <li>Setup a source for your table:
+<pre>
+source files_file_en : base
+{
+    sql_query	= \
+                     SELECT files_file.id, files_file.name, files_data.description, files_file.tags as tag \
+                     FROM files_file JOIN files_data \
+                     ON files_file.id = files_data.file_id \
+                     AND files_data.lang = 'en' \
+                     AND files_file.visible = 1 \
+                     GROUP BY files_file.id
+    sql_query_info	= SELECT * FROM files_file WHERE id=$id
+}
+</pre></li>
+    <li>Setup an index for your table:
+<pre>index files_file_en
+{
+    source			= files_file_en
+    path			= /var/data/files_file_en
+    docinfo			= extern
+    morphology			= none
+    stopwords			=
+    min_word_len		= 2
+    charset_type		= sbcs
+    min_prefix_len		= 0
+    min_infix_len		= 0
+}
+</pre></li>
+    <li>Go into your models and add the import:
+        <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">cursesite.core.search.models</span> <span class="kn">import</span> <span class="n">SphinxSearch</span>
+</span></code></pre></td></tr></table></div></figure>
+    </li>
+    <li>Go to the model you want to attach the search to:
+        <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">search</span>	<span class="o">=</span> <span class="n">SphinxSearch</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s">&quot;files_file_en&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+    </li>
+    <li>Now query:<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">File</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">&#39;hello&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></li>
+</ol></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/12/20/set-cookies-without-a-response-in-django">Set Cookies Without a Response in Django</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-20T00:00:00-08:00" pubdate data-updated="true">Dec 20<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One issue I&#8217;ve personally had to overcome with Django, and languages which aren&#8217;t specifically designed for the web, is that you don&#8217;t have access to the environment everywhere. The environment I&#8217;m referring to, is the current request, and response objects.</p>
+
+<p>In PHP there is no response object, at least not one as you would see in Django. If you wish to set a header or cookie, you simply do it (before output has been given). In .NET it&#8217;s more or less the same, you set it in a globally accessible environment variable. This makes it very easy for random tidbits of code to modify the headers.</p>
+
+<p>We were recently implementing our new authentication service on Curse. The authentication service, of course, has to set several cookies. The issue we had to overcome was the authentication service may not, and usually wouldn&#8217;t, have access to a response object, as it hadn&#8217;t been created yet. The solution we came up with was simply to make the request.COOKIES variable have set methods on it.</p>
+
+<p>The code itself is fairly confusing, as I attempted to override request.COOKIES originally with just a Cookie() object. This proved to be a backwards-compatible issue as it wouldn&#8217;t return a string by default with getitem (you would need to call cookie.value to get it&#8217;s value instead). To ensure backwards compatibility we had to subclass the Cookie, and Morsel methods, and override getitem to act the same.</p>
+
+<p>All in all, we ended up with two middleware pieces, and a new class for request.COOKIES. The prehandler middleware should be your first middleware, and the post should be your last.</p>
+
+<p>You can <a href="http://www.pastethat.com/djangocookies">view the source at PasteThat</a>.<br><script src="http://gist.github.com/181116.js"></script></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/12/20/dir-in-javascript">Dir() in JavaScript</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-20T00:00:00-08:00" pubdate data-updated="true">Dec 20<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I was working with some JavaScript code today (for our new moderation tools on Curse), and found something interesting. Let me first say by in no way do I claim to be a JavaScript expert, so don&#8217;t tease me too much.<br></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2007/12/20/dir-in-javascript">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/12/06/handling-cache-invalidation">Handling Cache Invalidation</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-06T00:00:00-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In preparation for a possible change in Curse&#8217;s caching strategy, I took the time today to do some benchmarks of memcached. The benchmarks were taken using the standard python-memcached library as well as 3rd party library for PHP (I couldn&#8217;t get Leopard working with the PECL package). It turns out, Python is actually <a href="http://www.pastethat.com/?G9lDG">fairly fast</a> in its memcached client.</p>
+
+<p>The idea behind our new strategy, is something that I&#8217;ve seen talked about quite a bit (once I started researching), row-level cache objects.</p>
+
+<p>Typically people store a group of objects in a cache, as we are still. You end up with many different groups of many objects. In most cases, you&#8217;re going to have overlapping, where you have the same objects in many different caches.</p>
+
+<p>The major problem comes in when you need to do invalidation. How do you invalidate all caches containing X object? There are several solutions around, none of which are very concrete in how they can solve every problem you can possibly think of.  Many languages such as .NET also employ their own solutions for caching.</p>
+
+<p>Using Django, with memcached, offers an interesting twist to the row-level object caching. The plan would be to design a &#8220;CachedModel&#8221; which would simply say &#8220;all requests to this model need to hit the cache&#8221;. Now that we have a model that is going to cache everything, we need to know how we&#8217;re going to cache it, and more importantly, how we&#8217;re going to (automatically) invalidate it.</p>
+
+<p>Invalidation has been one of the most difficult tasks we&#8217;ve faced in the last year. The original approach was to manually delete keys (yes, not a good idea) that we define in some routine. What the new system would accomplish is automatically updating any cache immediately when an object is changed, or removed.</p>
+
+<p>There are two systems which we must take into consideration:<br><ul><br><li>Lists of objects (such as a list of articles)</li><br><li>Individual objects (a single article)</li><br></ul><br>Handling invalidation on the single object caches is easy, so why not leave at that? The plan is simply, just that. Invalidation will simply be invalidating the single object in the cache.</p>
+
+<p>To solve the issue of lists of objects needing invalidation we transparently handle this by simply caching a list of references (say its a list of 10 cache keys, which you then do a bulk get on). When you update the title of your article, you simply update its object cache, and any cache that references is going to be pulling in that object cache so it is immediately updated as well.</p>
+
+<p>Removing objects is also fairly simply. When we are polling for our list of references, we&#8217;re going to need to see what&#8217;s missing. When we find missing objects, we try to get them (query the database). If they fail, our cache is no longer valid. Easy, ya?</p>
+
+<p>All in all, this would potentially solve all of our current caching needs. It doesn&#8217;t handle every case (such as invalidating a list of new objects when a new one is added), but those could be handled with dependencies or signals.</p>
+
+<p>If you have your own caching stories, or solutions, please share them! I&#8217;d be glad to hear from anyone else who has similar problems, or even larger problems.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/12/04/great-youtube-video-about-overexgatterated-worth">Great YouTube Video About Overexgatterated Worth</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-04T00:00:00-08:00" pubdate data-updated="true">Dec 4<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><object width="425" height="355"><param name="movie" value="http://www.youtube.com/v/fi4fzvQ6I-o&rel=1"></param><param name="wmode" value="transparent"></param><embed src="http://www.youtube.com/v/fi4fzvQ6I-o&rel=1" type="application/x-shockwave-flash" wmode="transparent" width="425" height="355"></embed></object></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/11/28/curse-version-5">Curse &#8211; Version 5</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-11-28T00:00:00-08:00" pubdate data-updated="true">Nov 28<span>th</span>, 2007</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>It&#8217;s been a hectic month getting everything done, but we&#8217;ve finally managed to push live the new site.  You&#8217;ll find a whole slew of changes to the design as well as some minor tweaks to some of the features. Most noticably:<br><ul><br><li>The header now makes sense. No more double takes and confusion in finding what you want.</li><br><li>The portal pages are now modularized and show much more content.</li><br><li>The main page has been revamped greatly. It shows compilations of the best content from all over Curse, including a brand new news feed.</li><br></ul><br>We have also tuned a lot of the site for performance, and fixed numerous bugs, so <a href="http://www.curse.com/">check it out</a>!</p></div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/13/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/11/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = ''
+        
+        var disqus_url = 'http://justcramer.com/blog/page/12/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

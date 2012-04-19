@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Pagination in Django - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="One of the common things we do across projects is paginate querysets and lists. Django happens to provide a base Paginator for us, but it&#8217;s &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2009/07/02/pagination-in-django">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Pagination in Django</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-02T00:00:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>One of the common things we do across projects is paginate querysets and lists. Django happens to provide a base Paginator for us, but it&#8217;s usefulness is limited. It requires you to do the same repetitive tasks over and over. We&#8217;re one of those groups of people who believe that not every URL need&#8217;s to be rewritten into a retarded directory structure, and paged entries just so happen to be one of those. For most of our paging needs, we simply use ?p=N.</p>
+
+<p>So, let me start by saying I haven&#8217;t looked into any existing pagination solutions, but I believe what we use is a great approach to handling pagination in a generic and reusable approach. In a typical pagination situation, you would do something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">paginator</span> <span class="o">=</span> <span class="n">paginator_class</span><span class="p">(</span><span class="n">queryset_or_list</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">query_dict</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span class='line'><span class="k">if</span> <span class="s">&#39;p&#39;</span> <span class="ow">in</span> <span class="n">query_dict</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">del</span> <span class="n">query_dict</span><span class="p">[</span><span class="s">&#39;p&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;page&#39;</span><span class="p">))</span>
+</span><span class='line'><span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>    <span class="c"># show an error</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">pager</span> <span class="o">=</span> <span class="n">paginator</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="p">(</span><span class="n">InvalidPage</span><span class="p">,</span> <span class="n">EmptyPage</span><span class="p">):</span>
+</span><span class='line'>    <span class="c"># show an error</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">page</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">start</span> <span class="o">=</span> <span class="n">page</span><span class="o">-</span><span class="n">range_gap</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">page</span> <span class="o">&lt;</span> <span class="n">paginator</span><span class="o">.</span><span class="n">num_pages</span><span class="o">-</span><span class="n">range_gap</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">end</span> <span class="o">=</span> <span class="n">page</span><span class="o">+</span><span class="n">range_gap</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">end</span> <span class="o">=</span> <span class="n">paginator</span><span class="o">.</span><span class="n">num_pages</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s">&#39;query_string&#39;</span><span class="p">:</span> <span class="n">query_dict</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;page_range&#39;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+</span><span class='line'>    <span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;num_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;has_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">pager</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'>    <span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="n">paginator</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Ok, well that&#8217;s fine and all, but we don&#8217;t want to do that a hundred times throughout our code. And going beyond the defaults, in our example above we use some additional information, such as the page range. What we ended up doing over at <a href="http://www.ibegin.com">iBegin</a>, <a href="http://www.lifestrm.com">Lifestrm</a>, and <a href="http://www.nibbits.com">Nibbits</a> are two solutions: a better pagination class to handle this for us, and a template tag to paginate so we can keep it out of the view.
+
+Let&#8217;s start with our new pagination class. It involves creating a new method called <code>get_context()</code> which allows you to simply return your generic use-case context for a paginator.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">BetterPaginator</span><span class="p">(</span><span class="n">Paginator</span><span class="p">):</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">An enhanced version of the QuerySetPaginator.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; my_objects = BetterPaginator(queryset, 25)</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; page = 1</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; context = {</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt;     &#39;my_objects&#39;: my_objects.get_context(page),</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; }</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">range_gap</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">raise</span> <span class="n">InvalidPage</span><span class="p">,</span> <span class="n">exc</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">paginator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="n">page</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">start</span> <span class="o">=</span> <span class="n">page</span><span class="o">-</span><span class="n">range_gap</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="n">page</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="o">-</span><span class="n">range_gap</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">end</span> <span class="o">=</span> <span class="n">page</span><span class="o">+</span><span class="n">range_gap</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s">&#39;page_range&#39;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+</span><span class='line'>        <span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;num_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;has_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">context</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now, for a simple use case, let&#8217;s look at our <code>paginate()</code> template tag:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">paginate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">queryset_or_list</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">paginator_class</span><span class="o">=</span><span class="n">EndlessPaginator</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">paginator</span> <span class="o">=</span> <span class="n">paginator_class</span><span class="p">(</span><span class="n">queryset_or_list</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">query_dict</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span class='line'>    <span class="k">if</span> <span class="s">&#39;p&#39;</span> <span class="ow">in</span> <span class="n">query_dict</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">del</span> <span class="n">query_dict</span><span class="p">[</span><span class="s">&#39;p&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s">&#39;query_string&#39;</span><span class="p">:</span> <span class="n">query_dict</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(),</span>
+</span><span class='line'>        <span class="s">&#39;paginator&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">paging</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;bone/paging.html&#39;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">objects</span><span class="o">=</span><span class="n">context</span><span class="p">[</span><span class="s">&#39;paginator&#39;</span><span class="p">][</span><span class="s">&#39;objects&#39;</span><span class="p">],</span> <span class="n">paging</span><span class="o">=</span><span class="n">paging</span><span class="p">)</span>
+</span><span class='line'><span class="c"># We use Jinja, so this is just a normal function, and it&#39;s registered as an object.</span>
+</span><span class='line'><span class="n">register</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">paginate</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Now with the above we&#8217;ve done two things. First, we have completely stripped out the need for the paging logic in every single view. This cuts down our code by an enormous amount. Secondly, we&#8217;ve allowed pagination via templates (or just by using paginate() in your view), and it gives us a generic paging template, as well as our list of objects.
+
+Let&#8217;s move on to what our template might look like:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='jinja'><span class='line'><span class="x">&amp;#123;% if paginator.has_pages %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;div class=&amp;quot;paging tr&amp;quot;&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% if paginator.num_pages %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;div class=&amp;quot;fl&amp;quot;&amp;gt;Page &amp;#123;&amp;#123; paginator.page &amp;#125;&amp;#125;&amp;#123;% if paginator.num_pages %&amp;#125; of &amp;#123;&amp;#123; paginator.num_pages &amp;#125;&amp;#125;&amp;#123;% endif %&amp;#125;&amp;lt;/div&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;ul&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if not paginator.is_first %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=1&amp;quot;&amp;gt;First&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;First&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if paginator.has_previous %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.previous_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Previous&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Previous&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% for p in paginator.page_range %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;#123;% if p == paginator.page %&amp;#125; class=&amp;quot;active&amp;quot;&amp;#123;% endif %&amp;#125;&amp;gt;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; p &amp;#125;&amp;#125;&amp;quot;&amp;gt;&amp;#123;&amp;#123; p &amp;#125;&amp;#125;&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endfor %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if paginator.has_next %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.next_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Next&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Next&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% if paginator.num_pages %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;li&amp;gt;&amp;#123;% if not paginator.is_last %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.num_pages &amp;#125;&amp;#125;&amp;quot;&amp;gt;Last&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Last&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endif %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;/ul&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% else %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;ul class=&amp;quot;basic&amp;quot;&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li class=&amp;quot;fl&amp;quot;&amp;gt;&amp;#123;% if paginator.has_previous %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.previous_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Previous Page&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Previous Page&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;li class=&amp;quot;fr&amp;quot;&amp;gt;&amp;#123;% if paginator.has_next %&amp;#125;&amp;lt;a href=&amp;quot;?&amp;#123;&amp;#123; query_string|escape &amp;#125;&amp;#125;&amp;amp;p=&amp;#123;&amp;#123; paginator.next_page &amp;#125;&amp;#125;&amp;quot;&amp;gt;Next Page&amp;lt;/a&amp;gt;&amp;#123;% else %&amp;#125;&amp;lt;span&amp;gt;Next Page&amp;lt;/span&amp;gt;&amp;#123;% endif %&amp;#125;&amp;lt;/li&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;lt;/ul&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endif %&amp;#125;</span>
+</span><span class='line'><span class="x">&amp;lt;/div&amp;gt;</span>
+</span><span class='line'><span class="x">&amp;#123;% endif %&amp;#125;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you&#8217;ll see we have quite a bit of logic in here. This allows for two different scenarios: numeric paging, and what we call endless paging.
+
+Let&#8217;s talk a bit more about endless paging. In some of our use cases, we simply don&#8217;t want to count how many pages and entries there are in the database because it is just inefficient, and meaningless. When you have 100k pages (let&#8217;s take Google search for example), no one cares about what&#8217;s on the last page, unless it&#8217;s sorted. And even then, you can simply reverse the sort. So to compensate for this, we extend our <code>BetterPaginator</code> class and create <code>EndlessPaginator</code>.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">EndlessPage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>        <span class="nb">super</span><span class="p">(</span><span class="n">EndlessPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_has_next</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paginator</span><span class="o">.</span><span class="n">per_page</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_list</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">object_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_list</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">paginator</span><span class="o">.</span><span class="n">per_page</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">has_next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_next</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">EndlessPaginator</span><span class="p">(</span><span class="n">BetterPaginator</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+</span><span class='line'>    <span class="s">&quot;Returns a Page object for the given 1-based page number.&quot;</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">raise</span> <span class="n">PageNotAnInteger</span><span class="p">(</span><span class="s">&#39;That page number is not an integer&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">bottom</span> <span class="o">=</span> <span class="p">(</span><span class="n">number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_page</span>
+</span><span class='line'>    <span class="n">top</span> <span class="o">=</span> <span class="n">bottom</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_page</span> <span class="o">+</span> <span class="mi">5</span>
+</span><span class='line'>    <span class="n">_page</span> <span class="o">=</span> <span class="n">EndlessPage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_list</span><span class="p">[</span><span class="n">bottom</span><span class="p">:</span><span class="n">top</span><span class="p">],</span> <span class="n">number</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_page</span><span class="o">.</span><span class="n">object_list</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">number</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_empty_first_page</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">pass</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="n">EmptyPage</span><span class="p">(</span><span class="s">&#39;That page contains no results&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">_page</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="n">InvalidPage</span><span class="p">,</span> <span class="n">exc</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">paginator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>            <span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>            <span class="s">&#39;has_pages&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">()</span> <span class="ow">or</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'>            <span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="ow">not</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="n">context</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The endless paging simply tells us &#8220;is there a next page?&#8221;. It does this by selecting N+X on your result set. If there are additional entries not present on the page, it simply says &#8220;there are more results available&#8221;. It comes in handy when you simply want to show a &#8220;More results&#8221; on things such a search, or massive querysets.</p>
+
+<p>So to wrap it up, we introduced 2 major concepts. The first being adding context to pagination to decrease the amount of code we write, and the latter being endless pagination, allowing us to do much more efficient paging mechanisms.</p>
+
+<p>What have you done to simplify your pagination in Django?</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-02T00:00:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2009</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2009/07/02/pagination-in-django" data-via="zeeg" data-counturl="http://justcramer.com/2009/07/02/pagination-in-django" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2009/06/29/chuggin-away" title="Previous Post: Chuggin Away">&laquo; Chuggin Away</a>
+      
+      
+        <a class="basic-alignment right" href="/2009/07/15/dynamic-keyword-arguments-in-django-urls" title="next Post: Dynamic Keyword Arguments in Django URLs">Dynamic Keyword Arguments in Django URLs &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '466 http://www.davidcramer.net/?p=466';
+        
+        var disqus_url = 'http://justcramer.com/2009/07/02/pagination-in-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '466 http://www.davidcramer.net/?p=466';
+        
+        var disqus_url = 'http://justcramer.com/2009/07/02/pagination-in-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

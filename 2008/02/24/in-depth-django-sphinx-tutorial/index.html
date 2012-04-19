@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>In-Depth django-sphinx Tutorial - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Again, I still suck at documentation, and my &#8220;tutorials&#8221; aren&#8217;t in-depth enough. So hopefully this covers all of the questions &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2008/02/24/in-depth-django-sphinx-tutorial">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">In-Depth Django-sphinx Tutorial</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-24T00:00:00-08:00" pubdate data-updated="true">Feb 24<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Again, I still suck at documentation, and my &#8220;tutorials&#8221; aren&#8217;t in-depth enough. So hopefully this covers all of the questions regarding using the django-sphinx module.<br><!--more--><br>The first thing you&#8217;re going to need to do is install the Sphinx search software. You will be able to get this through <a href="http://www.sphinxsearch.com/">http://www.sphinxsearch.com/</a>, or probably even port or aptitude.</p>
+
+<p><h2>Configure Sphinx</h2></p>
+
+<p>Once you have successfully installed Sphinx you need to configure it. Follow the directions in on their website for the basic configuration, but most importantly, you need to configure a search index which can relate to one of your models.</p>
+
+<p>Here is an example of an index from Curse&#8217;s File model, which let&#8217;s you search via name, description, and tags on a file. Please note, that &#8220;base&#8221; is a base source definition we created which has a few defaults which we use, but this is unrelated to your source definition.</p>
+
+<pre><br>source files_file_en : base<br>{<br>sql_query			= \<br>SELECT files_file.id, files_file.name, files_data.description, files_file.tags as tag \<br>FROM files_file JOIN files_data \<br>ON files_file.id = files_data.file_id \<br>AND files_data.lang = 'en' \<br>AND files_file.visible = 1 \<br>GROUP BY files_file.id<br>sql_query_info		= SELECT * FROM files_file WHERE id=$id<br>}<br></pre>
+
+<p>Now that you have your source defined, you need to build an index which uses this source. I do recommend placing all of your sphinx information somewhere else, maybe <code>/var/sphinx/data</code>.</p>
+
+<pre>index files_file_en<br>{<br>source			= files_file_en<br>path			= /var/data/files_file_en<br>docinfo			= extern<br>morphology			= none<br>stopwords			=<br>min_word_len		= 2<br>charset_type		= sbcs<br>min_prefix_len		= 0<br>min_infix_len		= 0<br>}<br></pre>
+
+<p><h2>Configure Django</h2></p>
+
+<p>Now that you&#8217;ve configured your search index you need to setup the configuration for Django. The first step to doing this is to install the django-sphinx wrapper. First things first, download the zip archive, or checkout the source from <a href="http://code.google.com/p/django-sphinx/">http://code.google.com/p/django-sphinx/</a>.</p>
+
+<p>Once you have your files on the local computer or server, you can simple do <code>sudo python setup.py install</code> to install the library.</p>
+
+<p>After installation you need to edit a few settings in settings.py, which, again, being that I suck at documentation, isn&#8217;t posted on the website.</p>
+
+<p>The two settings you need to add are these:<br><pre><br>SPHINX_SERVER = 'localhost'<br>SPHINX_PORT = 3312<br></pre></p>
+
+<p><h2>Setup Your Model</h2></p>
+
+<p>Now you are fully able to utilize Sphinx within Django. The next step is to actually attach your search index to a model. To do this, you will need to <code>import djangosphinx</code> and then attach the manager to a model. See the example below:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">djangosphinx</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">File</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">model</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">tags</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span> <span class="c"># We actually store tags for efficiency in tag,tag,tag format here</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">objects</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">search</span>  <span class="o">=</span> <span class="n">djangosphinx</span><span class="o">.</span><span class="n">SphinxSearch</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s">&quot;files_file_en&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The index argument is optional, and there are several other parameters you can pass, but you&#8217;ll have to look in the code (or pydoc if I did it right, but probably not).</p>
+
+<p>Once we&#8217;ve defined the search manager on our model, we can access it via Model.manager_name and pass it many things like we could with a normal object manager in Django. The typical usage is <code>Model.search.query('my fulltext query')</code> which would then query sphinx, grab a list of IDs, and then do a <code>Model.objects.filter(pk__in=[list of ids])</code> and return this result set.</p>
+
+<p><h2>Search Methods</h2></p>
+
+<p>There are a few additional methods which you can use on your search queryset besides the default <code>query</code> method. <code>order_by</code>, <code>filter</code>, <code>count</code>, and <code>exclude</code> to name a few. These don&#8217;t *quite* work the same as Django&#8217;s as they&#8217;re used directly within the search wrapper. So here&#8217;s a brief rundown of these:</p>
+
+<ul><li><code>query</code><br />This is your basic full-text search query. It works exactly the same as passing your query to the full-text engine. It&#8217;s search type will be based on the <strong>search mode</strong>, which, by default, is SPH_MATCH_EXTENDED.</li><li><code>filter</code>/<code>exclude</code><br />The filter and excludes method holds the same idea as the normal queryset methods, except that it is used directly in Sphinx. What this means, is that you can only filter on attribute fields that are present in your search index.</li><li><code>order_by</code><br />The order_by method also passes its parameters to Sphinx, with one exception. There are four reserved keywords: <code>@id</code>, <code>@weight</code>, <code>@rank</code>, and <code>@relevance</code>. These are detailed in the Sphinx documentation.</li><li><code>select_related</code><br />This method is directly passed onto the Django queryset and holds no value to Sphinx.</li><li><code>index_on</code><br />Allows you to specify which index(es) you are querying for. To query for multiple indexes you need to include a &#8220;content_type&#8221; name in your fields.</li><br></u></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-24T00:00:00-08:00" pubdate data-updated="true">Feb 24<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2008/02/24/in-depth-django-sphinx-tutorial" data-via="zeeg" data-counturl="http://justcramer.com/2008/02/24/in-depth-django-sphinx-tutorial" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/02/21/turn-mysql-completely-into-utf-8" title="Previous Post: Turn MySQL Completely Into UTF-8">&laquo; Turn MySQL Completely Into UTF-8</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/02/29/pastethat-updates" title="next Post: PasteThat Updates">PasteThat Updates &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '79 http://www.davidcramer.net/code/79/in-depth-django-sphinx-tutorial.html';
+        
+        var disqus_url = 'http://justcramer.com/2008/02/24/in-depth-django-sphinx-tutorial';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '79 http://www.davidcramer.net/code/79/in-depth-django-sphinx-tutorial.html';
+        
+        var disqus_url = 'http://justcramer.com/2008/02/24/in-depth-django-sphinx-tutorial';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

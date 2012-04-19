@@ -1,0 +1,960 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with Sentry, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/blog/page/3">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/10/19/keeping-your-logging-compatible-with-sentry">Keeping Your Logging Compatible With Sentry</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-10-19T00:00:00-07:00" pubdate data-updated="true">Oct 19<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with <a href="http://github.com/dcramer/django-sentry">Sentry</a>, and in the end gives us some very ugly exception logging.</p>
+
+<p>Let&#8217;s take a simple example (we&#8217;re going to use Celery for this one):</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+</span><span class='line'>            <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+</span><span class='line'>            <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
+</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+The functionality is pretty obvious. The logger is set via something similar to:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;celery&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now the big issue with this, is it doesnt use the standardized logging storage for exceptions. This isn&#8217;t an issue if you&#8217;re logging to a text file, or something that just streams the messages, but once you start using something as powerful as Sentry, it is. To fix this, we need to make one simple adjustment:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># import the sys module</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'>    <span class="c"># append exc_info=sys.exc_info</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+</span><span class='line'>        <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span>
+</span><span class='line'>        <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">),</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now we&#8217;ll pass along the exception, just like we would had we used <code>logging.exception</code> over </code>logging.error</code>, and apps like Sentry can take advantage of this.</p>
+
+<p>&#8212;&#8211;</p>
+
+<p>For those unaware, Sentry is a logging application built on top of Django. It allows you to efficiently log exceptions (and other messages, if you want) to a database. This gives you the benefit of being able to have a higher level overview of what&#8217;s going on in your environment, especially with bug tracking.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/08/26/tips-tricks-for-your-django-powered-database">Tips & Tricks for Your Django Powered Database</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-08-26T00:00:00-07:00" pubdate data-updated="true">Aug 26<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Tonight was our <a href="http://www.meetup.com/The-San-Francisco-Django-Meetup-Group/">Django meetup</a> here in San Francisco. Four of us presented (three from Whiskey, outnumbering everyone as always ;), with some pretty great material. A few of my favorites were .update() from Andy McCurdy, (I have to love anyone that agrees), formfield_overrides (not sure how I didn&#8217;t know about this) for the admin by Honza Král, and definitely more food for though from Ted Nyman on Redis. For those who aren&#8217;t lucky enough there&#8217;s a <a href="http://www.justin.tv/whiskeymedia/b/268976029">video available</a>, and you can grab my slides over at <a href="http://www.slideshare.net/zeeg/db-tips-tricks-django-meetup">SlideShare</a>.</p>
+
+<p>My favorite part of the tonight:</p>
+
+<pre>>>> r.sadd('not_foo', 'django pony is awesome');
+False</pre></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/09/feature-switches-at-disqus">Feature Switches at Disqus</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-09T00:00:00-07:00" pubdate data-updated="true">Jul 9<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Wrote up a post on <a href="http://blog.disqus.com/post/789540337/feature-switches">how we use feature switches at Disqus</a> within Django templates and views.</p>
+
+<p>(In the future we&#8217;ll be posting all of our tech over on the Dev section of the Disqus blog)</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/05/30/scaling-threaded-comments-on-django-at-disqus">Scaling Threaded Comments on Django at Disqus</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-05-30T00:00:00-07:00" pubdate data-updated="true">May 30<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>As many you of know I <a href="http://blog.disqus.com/post/568244555/david-cramer">joined</a> <a href="http://www.disqus.com">Disqus</a> last month. This was a pretty big move for me, and definitely a great one. They have some amazing challenges, and the company has a great group of people willing to solve them.</p>
+
+<p>I&#8217;ve always been a big advocate of MySQL. Not because it&#8217;s the best relational database, but because it works, and it works well. However, moving to Disqus had one big change which I had to adjust to, and that was PostgreSQL. Not only that, but the size of the data in their databases more than tripled anything I had previously worked with (and that&#8217;s not even including the load, just raw data).</p>
+
+<p>So, going on a month now at this amazing workplace, I&#8217;ve learned some pretty cool things regarding PGSQL. Let&#8217;s talk about a few of those, and the pros and cons.</p>
+
+<p>First up, scalability, as it&#8217;s the biggy. For a long time PostgreSQL has been looked at as an alternative to MySQL. For most of that time, however, there just was no way to scale it to the level of which MySQL could achieve. In the last few years the problem has all but vanished, and there&#8217;s been many interesting, widely adopted tools for PG. Two of them which we use at Disqus are <a href="http://www.slony.info/">Slony</a>, and <a href="http://pgfoundry.org/projects/pgbouncer">pgbouncer</a>. Slony allows us to replicate data (as well as partition in, in some cases), and pgbouncer solves persistent connections and pooling.</p>
+
+<p>Next up, let&#8217;s move on to the language itself. I had the pleasure this week of learning how to use recursive queries within PGSQL 8.4, and holy shit are they powerful.  Here&#8217;s what I really want to talk about with this blog post. MySQL allows you to do things, and do them well, but you must do them within the constructs of the engine. Now while this holds true within PG as well, you have much more freedom in the choices you can make. So, now I want to talk about our problem, threaded comments.</p>
+
+<p>As you all know, Disqus is not only the largest Django site (<strong>we are closing in on a billion page views each month</strong>), but it also the largest service provider for comments on the web. We provide many features, to many thousands of websites, the basics of which being threaded comments.</p>
+
+<p>PostgreSQL offers several solutions to threading. There&#8217;s obviously the most common (and fairly efficient) method which is trickily named <a href="http://articles.sitepoint.com/print/hierarchical-data-database">modified preorder tree traversal</a>. To summarize, this adds a left order, and a right order, which may be updated on insertion of a comment into the tree. Now there is also the other standard approach (which for some reason Reddit finds oh so fun to use), which is &#8220;select everything and deal with it in memory&#8221;. Well, turns out, it&#8217;s not just Reddit doing that :)</p>
+
+<p>Moving on to what PGSQL actually offers, we have two more options (within 8.4 at least). One of those is a contrib module within PG called ltree. It allows you to store the full path (all parents) to a node as well as searching and selecting on it with standard SQL statements. This is extremely useful if you just want a basic &#8220;order by oldest&#8221; as it becomes a simple &#8220;order by ltree_column&#8221;. However, Disqus, as always, isn&#8217;t that simple.</p>
+
+<p>Our second solution is the new recursive queries. Now this took me a few hours to really wrap my head around how it was working, but once I did, I was amazed at the possibilities. Including things like the <code>OVER()</code> modifier, Postgres offers some very interesting concepts that weren&#8217;t available to me within MySQL. The best part? They actually perform VERY well.</p>
+
+<p>Let&#8217;s get down to our situation, which is a big one. Right now, Disqus handles threading just like Reddit, which handles it just like many other solutions on the internet, that is, very poorly. And I don&#8217;t mean poorly as in its badly written, it&#8217;s just not optimized nearly as well as it could be. This doesn&#8217;t become a problem until certain people (I&#8217;m looking at you Mr. Obama) start using your application, and everybody and anybody wants to reply to a comment. Again, we&#8217;re pulling them down to Django (even if its incrementally) and grouping them withint he application logic.</p>
+
+<p>As of 8.4 this can truly be handled by recursive queries (in any situation we&#8217;ve come across, even if it&#8217;s a bit complex to do it). It&#8217;s even pretty simple to do.</p>
+
+<p>So let&#8217;s take a basic example. We have a comment model, which looks a bit like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">create</span> <span class="k">table</span> <span class="n">comments</span> <span class="p">(</span>
+</span><span class='line'>    <span class="n">id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">message</span> <span class="nb">VARCHAR</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author</span> <span class="nb">VARCHAR</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">parent_id</span> <span class="nb">INTEGER</span> <span class="k">REFERENCES</span> <span class="n">comments</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+</span><span class='line'><span class="p">);</span>
+</span><span class='line'><span class="k">insert</span> <span class="k">into</span> <span class="n">comments</span> <span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">author</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">values</span> <span class="p">(</span><span class="s1">&#39;This thread is really cool!&#39;</span><span class="p">,</span> <span class="s1">&#39;David&#39;</span><span class="p">,</span> <span class="k">NULL</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Ya David, we love it!&#39;</span><span class="p">,</span> <span class="s1">&#39;Jason&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;I agree David!&#39;</span><span class="p">,</span> <span class="s1">&#39;Daniel&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;gift Jason&#39;</span><span class="p">,</span> <span class="s1">&#39;Anton&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+</span><span class='line'>    <span class="p">(</span><span class="s1">&#39;Very interesting post!&#39;</span><span class="p">,</span> <span class="s1">&#39;thedz&#39;</span><span class="p">,</span> <span class="k">NULL</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;You sir, are wrong&#39;</span><span class="p">,</span> <span class="s1">&#39;Chris&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Agreed&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Fo sho, Yall&#39;</span><span class="p">,</span> <span class="s1">&#39;Mac&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>What we&#8217;ve done now, is setup a basic comment model. We&#8217;ve included the message, the author, and the parent comment (which is optional). Now let&#8217;s learn how to use a recursive query to easily re-order this datd, showing us a fully threaded view, sorted in ascending order by id.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">WITH</span> <span class="k">RECURSIVE</span> <span class="n">cte</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">author</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>  <span class="k">AS</span> <span class="p">(</span>
+</span><span class='line'>    <span class="k">SELECT</span>  <span class="n">id</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">message</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">author</span><span class="p">,</span>
+</span><span class='line'>        <span class="nb">array</span><span class="p">[</span><span class="n">id</span><span class="p">]</span> <span class="k">AS</span> <span class="n">path</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">parent_id</span><span class="p">,</span>
+</span><span class='line'>        <span class="mi">1</span> <span class="k">AS</span> <span class="n">depth</span>
+</span><span class='line'>    <span class="k">FROM</span>    <span class="n">comments</span>
+</span><span class='line'>    <span class="k">WHERE</span>   <span class="n">parent_id</span> <span class="k">IS</span> <span class="k">NULL</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">UNION</span> <span class="k">ALL</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">SELECT</span>  <span class="n">comments</span><span class="p">.</span><span class="n">id</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">comments</span><span class="p">.</span><span class="n">message</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">comments</span><span class="p">.</span><span class="n">author</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">cte</span><span class="p">.</span><span class="n">path</span> <span class="o">||</span> <span class="n">comments</span><span class="p">.</span><span class="n">id</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">comments</span><span class="p">.</span><span class="n">parent_id</span><span class="p">,</span>
+</span><span class='line'>        <span class="n">cte</span><span class="p">.</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">AS</span> <span class="n">depth</span>
+</span><span class='line'>    <span class="k">FROM</span>    <span class="n">comments</span>
+</span><span class='line'>    <span class="k">JOIN</span> <span class="n">cte</span> <span class="k">ON</span> <span class="n">comments</span><span class="p">.</span><span class="n">parent_id</span> <span class="o">=</span> <span class="n">cte</span><span class="p">.</span><span class="n">id</span>
+</span><span class='line'>    <span class="p">)</span>
+</span><span class='line'>    <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">author</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">depth</span> <span class="k">FROM</span> <span class="n">cte</span>
+</span><span class='line'><span class="k">ORDER</span> <span class="k">BY</span> <span class="n">path</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Pretty sweet huh? Oh wait, confused? So was I, and the query I was looking at was a whole lot more complex.  Public shout-out to the amazing folks at <a href="http://pgexperts.com">pgexperts</a> for pointing us on the right path.</p>
+
+<p>Now I&#8217;m not going to drill into this too much, because there are much better <a href="http://www.storytotell.org/blog/2009/08/11/postgresql84-recursive-queries.html">tutorials</a> for dealing with recursive queries in this pattern, but let&#8217;s finish up with our results.</p>
+
+<p>We deal with an <strong>enormous</strong> set of information, and some threads have literally thousands of repies. Pulling this down into memory isn&#8217;t a problem when 99% of threads only have a hundred replies, but when they start to peak we end up wasting a lot of time. Recursion within PGSQL allows us to easily pass off this work to the database (which just so happens to be able to do it faster than we ever could), and save us a ton of network traffic and web processing time in the process.</p>
+
+<p>To give you an idea of the effect this will have (pending everything works out), we&#8217;ve seen savings of up to 500% on some large datasets, just for the SQL processing time (returning 25 results, rather than 1000). This doesn&#8217;t even represent the cost in our application layer. Yes, you heard that right, <strong>the SQL statement is 5x more performant at the database level alone</strong>.</p>
+
+<p>Wrapping all of this up, for a MySQL advocate, I&#8217;m pretty damn impressed with the performance, scalability, and the general flexibility that Disqus has achieved with PostgreSQL. I&#8217;m definitely looking forward to what else we can do with the platform, and the many challenges that await us.</p>
+
+<p>(And yes, for those wondering, I&#8217;m &#8220;back&#8221;, and will continue blogging about random awesome/crazy/forbidden things that we get to treat ourselves to)</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/05/12/announcing-django-db-log-1-7-1">Announcing Django-db-log 1.7.1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-05-12T00:00:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today I pushed out a slight overhaul to the UI (and functionality) of django-db-log. The 1.7 version set (use 1.7.1 as 1.7 had a couple minor issues).</p>
+
+<p>Here&#8217;s the brief changeset:<br><ul><li>Renders full debugging pages just like you&#8217;d see with Django (only for newly logged errors) under the new Messages admin.</li><li>Supports logging full exceptions with the python logging handler via the built-in <code>exc_info</code> keyword argument.</li><li>Better support for logging fallbacks if django-db-log fails.</li><li>Overall improved administration interface.</li></ul></p>
+
+<p>The changeset is fairly small, but the headliner is a big one. It allows you to easily debug a request as if it had just happened (by seeing full tracebacks, local variables, etc.). It works with any of the exception handling methods: middleware, create_from_exception, and create_from_record (which is what the logging handler uses).</p>
+
+<p>Here&#8217;s a sexy preview of it in use over at our development environment on Disqus:</p>
+
+<p><a href="http://www.davidcramer.net/wp-content/uploads/2010/05/Screen-shot-2010-05-12-at-1.13.50-PM.png"><img src="http://www.davidcramer.net/wp-content/uploads/2010/05/Screen-shot-2010-05-12-at-1.13.50-PM.png" alt="" title="Screen shot 2010-05-12 at 1.13.50 PM" width="80%" class="aligncenter size-full wp-image-6164" /></a></p>
+
+<p>Ready to upgrade?</p>
+
+<pre>pip install django-db-log --upgrade</pre>
+
+<p>Enjoy!</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/02/18/starcraft-2-is-here">StarCraft 2 Is Here</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-02-18T00:00:00-08:00" pubdate data-updated="true">Feb 18<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Yesterday an old colleague dropped me a message saying SC2 beta accounts had started to pop up. I was hopeful, but didn&#8217;t expect to get in right away. So, I jumped over to my Battle.net account, and to my surprise there it was. A few hours later I received an email from Blizzard as well:</p>
+
+<blockquote>Congratulations! You’ve been selected to participate in the beta test of StarCraft® II: Wings of Liberty™.</blockquote>
+
+<p>Now we begin the tedious process of dissecting StarCraft 2 and it&#8217;s maps. First impressions: it&#8217;s going to be hell :)</p>
+
+<p>Oh, ya, and I&#8217;ll be throwing up random <a href="http://www.nibbits.com/sc2/gallery/">StarCraft 2 media on Nibbits</a> as I get time to play.</p>
+
+<p><a href="http://www.nibbits.com/sc2/gallery/view/31/"><img src="http://s3.amazonaws.com/nibbits/gallery%2Fimages%2FScreenshot033.800x600.jpg" width="400"/></a></p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/02/09/presenting-django-devserver-a-better-runserver">Presenting Django-devserver, a Better Runserver.</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-02-09T00:00:00-08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today I&#8217;m going to talk (rant) about runserver, a great inclusion of the Django software package. It&#8217;s designed to help you easily run a Django project in a local (development) environment. Well, like many people, I have Rails in my background, and I miss certain things from it. One of those things, is the shiny SQL output in your terminal while running Mongrel.</p>
+
+<p>Since I don&#8217;t have enough open source projects to maintain, I decided today that I needed this. It turned out to be extraordinarily easy even. I just ripped out my code from django-debug-toolbar (SQL and Cache tracking), flipped up a generic framework, and voila, <a href="http://github.com/dcramer/django-devserver">django-devserver</a> was born.</p>
+
+<p>Now let&#8217;s get down to it. django-devserver provides a simple drop-in runserver replacement. It allows you to run a command, <code>python manage.py rundevserver</code>, and to get some additional information. As of writing, that additional information includes real-time SQL logging (aka mass query spam in your terminal), and a summary of cache calls.</p>
+
+<p>Let&#8217;s take a look at some of our sample output:</p>
+
+<p><a href="http://www.davidcramer.net/wp-content/uploads/2010/02/Screen-shot-2010-02-09-at-4.03.11-PM1.png"><img src="http://www.davidcramer.net/wp-content/uploads/2010/02/Screen-shot-2010-02-09-at-4.03.11-PM1.png" alt="" title="Screen shot 2010-02-09 at 4.03.11 PM" width="476" height="97" class="alignnone size-full wp-image-1181" /></a></p>
+
+<p>While the syntax coloring still has a lot to be desired, it&#8217;s definitely a nice usable output. The SQL module, at the moment, simply outputs the query pre-execution, and post-execution outputs the time taken. The cache module outputs some generic stats, such as total time taken, # of calls, and hits vs misses.</p>
+
+<p>The beautiful thing about the solution is how extensible it came out, for example, our cache module is only a few lines of code:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">simplejson</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.core.cache</span> <span class="kn">import</span> <span class="n">cache</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">devserver.modules</span> <span class="kn">import</span> <span class="n">DevServerModule</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">CacheSummaryModule</span><span class="p">(</span><span class="n">DevServerModule</span><span class="p">):</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">Outputs a summary of cache events once a response is ready.</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">logger_name</span> <span class="o">=</span> <span class="s">&#39;cache&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">attrs_to_track</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;set&#39;</span><span class="p">,</span> <span class="s">&#39;get&#39;</span><span class="p">,</span> <span class="s">&#39;delete&#39;</span><span class="p">,</span> <span class="s">&#39;add&#39;</span><span class="p">,</span> <span class="s">&#39;get_many&#39;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">process_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">devserver.utils.stats</span> <span class="kn">import</span> <span class="n">track</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># save our current attributes</span>
+</span><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">old</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_to_track</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_to_track</span><span class="p">:</span>
+</span><span class='line'><span class="nb">setattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">track</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="s">&#39;cache&#39;</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">process_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">devserver.utils.stats</span> <span class="kn">import</span> <span class="n">stats</span>
+</span><span class='line'>
+</span><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;total time </span><span class="si">%(time)s</span><span class="s"> - </span><span class="si">%(calls)s</span><span class="s"> calls; </span><span class="si">%(hits)s</span><span class="s"> hits; </span><span class="si">%(misses)s</span><span class="s"> misses&#39;</span> <span class="o">%</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span class='line'><span class="n">calls</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="n">time</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_time</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="n">hits</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_hits</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="n">misses</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_misses_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">)</span> <span class="o">+</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_misses_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_many</span><span class="p">),</span>
+</span><span class='line'><span class="n">gets</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">),</span>
+</span><span class='line'><span class="n">sets</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">),</span>
+</span><span class='line'><span class="n">get_many</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_many</span><span class="p">),</span>
+</span><span class='line'><span class="n">deletes</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_total_calls_for_function</span><span class="p">(</span><span class="s">&#39;cache&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">.</span><span class="n">delete</span><span class="p">),</span>
+</span><span class='line'><span class="c">#cache_calls_list = [(c[&#39;time&#39;], c[&#39;func&#39;].__name__, c[&#39;args&#39;], c[&#39;kwargs&#39;], simplejson.dumps(c[&#39;stack&#39;])) for c in stats.get_calls(&#39;cache&#39;)],</span>
+</span><span class='line'><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c"># set our attributes back to their defaults</span>
+</span><span class='line'><span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">old</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+</span><span class='line'><span class="nb">setattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The entire thing supports all of the typical middleware processing, as well as the two additional methods: <code>process_init()</code> and <code>process_complete()</code>.</p>
+
+<p>I&#8217;m hoping to pull all of my usable work on the django-debug-toolbar into the devserver, but right now the two main additions I have planned are an SQLSummaryModule, and a ProcessTimeModule.</p>
+
+<p>Hope you all enjoy, and get busy <a href="http://github.com/dcramer/django-devserver">forking over at GitHub</a>.</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/01/06/debugging-django-errors">Debugging Django Errors</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-01-06T00:00:00-08:00" pubdate data-updated="true">Jan 6<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">&#8212;
+wordpress_id: 502
+layout: post
+title: Debugging Django Errors
+wordpress_url: http://www.davidcramer.net/?p=502
+categories: [&#8220;django&#8221;]&#8212;
+<p>Today (for many hours) I sat here attempting to debug an error which Django wasn&#8217;t spitting out. This happened when combining Django+mod_wsgi and having a runtime import error. The result is a generic white internal server error page from Apache, and nothing recorded in any kind of error log.</p>
+
+<p>So, to make your life easier, I thought I&#8217;d help you out by showing what I discovered.</p>
+
+<p>First things first, you&#8217;re going to want to install a piece of debugging wsgi middleware. This was new to me, but its basically just a decorating class for your wsgi application. What I used was Paste&#8217;s ErrorMiddleware:</p>
+
+<pre>pip install -e svn+http://svn.pythonpaste.org/Paste/trunk</pre>
+
+<p>Now, pop open your handler file (handler.wsgi in our case). What we did, was make it so if DEBUG is set to True, then it wraps the application handler with the new middleware:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os.path</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Add the project to the python path</span>
+</span><span class='line'><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s">&#39;..&#39;</span><span class="p">))</span>
+</span><span class='line'><span class="c"># Prevent mod_wsgi from erroring on stdout access</span>
+</span><span class='line'><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Set our settings module</span>
+</span><span class='line'><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DJANGO_SETTINGS_MODULE&#39;</span><span class="p">]</span><span class="o">=</span><span class="s">&#39;iplatform.settings&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">django.core.handlers.wsgi</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Run WSGI handler for the application</span>
+</span><span class='line'><span class="n">application</span> <span class="o">=</span> <span class="n">django</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">wsgi</span><span class="o">.</span><span class="n">WSGIHandler</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Debug middleware</span>
+</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+</span><span class='line'><span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Using Paste error middleware&quot;</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">paste.exceptions.errormiddleware</span> <span class="kn">import</span> <span class="n">ErrorMiddleware</span>
+</span><span class='line'><span class="n">application</span> <span class="o">=</span> <span class="n">ErrorMiddleware</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_exceptions_in_wsgi_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c"># Create session directory if not present</span>
+</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SESSION_FILE_PATH</span><span class="p">:</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'><span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">SESSION_FILE_PATH</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+</span><span class='line'><span class="k">pass</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Hope this helps you as much as it helped me!</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/12/24/big-companies-make-me-laugh">Big Companies Make Me Laugh</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>And then want to take a chainsaw to their operations center..</p>
+
+<p>My girlfriend and I started playing World of Warcraft so I figured I&#8217;d just reactivate my old account. Went to login and got an &#8220;account permanently banned&#8221; notice. Well, sure, I did odd things Blizzard didn&#8217;t like back in the day, but it wasn&#8217;t banned when I migrated it to the Battle.net service.</p>
+
+<p>So, I drop an email to the address that they direct you to, and here&#8217;s the (fucking retarded) response I get:</p>
+
+<blockquote>After further investigation, Blizzard has determined there is insufficient evidence that the chargeback in place on the World of Warcraft account ZEEG was a direct result of an account compromise. As such, the account will remain disabled until the negative balance of $14.99 is repaid.
+
+<p>Please review the World of Warcraft Terms of Use at (http://www.worldofwarcraft.com/legal/termsofuse.html), which was agreed to upon establishment of the account in question. If a charge is returned to Blizzard Entertainment for any reason, Blizzard Entertainment reserves the right, in its sole discretion, to suspend or terminate access and the Account, as well as terminating this Agreement and all of Blizzard Entertainment&#8217;s obligations hereunder.</p>
+
+<p>These funds can only be repaid via a United States money order for the full and EXACT amount of the disputed funds: $14.99</blockquote></p>
+
+<p>First off, negative balance? What? Explain that bullshit. I haven&#8217;t played WoW in I don&#8217;t know how long, and why would I still owe them money? Secondly, money order? Is this 1995 again?</p></div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/12/22/windows-7-network-issues-on-evga-780i-motherboard">Windows 7 Network Issues on EVGA 780i Motherboard</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-12-22T00:00:00-08:00" pubdate data-updated="true">Dec 22<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Just thought I&#8217;d throw up the resolution I found for my networking issues on Windows 7. I&#8217;ve had these non-stop for as many weeks as I can remember. Originally, they were happening via my wireless connection (which uses generic Broadcom drivers). So I figured that maybe the drivers were to blame, and I switched to an ethernet cable. Once I had made the change, I noticed the internet dieing periodically, or after I started downloading large files. Right clicking the network connection and going to diagnose would fix it, with an error noting that the gateway had been invalid (it was being reset to 0.0.0.0).</p>
+
+<p>So, my first step was to update to EVGA&#8217;s latest drivers for Windows 7 64-bit. That didn&#8217;t change anything, which was a huge disappointment. After much Googling though, I found a solution which suggested using the Windows Vista 64 bit drivers. Not that it makes much sense, but it seems to have worked for me and many others.</p>
+
+<p>The conclusion: Install Windows Vista drivers for your EVGA motherboard if you&#8217;re using Windows 7. This is pretty quick:<br><ul><br><li>Download the correct motherboard drivers for Windows Vista</li><br><li>Extract them by running the original setup.py (don&#8217;t continue installing once they&#8217;ve been extracted).</li><br><li>Right click Computer -> Properties.</li><br><li>Click &#8220;Device Manager&#8221; on the left sidebar.</li><br><li>Find your Network adapters page, and look for &#8220;NVIDIA nForce &#8230;&#8221;. Right click this and click &#8220;Update driver software&#8221;.</li><br><li>Click on &#8220;Browse my computer for driver software&#8221;.</li><br><li>In the search box, click Browse, and locate the folder where you extracted the drivers. Should look like &#8220;C:\NVIDIA\nForceWinVista64Eng\15.51\Ethernet&#8221;</li><br><li>Enjoy no more network loss.</li><br></ul></p></div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/4/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/2/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = ''
+        
+        var disqus_url = 'http://justcramer.com/blog/page/3/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

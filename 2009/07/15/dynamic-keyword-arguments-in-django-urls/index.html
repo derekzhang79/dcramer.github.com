@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic Keyword Arguments in Django URLs - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="Today I&#8217;m going to talk a little bit about one of our hurdles, and a quick solution we came up with to get around it at iBegin. We needed the &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2009/07/15/dynamic-keyword-arguments-in-django-urls">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Dynamic Keyword Arguments in Django URLs</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-15T00:00:00-07:00" pubdate data-updated="true">Jul 15<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Today I&#8217;m going to talk a little bit about one of our hurdles, and a quick solution we came up with to get around it at <a href="http://www.ibegin.com/">iBegin</a>. We needed the ability to override URLs per-site, which by itself is fairly easy. You simply change the <code>ROOT_URLCONF</code> in your local or per-site settings file. Let&#8217;s take an example:</p>
+
+<p>Let&#8217;s say I want <code>/blog/details/&lt;post_slug&gt;</code> on Site A, but on Site B I want that to be <code>/blog/details/&lt;post_id&gt;</code>. This is fairly easy to handle in templates, by simply passing different kwargs to your url resolver, but we needed to be able to handle this in methods like <code>get_absolute_url()</code>. First let&#8217;s explain why we needed this instead of the default resolver.</p>
+
+<p>In many cases, your URLs are not going to allow changing variables. This is common in overloading of methods as the arguments accepted can change. At iBegin we had a need for this in several situations, and thus we needed a way to pass varying kwargs to the same view. For example, if you had <code>/blog/details/&lt;post_id&gt;</code> and you just wanted to change it to <code>/blog/view-post/&lt;post_id&gt;/</code> your resolver is going to pick up the change without any work, and you wont need to change any calls for this URL.</p>
+
+<p>The way the resolver works, is it simply loops over any matching <code>lookup_view</code> and tries to find URL which matches the kwargs or args you passed to it. In our case, we needed to be able to pass it all available kwargs, and have it return a working URL. This allows us to easily change the URL to match any of the accepted arguments in our overloaded view, and not worry about modifying our <code>reverse()</code> lookups.</p>
+
+<p>So back to our original example, using our newly implemented <code>vary_permalink</code>, we can have a dynamic overloaded absolute url by doing the following:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="nd">@vary_permalink</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">kwarg_map</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s">&#39;city_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;state_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;country_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;business_slug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;business_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">(</span><span class="s">&#39;directory:business&#39;</span><span class="p">,</span> <span class="n">kwarg_map</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+In this situation, as long as we have a url named <code>directory:business</code> that accepts any number of those kwargs, in any order, it will be returned. The only limitation presented in this situation currently, is there&#8217;s no way of determining which one to return. So for this example, we simply use a first-in-first-out routine. Future plans could possible include extending the <code>url()</code> method and url resolvers to implement a <code>priority</code> flag.
+
+Enough with the explanation, let&#8217;s get down to the actual code:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">get_resolver</span><span class="p">,</span> <span class="n">reverse</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">vary_reverse</span><span class="p">(</span><span class="n">lookup_view</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    Returns the first matching URL for the ``lookup_view``</span>
+</span><span class='line'><span class="sd">    matching any number of ``kwargs`` in any order.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">    vary_reverse(&#39;lookup_view&#39;, {&#39;param1&#39;: &#39;value&#39;, &#39;param2&#39;: &#39;value&#39;})</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">resolver</span> <span class="o">=</span> <span class="n">get_resolver</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">resolver</span><span class="o">.</span><span class="n">reverse_dict</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="n">lookup_view</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">pattern</span><span class="p">,</span> <span class="n">req_kwargs</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">req_kwargs</span><span class="p">])</span>
+</span><span class='line'>        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">continue</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="n">lookup_view</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;No url matching kwargs.&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+The first part is our new <code>reverse()</code> method. We can pass in the same arguments as seen above in the <code>@vary_permalink</code> decorator, which is shown below:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">vary_permalink</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">bits</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">vary_reverse</span><span class="p">(</span><span class="o">*</span><span class="n">bits</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">inner</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>That&#8217;s the quick and dirty rundown of how we&#8217;ve solved overloading of views with differing arguments and maintaining callable URL methods on models. Have you come up with a better solution, let me know!</p></div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-15T00:00:00-07:00" pubdate data-updated="true">Jul 15<span>th</span>, 2009</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2009/07/15/dynamic-keyword-arguments-in-django-urls" data-via="zeeg" data-counturl="http://justcramer.com/2009/07/15/dynamic-keyword-arguments-in-django-urls" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2009/07/02/pagination-in-django" title="Previous Post: Pagination in Django">&laquo; Pagination in Django</a>
+      
+      
+        <a class="basic-alignment right" href="/2009/09/14/using-jinja2-with-django" title="next Post: Using Jinja2 with Django (via Coffin)">Using Jinja2 with Django (via Coffin) &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '470 http://www.davidcramer.net/?p=470';
+        
+        var disqus_url = 'http://justcramer.com/2009/07/15/dynamic-keyword-arguments-in-django-urls';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '470 http://www.davidcramer.net/?p=470';
+        
+        var disqus_url = 'http://justcramer.com/2009/07/15/dynamic-keyword-arguments-in-django-urls';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>

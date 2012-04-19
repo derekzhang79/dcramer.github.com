@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>A Better Paginator in Django - David Cramer's Blog</title>
+  <meta name="author" content="David Cramer">
+
+  
+  <meta name="description" content="One of the tasks that I seem to repeatedly do across multiple projects, is extend the built-in paginator from Django. The built-in is fairly nice, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://justcramer.com/2008/08/13/a-better-paginator-in-django">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">David Cramer's Blog</a></h1>
+  
+    <h2>Python at Scale.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:justcramer.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/resume/">Resume</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">A Better Paginator in Django</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-13T00:00:00-07:00" pubdate data-updated="true">Aug 13<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>One of the tasks that I seem to repeatedly do across multiple projects, is extend the built-in paginator from Django. The built-in is fairly nice, but it&#8217;s quite honestly extremely confusing as you have to pass around a paginator instance as well as a paginator.page() instance in order to get useful pagination inside of a template.</p>
+
+<p>After the Nth time of someone coming up with questions about the paginator, and seeing Brian Rosner&#8217;s not-very-smart &#8220;smart_page_range&#8221; code (his words, not mine!), I figured it might be useful to throw this out to the public.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">django.core.paginator</span> <span class="kn">import</span> <span class="n">QuerySetPaginator</span><span class="p">,</span> <span class="n">InvalidPage</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;BetterQuerySetPaginator&#39;</span><span class="p">,</span> <span class="s">&#39;InvalidPage&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">BetterQuerySetPaginator</span><span class="p">(</span><span class="n">QuerySetPaginator</span><span class="p">):</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">An enhanced version of the QuerySetPaginator.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; my_objects = BetterQuerySetPaginator(queryset, 25)</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; page = 1</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; context = {</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt;     &#39;my_objects&#39;: my_objects.get_context(page),</span>
+</span><span class='line'><span class="sd">&gt;&gt;&gt; }</span>
+</span><span class='line'><span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">range_gap</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'><span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'><span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">),</span> <span class="n">exc</span><span class="p">:</span>
+</span><span class='line'><span class="k">raise</span> <span class="n">InvalidPage</span><span class="p">,</span> <span class="n">exc</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">page</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+</span><span class='line'><span class="n">start</span> <span class="o">=</span> <span class="n">page</span><span class="o">-</span><span class="n">range_gap</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'><span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">page</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="o">-</span><span class="n">range_gap</span><span class="p">:</span>
+</span><span class='line'><span class="n">end</span> <span class="o">=</span> <span class="n">page</span><span class="o">+</span><span class="n">range_gap</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'><span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">paginator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'><span class="s">&#39;page_range&#39;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+</span><span class='line'><span class="s">&#39;objects&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">object_list</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;num_pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;has_previous&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_previous</span><span class="p">(),</span>
+</span><span class='line'><span class="s">&#39;has_next&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+</span><span class='line'><span class="s">&#39;previous_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">previous_page_number</span><span class="p">(),</span>
+</span><span class='line'><span class="s">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">paginator</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">(),</span>
+</span><span class='line'><span class="s">&#39;is_first&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;is_last&#39;</span><span class="p">:</span> <span class="n">page</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_pages</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">return</span> <span class="n">context</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-13T00:00:00-07:00" pubdate data-updated="true">Aug 13<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2008/08/13/a-better-paginator-in-django" data-via="zeeg" data-counturl="http://justcramer.com/2008/08/13/a-better-paginator-in-django" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/08/12/updating-to-mysql-51-from-a-fink-installation" title="Previous Post: Updating to MySQL 5.1 from a Fink Installation">&laquo; Updating to MySQL 5.1 from a Fink Installation</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/08/23/logging-in-with-email-addresses-in-django" title="next Post: Logging In With Email Addresses in Django">Logging In With Email Addresses in Django &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite">
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '193 http://www.davidcramer.net/?p=193';
+        
+        var disqus_url = 'http://justcramer.com/2008/08/13/a-better-paginator-in-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2011/06/24/europython">EuroPython</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/dcramer">@dcramer</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'dcramer',
+            count: 10,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("zeeg", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - David Cramer -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        
+            var disqus_identifier = '193 http://www.davidcramer.net/?p=193';
+        
+        var disqus_url = 'http://justcramer.com/2008/08/13/a-better-paginator-in-django';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+</body>
+</html>
