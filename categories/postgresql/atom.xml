@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: postgresql | David Cramer's Blog]]></title>
-  <link href="http://dcramer.github.com/categories/postgresql/atom.xml" rel="self"/>
-  <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-24T22:35:23-07:00</updated>
-  <id>http://dcramer.github.com/</id>
+  <link href="http://justcramer.com/categories/postgresql/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-24T23:02:23-07:00</updated>
+  <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Sticking With Standards]]></title>
-    <link href="http://dcramer.github.com/2012/04/24/sticking-with-standards"/>
+    <link href="http://justcramer.com/2012/04/24/sticking-with-standards"/>
     <updated>2012-04-24T22:23:00-07:00</updated>
-    <id>http://dcramer.github.com/2012/04/24/sticking-with-standards</id>
+    <id>http://justcramer.com/2012/04/24/sticking-with-standards</id>
     <content type="html"><![CDATA[<p>More and more I'm seeing the "requirements.txt pattern" come up. This generally refers to projects (but not just), and
 seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
 Python world, and because I have an opinion on everything, I want to share mine.</p>
@@ -155,9 +155,9 @@ ensures that is never the case.</p>
   
   <entry>
     <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
-    <link href="http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
+    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
     <updated>2012-04-08T16:52:00-07:00</updated>
-    <id>http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
+    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
     <content type="html"><![CDATA[<p>Something we've been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that's somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>. In the end, this is an overly complicated solution to solve the problem of threads having 10s or 100s of thousands of comments.</p>
 
 

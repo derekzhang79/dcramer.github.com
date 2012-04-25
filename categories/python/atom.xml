@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: python | David Cramer's Blog]]></title>
-  <link href="http://dcramer.github.com/categories/python/atom.xml" rel="self"/>
-  <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-24T22:35:23-07:00</updated>
-  <id>http://dcramer.github.com/</id>
+  <link href="http://justcramer.com/categories/python/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-24T23:02:23-07:00</updated>
+  <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
-    <link href="http://dcramer.github.com/2011/08/05/extending-django-nose"/>
+    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
     <updated>2011-08-05T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/08/05/extending-django-nose</id>
+    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
     <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django's test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I'm happy to say we're running (basically) Nose with some minor extensions, and it's working great.</p>
 
 
@@ -447,9 +447,9 @@ tests/db/connections/redis/tests.py
   
   <entry>
     <title type="html"><![CDATA[Python and OS X Lion]]></title>
-    <link href="http://dcramer.github.com/2011/07/20/python-and-os-x-lion"/>
+    <link href="http://justcramer.com/2011/07/20/python-and-os-x-lion"/>
     <updated>2011-07-20T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/07/20/python-and-os-x-lion</id>
+    <id>http://justcramer.com/2011/07/20/python-and-os-x-lion</id>
     <content type="html"><![CDATA[<p>Just a few quick tips that I've had to run through and discover today while upgrading to Lion.</p>
 
 
@@ -500,9 +500,9 @@ TemplateSyntaxError: Caught IOError while rendering: [Errno 32] Broken pipe</pre
   
   <entry>
     <title type="html"><![CDATA[EuroPython]]></title>
-    <link href="http://dcramer.github.com/2011/06/24/europython"/>
+    <link href="http://justcramer.com/2011/06/24/europython"/>
     <updated>2011-06-24T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/06/24/europython</id>
+    <id>http://justcramer.com/2011/06/24/europython</id>
     <content type="html"><![CDATA[<p>This last week I've been attending <a href="http://europython.eu">EuroPython</a> over here in Firenze (or as we Americans know it, Florence), Italy. It's been a pretty amazing time, visiting the beautiful city, putting faces to names, and seeing some great presentations. More importantly, and the main reason for my trip, was the two talks that I delivered here this week.</p>
 
 
@@ -530,9 +530,9 @@ TemplateSyntaxError: Caught IOError while rendering: [Errno 32] Broken pipe</pre
   
   <entry>
     <title type="html"><![CDATA[Setting Up Your Own PyPi Server]]></title>
-    <link href="http://dcramer.github.com/2011/04/04/setting-up-your-own-pypi-server"/>
+    <link href="http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server"/>
     <updated>2011-04-04T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/04/04/setting-up-your-own-pypi-server</id>
+    <id>http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server</id>
     <content type="html"><![CDATA[<p>Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git repository? For a low low price of FREE, and an hour of labor, get your very own PyPi server and solve all of your worries!</p>
 
 

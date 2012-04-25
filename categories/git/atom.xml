@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: git | David Cramer's Blog]]></title>
-  <link href="http://dcramer.github.com/categories/git/atom.xml" rel="self"/>
-  <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-24T22:35:23-07:00</updated>
-  <id>http://dcramer.github.com/</id>
+  <link href="http://justcramer.com/categories/git/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-24T23:02:23-07:00</updated>
+  <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Creating a Read-only Mirror for your GitHub Server]]></title>
-    <link href="http://dcramer.github.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
+    <link href="http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
     <updated>2011-05-09T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
+    <id>http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
     <content type="html"><![CDATA[<p>Recently we've been transitioning our git repositories to GitHub. We chose to go this route for a variety of reasons, but mostly
 because they have kickass pull requests, which we're going to test run as code reviews. However, one of the requirements of this process was that
 our original git-server still remain functional, in at least a read-only state. This saves us the time of having to update deploy and

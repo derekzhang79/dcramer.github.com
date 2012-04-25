@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[David Cramer's Blog]]></title>
-  <link href="http://dcramer.github.com/atom.xml" rel="self"/>
-  <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-24T22:35:23-07:00</updated>
-  <id>http://dcramer.github.com/</id>
+  <link href="http://justcramer.com/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-24T23:02:23-07:00</updated>
+  <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Sticking With Standards]]></title>
-    <link href="http://dcramer.github.com/2012/04/24/sticking-with-standards"/>
+    <link href="http://justcramer.com/2012/04/24/sticking-with-standards"/>
     <updated>2012-04-24T22:23:00-07:00</updated>
-    <id>http://dcramer.github.com/2012/04/24/sticking-with-standards</id>
+    <id>http://justcramer.com/2012/04/24/sticking-with-standards</id>
     <content type="html"><![CDATA[<p>More and more I&#8217;m seeing the &#8220;requirements.txt pattern&#8221; come up. This generally refers to projects (but not just), and
 seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
 Python world, and because I have an opinion on everything, I want to share mine.</p>
@@ -150,9 +150,9 @@ ensures that is never the case.</p>
   
   <entry>
     <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
-    <link href="http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
+    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
     <updated>2012-04-08T16:52:00-07:00</updated>
-    <id>http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
+    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
     <content type="html"><![CDATA[<p>Something we&#8217;ve been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that&#8217;s somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>. In the end, this is an overly complicated solution to solve the problem of threads having 10s or 100s of thousands of comments.</p>
 
 <p>For some background, our first implementation is very similar to how <a href="http://reddit.com">Reddit</a> and many other systems work. It generally looks something like this:</p>
@@ -314,9 +314,9 @@ child_id | value
   
   <entry>
     <title type="html"><![CDATA[Scaling Schema Changes]]></title>
-    <link href="http://dcramer.github.com/2011/11/10/scaling-schema-changes"/>
+    <link href="http://justcramer.com/2011/11/10/scaling-schema-changes"/>
     <updated>2011-11-10T16:06:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/11/10/scaling-schema-changes</id>
+    <id>http://justcramer.com/2011/11/10/scaling-schema-changes</id>
     <content type="html"><![CDATA[<p>I frequently get asked how Disqus deals with schema changes. It&#8217;s a fair question, since we operate a fairly large amount of servers, but I also tend to think the answer is somewhat obvious. So let&#8217;s start with the problem of schema changes at scale (in PostgreSQL).</p>
 
 <p>Generally you have some table, let&#8217;s call it a profile (since people seem to enjoy changing those). Well today, a new service has launched called Twooter, and we want to denormalize the user&#8217;s Twooter name into their profile. To do this we need to add a new field, <code>twooter_username</code>.</p>
@@ -369,9 +369,9 @@ child_id | value
   
   <entry>
     <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
-    <link href="http://dcramer.github.com/2011/08/05/extending-django-nose"/>
+    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
     <updated>2011-08-05T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/08/05/extending-django-nose</id>
+    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
     <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django&#8217;s test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I&#8217;m happy to say we&#8217;re running (basically) Nose with some minor extensions, and it&#8217;s working great.</p>
 
 <p>Getting Django running on Nose is no small feat. Luckily, someone else has already put in a lot of that effort, and packaged it up all nice and neat as <a href="http://pypi.python.org/pypi/django-nose">django-nose</a>. I won&#8217;t go through setting up the package, but it&#8217;s pretty straight forward. One thing that we quickly noticed however, was that it didnt quite fit our approach to testing, which was strictly unittest. After a couple days of going back and forth with some minor issues, we came up with a few pretty useful extensions to the platform.</p>
@@ -714,9 +714,9 @@ tests/db/connections/redis/tests.py
   
   <entry>
     <title type="html"><![CDATA[Python and OS X Lion]]></title>
-    <link href="http://dcramer.github.com/2011/07/20/python-and-os-x-lion"/>
+    <link href="http://justcramer.com/2011/07/20/python-and-os-x-lion"/>
     <updated>2011-07-20T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/07/20/python-and-os-x-lion</id>
+    <id>http://justcramer.com/2011/07/20/python-and-os-x-lion</id>
     <content type="html"><![CDATA[<p>Just a few quick tips that I&#8217;ve had to run through and discover today while upgrading to Lion.</p>
 
 <p>Start by <strong>installing Xcode 4</strong>, which is available via the App Store (for free now). This will fix your missing distutils package (which probably fixes a majority of your issues). You&#8217;ll also need to <strong>reinstall all global site-packages</strong>, such as pip or virtualenvwrapper.</p>
@@ -744,9 +744,9 @@ TemplateSyntaxError: Caught IOError while rendering: [Errno 32] Broken pipe</pre
   
   <entry>
     <title type="html"><![CDATA[EuroPython]]></title>
-    <link href="http://dcramer.github.com/2011/06/24/europython"/>
+    <link href="http://justcramer.com/2011/06/24/europython"/>
     <updated>2011-06-24T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/06/24/europython</id>
+    <id>http://justcramer.com/2011/06/24/europython</id>
     <content type="html"><![CDATA[<p>This last week I&#8217;ve been attending <a href="http://europython.eu">EuroPython</a> over here in Firenze (or as we Americans know it, Florence), Italy. It&#8217;s been a pretty amazing time, visiting the beautiful city, putting faces to names, and seeing some great presentations. More importantly, and the main reason for my trip, was the two talks that I delivered here this week.</p>
 
 <p>The first was on Tuesday morning, titled &#8221;<strong><a href="http://www.slideshare.net/zeeg/building-scalable-web-apps" title="Building Scalable Web Apps">Building Scalable Web Apps</a></strong>&#8221;. I tried to show how one might solve some problems building a real web app, so we built a little bit of a backend for a Twitter-like stream.</p>
@@ -761,9 +761,9 @@ TemplateSyntaxError: Caught IOError while rendering: [Errno 32] Broken pipe</pre
   
   <entry>
     <title type="html"><![CDATA[Creating a Read-only Mirror for your GitHub Server]]></title>
-    <link href="http://dcramer.github.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
+    <link href="http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror"/>
     <updated>2011-05-09T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
+    <id>http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror</id>
     <content type="html"><![CDATA[<p>Recently we&#8217;ve been transitioning our git repositories to GitHub. We chose to go this route for a variety of reasons, but mostly
 because they have kickass pull requests, which we&#8217;re going to test run as code reviews. However, one of the requirements of this process was that
 our original git-server still remain functional, in at least a read-only state. This saves us the time of having to update deploy and
@@ -829,9 +829,9 @@ other scripts which read from this mirror and perform various tasks.</p>
   
   <entry>
     <title type="html"><![CDATA[Setting Up Your Own PyPi Server]]></title>
-    <link href="http://dcramer.github.com/2011/04/04/setting-up-your-own-pypi-server"/>
+    <link href="http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server"/>
     <updated>2011-04-04T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/04/04/setting-up-your-own-pypi-server</id>
+    <id>http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server</id>
     <content type="html"><![CDATA[<p>Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git repository? For a low low price of FREE, and an hour of labor, get your very own PyPi server and solve all of your worries!</p>
 
 <h3>Set up Chishop</h3>
@@ -966,9 +966,9 @@ index = http://my.chishop/simple</pre>
   
   <entry>
     <title type="html"><![CDATA[Building Cursors for the Disqus API]]></title>
-    <link href="http://dcramer.github.com/2011/03/08/building-cursors-for-the-disqus-api"/>
+    <link href="http://justcramer.com/2011/03/08/building-cursors-for-the-disqus-api"/>
     <updated>2011-03-08T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/03/08/building-cursors-for-the-disqus-api</id>
+    <id>http://justcramer.com/2011/03/08/building-cursors-for-the-disqus-api</id>
     <content type="html"><![CDATA[<p>This last week we&#8217;ve been implementing cursors for the Disqus API (3.0). If you&#8217;re not familiar, the concept is like cursors in your database: create a marker for where you are with your result set so you can iterate through a large set of results efficiently. Think of it like a snapshot. A marker that lets us retrieve the results you were previously looking for, and return a subset of those results.</p>
 
 <h3>LIMIT/OFFSET is Bad</h3>
@@ -1022,9 +1022,9 @@ id  | timestamp         | title
   
   <entry>
     <title type="html"><![CDATA[Using OS X Media Keys in Rdio]]></title>
-    <link href="http://dcramer.github.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop"/>
+    <link href="http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop"/>
     <updated>2011-02-08T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop</id>
+    <id>http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop</id>
     <content type="html"><![CDATA[<p><strong>Update:</strong> Use <a href="http://fluidapp.com/">Fluid</a>, with <a href="http://media.wilsonminer.com/share/shrapnel/fluid/rdio-fluid.png">this awesome icon by Wilson Miner</a>, and name it &#8220;Rdio Desktop&#8221; and follow these same instructions for a much better experience. You will also need to edit the macros and change Next/Previous track to use arrow keys instead of ctrl+arrow.</p>
 
 <p>I&#8217;m not going into much details, as it&#8217;s been a <strong>long frustrating day</strong> dealing with a number of things today, but I wanted to share how I managd to actually get Rdio Desktop to not suck (well, more like make it bearable). What do I mean by this? After many hours I discovered how I could <strong>remap the media keys on my OS X keyboard to work with Rdio Desktop</strong>. Ugh.</p>
@@ -1049,9 +1049,9 @@ id  | timestamp         | title
   
   <entry>
     <title type="html"><![CDATA[Error Tracing in Sentry]]></title>
-    <link href="http://dcramer.github.com/2011/01/25/error-tracing-in-sentry"/>
+    <link href="http://justcramer.com/2011/01/25/error-tracing-in-sentry"/>
     <updated>2011-01-25T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/01/25/error-tracing-in-sentry</id>
+    <id>http://justcramer.com/2011/01/25/error-tracing-in-sentry</id>
     <content type="html"><![CDATA[<p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
 
 <h4>Exposing Sentry ID</h4>
@@ -1144,9 +1144,9 @@ id  | timestamp         | title
   
   <entry>
     <title type="html"><![CDATA[Settings in Django]]></title>
-    <link href="http://dcramer.github.com/2011/01/13/settings-in-django"/>
+    <link href="http://justcramer.com/2011/01/13/settings-in-django"/>
     <updated>2011-01-13T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/01/13/settings-in-django</id>
+    <id>http://justcramer.com/2011/01/13/settings-in-django</id>
     <content type="html"><![CDATA[<p>I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a hundred different ways that you can manage it. While I&#8217;m not going to say ours is the best way, it has allowed us a very flexible application config under our varying situations.</p>
 
 <h4>Managing Local Settings</h4>
@@ -1437,9 +1437,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[How to actually make LocalSolr work]]></title>
-    <link href="http://dcramer.github.com/2011/01/04/how-to-actually-make-localsolr-work"/>
+    <link href="http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work"/>
     <updated>2011-01-04T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/01/04/how-to-actually-make-localsolr-work</id>
+    <id>http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work</id>
     <content type="html"><![CDATA[<p>Today I&#8217;ve been working on integrating geospatial search with our upcoming DISQUS Search product, which happens to rely on Solr. It didn&#8217;t take much work before I stumbled upon <a href="http://www.gissearch.com/localsolr">LocalSolr</a>, which seems to be the defacto gis implementation. The docs were fairly brief, but it <em>seemed</em> easy to get up and running. It just so happens that it wasnt <em>that</em> easy after all. Hoping that this helps someone else out, here&#8217;s my step by step to getting it setup (locally, at least):</p>
 
 <p>First up, you&#8217;re going to need to grab the localsolr libraries in some form or another. Hidden obscurely on a &#8220;Quick Start&#8221; link, is a tgz of an <a href="http://www.nsshutdown.com/solr-example.tgz">example project</a>. It&#8217;s much like example project included with the actual Solr package, so it should be fairly straightforward. Once I had this, I pulled in my existing configuration to replace the example&#8217;s, and updating it per the docs.</p>
@@ -1499,9 +1499,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[Database Routers in Django]]></title>
-    <link href="http://dcramer.github.com/2010/12/30/database-routers-in-django"/>
+    <link href="http://justcramer.com/2010/12/30/database-routers-in-django"/>
     <updated>2010-12-30T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/12/30/database-routers-in-django</id>
+    <id>http://justcramer.com/2010/12/30/database-routers-in-django</id>
     <content type="html"><![CDATA[<p>Whether you&#8217;re doing master / slave, or partitioning data, when your product gets large enough you&#8217;ll need the ability to route data to various nodes in your database. Django (as of 1.2) out of the box provides a pretty cool solution called a Database Router. Here at DISQUS we have a large set of data, and one this of course brings the need to implement some of these fairly standard solutions.</p>
 
 <p>The first solution that many companies will choose is a master / slave setup. This is the most common of all database scaling techniques and is very easy to setup in modern RDBMS solutions. In Django, this also comes very easy with a few lines of code:</p>
@@ -1705,9 +1705,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[BitField's in Django]]></title>
-    <link href="http://dcramer.github.com/2010/12/27/django-bitfield"/>
+    <link href="http://justcramer.com/2010/12/27/django-bitfield"/>
     <updated>2010-12-27T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/12/27/django-bitfield</id>
+    <id>http://justcramer.com/2010/12/27/django-bitfield</id>
     <content type="html"><![CDATA[<p>Today we&#8217;re releasing another heavily used component from the DISQUS code base, <a href="https://github.com/disqus/django-bitfield">our BitField class</a>. While not a true BIT field (it uses a BIGINT), it still allows you the convenience of accessing the values as if they were bit flags.</p>
 
 <p>When I joined DISQUS about 7 months ago, we were using a Q-like object class to do checks against our BigIntegerField&#8217;s. It worked fairly well, but was just too verbose. To add to that, we had a function which would attach callables to the instance for each flag. This let us do things like <code>instance.FLAG_NAME()</code> to check if it was set, and <code>intance.FLAG_NAME(True)</code> to set the flag. This worked well, but, like many things, we wanted to improve on it. </p>
@@ -1781,10 +1781,10 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[Blog Refresh]]></title>
-    <link href="http://dcramer.github.com/2010/12/24/blog-refresh"/>
+    <link href="http://justcramer.com/2010/12/24/blog-refresh"/>
     <updated>2010-12-24T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/12/24/blog-refresh</id>
-    <content type="html"><![CDATA[<p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="http://dcramer.github.com/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
+    <id>http://justcramer.com/2010/12/24/blog-refresh</id>
+    <content type="html"><![CDATA[<p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="http://justcramer.com/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
 
 <p>The new blog is powered off of <a href="https://github.com/mojombo/jekyll">Jekyll</a> and is running off of the <a href="http://pages.github.com">GitHub Pages technology</a>. I decided to use the <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a> project as a starter for the new design, and it&#8217;s turned out pretty well. If you&#8217;re curious, the source is available on <a href="https://github.com/dcramer/dcramer.github.com">GitHub</a> as always.</p>
 
@@ -1817,9 +1817,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[Feature Switches in Django with Gargoyle]]></title>
-    <link href="http://dcramer.github.com/2010/12/21/feature-switches-in-django-with-gargoyle"/>
+    <link href="http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle"/>
     <updated>2010-12-21T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/12/21/feature-switches-in-django-with-gargoyle</id>
+    <id>http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle</id>
     <content type="html"><![CDATA[<p>A while back we talked about using <a href="http://blog.disqus.com/post/789540337/partial-deployment-with-feature-switches">feature switches</a> to deal with partial deployment. This allows you to easily deploy to portions of your audience, or bring out less finalized features without hiding them behind branches and the likes. This last week we hosted a company hack day here at DISQUS, and myself and <a href="http://anton.kovalyov.net/">Anton Kovalyov</a> decided we&#8217;d open source our switches platform. So the idea was that everyone here had a whole day to work on their projects. We figured that&#8217;d leave us plenty of time left over. In the end it turned out that creating an extensible platform was a bit more work than we had hoped.</p>
 
 <p>After hack day, and some sparse hours of finalizing things, we&#8217;re proud to be announcing <a href="https://github.com/disqus/gargoyle">Gargoyle</a> today.</p>
@@ -1835,9 +1835,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[Announcing the DISQUS Code Blog]]></title>
-    <link href="http://dcramer.github.com/2010/12/10/announcing-the-disqus-code-blog"/>
+    <link href="http://justcramer.com/2010/12/10/announcing-the-disqus-code-blog"/>
     <updated>2010-12-10T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/12/10/announcing-the-disqus-code-blog</id>
+    <id>http://justcramer.com/2010/12/10/announcing-the-disqus-code-blog</id>
     <content type="html"><![CDATA[<p>Yesterday we semi-silently launched our <a href="http://code.disqus.com/">engineering blog and project site</a> over at DISQUS. We&#8217;re going to be aggregating posts from all of the engineering team&#8217;s personal blogs, as well as putting all of our open source projects and conference coverage over there. Look for all of the juicy details with what we&#8217;re building in Python and Django, and how we scale those apps.</p>
 
 <p>As I&#8217;m sure many will ask what we&#8217;re using to power that site, the answer is GitHub. We originally had looked at using Tumblr to aggregate RSS feeds into a new blog, but their existing tools werent powerful enough. By the time we had written our own (to import a post and tag it appropriately), we realized that their API just wasn&#8217;t responsive (or available) enough. In the end we decided to use <a href="http://github.com">GitHub</a> and the <a href="https://github.com/mojombo/jekyll">Jekyll blog application</a>. Being that this is GitHub, you can also check out the <a href="https://github.com/disqus/disqus.github.com">source to our blog</a> if you dare. We&#8217;re still fairly new to Jekyll, so don&#8217;t use us as best practices just yet.</p>
@@ -1847,9 +1847,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[Tracking changes to fields in Django]]></title>
-    <link href="http://dcramer.github.com/2010/12/06/tracking-changes-to-fields-in-django"/>
+    <link href="http://justcramer.com/2010/12/06/tracking-changes-to-fields-in-django"/>
     <updated>2010-12-06T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/12/06/tracking-changes-to-fields-in-django</id>
+    <id>http://justcramer.com/2010/12/06/tracking-changes-to-fields-in-django</id>
     <content type="html"><![CDATA[<p>A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine if certain actions need to take place when that instance is updated. We tend to use it like &#8220;if changed&#8221; database triggers. This has been very useful in situations like marking a comment as visible. In many areas this data is denormalized and we need to somehow propagate changes to counters or other similar structures.</p>
 
 <p>What we ended up doing was building a class decorator. This was my first time using such a technique, and it turned out really well. If you&#8217;re not familiar, they work almost identically to function decorators. You might even consider them a class factory, if that better helps you understand whats happening.</p>
@@ -1861,9 +1861,9 @@ project/conf/settings/dev.py
   
   <entry>
     <title type="html"><![CDATA[Integrating PyFlakes Into TextMate]]></title>
-    <link href="http://dcramer.github.com/2010/11/30/integrating-pyflakes-into-textmate"/>
+    <link href="http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate"/>
     <updated>2010-11-30T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2010/11/30/integrating-pyflakes-into-textmate</id>
+    <id>http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate</id>
     <content type="html"><![CDATA[<p>One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve is showing a tooltip, and only when you save the file. There&#8217;s been a few attempts at doing this with things like JSLint and PyLint, but most of them fall short. Today I decided to correct that.</p>
 
 <p>A great bundle out there for JavaScript developers exists already, <a href="https://github.com/johnmuhl/javascript-tools-tmbundle">JavaScript Tools TextMate Bundle</a>. I&#8217;m not entirely sure who the original author is, but all in all, the bundle does its job well. It hooks the save hotkey and runs JSLint on your file, and gives you a bunch of other shiny tools as well. With Python there&#8217;s a few out there, but none really fit the workflow that I think is ideal: automation.</p>

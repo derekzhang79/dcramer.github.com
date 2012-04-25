@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: howto | David Cramer's Blog]]></title>
-  <link href="http://dcramer.github.com/categories/howto/atom.xml" rel="self"/>
-  <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-24T22:35:23-07:00</updated>
-  <id>http://dcramer.github.com/</id>
+  <link href="http://justcramer.com/categories/howto/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-24T23:02:23-07:00</updated>
+  <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Using OS X Media Keys in Rdio]]></title>
-    <link href="http://dcramer.github.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop"/>
+    <link href="http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop"/>
     <updated>2011-02-08T00:00:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop</id>
+    <id>http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop</id>
     <content type="html"><![CDATA[<p><strong>Update:</strong> Use <a href="http://fluidapp.com/">Fluid</a>, with <a href="http://media.wilsonminer.com/share/shrapnel/fluid/rdio-fluid.png">this awesome icon by Wilson Miner</a>, and name it "Rdio Desktop" and follow these same instructions for a much better experience. You will also need to edit the macros and change Next/Previous track to use arrow keys instead of ctrl+arrow.</p>
 
 

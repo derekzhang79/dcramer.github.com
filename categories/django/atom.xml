@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
-  <link href="http://dcramer.github.com/categories/django/atom.xml" rel="self"/>
-  <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-24T22:35:23-07:00</updated>
-  <id>http://dcramer.github.com/</id>
+  <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-04-24T23:02:23-07:00</updated>
+  <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Sticking With Standards]]></title>
-    <link href="http://dcramer.github.com/2012/04/24/sticking-with-standards"/>
+    <link href="http://justcramer.com/2012/04/24/sticking-with-standards"/>
     <updated>2012-04-24T22:23:00-07:00</updated>
-    <id>http://dcramer.github.com/2012/04/24/sticking-with-standards</id>
+    <id>http://justcramer.com/2012/04/24/sticking-with-standards</id>
     <content type="html"><![CDATA[<p>More and more I'm seeing the "requirements.txt pattern" come up. This generally refers to projects (but not just), and
 seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
 Python world, and because I have an opinion on everything, I want to share mine.</p>
@@ -155,9 +155,9 @@ ensures that is never the case.</p>
   
   <entry>
     <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
-    <link href="http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
+    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
     <updated>2012-04-08T16:52:00-07:00</updated>
-    <id>http://dcramer.github.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
+    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
     <content type="html"><![CDATA[<p>Something we've been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that's somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>. In the end, this is an overly complicated solution to solve the problem of threads having 10s or 100s of thousands of comments.</p>
 
 
@@ -397,9 +397,9 @@ child_id | value
   
   <entry>
     <title type="html"><![CDATA[Scaling Schema Changes]]></title>
-    <link href="http://dcramer.github.com/2011/11/10/scaling-schema-changes"/>
+    <link href="http://justcramer.com/2011/11/10/scaling-schema-changes"/>
     <updated>2011-11-10T16:06:00-08:00</updated>
-    <id>http://dcramer.github.com/2011/11/10/scaling-schema-changes</id>
+    <id>http://justcramer.com/2011/11/10/scaling-schema-changes</id>
     <content type="html"><![CDATA[<p>I frequently get asked how Disqus deals with schema changes. It's a fair question, since we operate a fairly large amount of servers, but I also tend to think the answer is somewhat obvious. So let's start with the problem of schema changes at scale (in PostgreSQL).</p>
 
 
@@ -499,9 +499,9 @@ child_id | value
   
   <entry>
     <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
-    <link href="http://dcramer.github.com/2011/08/05/extending-django-nose"/>
+    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
     <updated>2011-08-05T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/08/05/extending-django-nose</id>
+    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
     <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django's test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I'm happy to say we're running (basically) Nose with some minor extensions, and it's working great.</p>
 
 
@@ -931,9 +931,9 @@ tests/db/connections/redis/tests.py
   
   <entry>
     <title type="html"><![CDATA[Python and OS X Lion]]></title>
-    <link href="http://dcramer.github.com/2011/07/20/python-and-os-x-lion"/>
+    <link href="http://justcramer.com/2011/07/20/python-and-os-x-lion"/>
     <updated>2011-07-20T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2011/07/20/python-and-os-x-lion</id>
+    <id>http://justcramer.com/2011/07/20/python-and-os-x-lion</id>
     <content type="html"><![CDATA[<p>Just a few quick tips that I've had to run through and discover today while upgrading to Lion.</p>
 
 
