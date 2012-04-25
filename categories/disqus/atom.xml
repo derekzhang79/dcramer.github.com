@@ -4,7 +4,7 @@
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-04-25T00:25:03-07:00</updated>
+  <updated>2012-04-25T01:16:21-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -31,7 +31,7 @@ Python world, and because I have an opinion on everything, I want to share mine.
 
 
 <p>Let's first talk about what this pattern actually is. As you should already be familiar with pip (if you're not, this
-post is not for you), the idea of this is that whatever your'e doing, is installable by pointing pip at a requirements.txt
+post is not for you), the idea of this is that whatever you're doing, is installable by pointing pip at a requirements.txt
 file which contains a list of your projects dependencies. This has some obvious benefits, one being that you can
 mark repositories as dependencies.</p>
 
