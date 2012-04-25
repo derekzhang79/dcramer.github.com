@@ -4,7 +4,7 @@
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-04-25T01:16:21-07:00</updated>
+  <updated>2012-04-25T01:58:42-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -126,16 +126,10 @@ thing, it <strong>does not prevent you from using setup.py</strong>. Let's take 
 </span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Now, in our case, this is probably a service on Disqus, which means we're not listing it as a dependancy. In every
-single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. Usually this
-is done with setuptools, and the (albeit, somewhat broken) <code>develop</code> command. Even if you want to use pip,
-that's not a problem:</p>
-
-
-
-
-<pre>
-pip install -e .
-</pre>
+single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. There's many ways
+to solve the problem, and generally adjusting <code>sys.path</code> is not what you're going to want. Whether you install
+the package or you just run it as an editable package (via pip install -e or setuptool's develop command), packaging
+your app makes it that much easier.</p>
 
 
 

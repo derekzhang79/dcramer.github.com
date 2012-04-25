@@ -172,16 +172,10 @@ thing, it <strong>does not prevent you from using setup.py</strong>. Let&#8217;s
 
 
 <p>Now, in our case, this is probably a service on Disqus, which means we&#8217;re not listing it as a dependancy. In every
-single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. Usually this
-is done with setuptools, and the (albeit, somewhat broken) <code>develop</code> command. Even if you want to use pip,
-that&#8217;s not a problem:</p>
-
-
-
-
-<pre>
-pip install -e .
-</pre>
+single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. There&#8217;s many ways
+to solve the problem, and generally adjusting <code>sys.path</code> is not what you&#8217;re going to want. Whether you install
+the package or you just run it as an editable package (via pip install -e or setuptool&#8217;s develop command), packaging
+your app makes it that much easier.</p>
 
 
 
