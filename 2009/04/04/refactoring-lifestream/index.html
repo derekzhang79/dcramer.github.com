@@ -1,95 +1,60 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>Refactoring Lifestream - David Cramer's Blog</title>
-  <meta name="author" content="David Cramer">
+    <meta charset="utf-8">
+    <title>Refactoring Lifestream - David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
 
-  
-  <meta name="description" content="For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it &hellip;">
-  
+    
+    <meta name="description" content="Refactoring Lifestream For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://justcramer.com/2009/04/04/refactoring-lifestream">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">David Cramer's Blog</a></h1>
-  
-    <h2>Python at Scale.</h2>
-  
-</hgroup>
+<body>
+	<header class="inner"><h1><a href="/">Python at Scale</a></h1>
+<h4>David Cramer's Blog</h4>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:justcramer.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/archives/">Archives</a></li>
-  <li><a href="/resume/">Resume</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div>
-<article class="hentry" role="article">
-  
-  <header>
-    
-      <h1 class="entry-title">Refactoring Lifestream</h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-<div class="entry-content"><p>For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it comes to WordPress, but tutorials and what are not spread out so it took a bit of time.</p>
+	<div id="content" class="inner"><article class="post">
+    <h1 class="title">Refactoring Lifestream</h1>
+    <div class="entry"><p>For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it comes to WordPress, but tutorials and what are not spread out so it took a bit of time.</p>
 
 <p>During the process, I also took the opportunity to speed up certain areas, such as option calls. Instead of storing options on a per-key basis, I changed it over to simply use a serialized arrays. In such, I added several new commands to the codebase:</p>
 
@@ -250,16 +215,8 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 <p>From there I decided to go all out, beyond just refactoring it into a class, I began adding some functionality from our upcoming service. Labels were moved out of the feed classes, and instead are now their own class. Each label is reusable, and controls how it&#8217;s events should be rendered. Doing this really opened the door to the possibilities of different styles of rendering for different media types.</p>
 
 <p>So after a nice days work, I&#8217;ve pushed out <a href="http://wordpress.org/extend/plugins/lifestream/">wp-lifestream 0.96</a>, which contains an enormous amount of bug fixes, optimizations, and best of all new features. You can see it running live on my blog, with the new display styles and all. Hopefully tomorrow I will be able to finish up the permalinks for events, which will also give the ability to attach comments to them.</p></div>
-
-
-  <footer>
-    <p class="meta">
-      
-  
-
-<span class="byline author vcard">Posted by <span class="fn">David Cramer</span></span>
-
-      
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -271,162 +228,36 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
   
 
 
-<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time>
-      
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justcramer.com/2009/04/04/refactoring-lifestream" data-via="zeeg" data-counturl="http://justcramer.com/2009/04/04/refactoring-lifestream" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/2009/04/02/problems-uploading-packages-with-setuptools-on-os-x" title="Previous Post: Problems Uploading Packages with Setuptools on OS X">&laquo; Problems Uploading Packages with Setuptools on OS X</a>
-      
-      
-        <a class="basic-alignment right" href="/2009/04/14/cleaning-up-with-json-and-sql" title="next Post: Cleaning up with JSON and SQL in Django">Cleaning up with JSON and SQL in Django &raquo;</a>
-      
-    </p>
-  </footer>
-</article>
-
-  <section>
-    <h1>Comments</h1>
-    <div id="disqus_thread" aria-live="polite">
-
-<script type="text/javascript">
-      var disqus_shortname = 'davidcramer';
-      
-        
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = '446 http://www.davidcramer.net/?p=446';
-        
-        var disqus_url = 'http://justcramer.com/2009/04/04/refactoring-lifestream';
-        var disqus_script = 'embed.js';
-      
-    (function () {
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    }());
-</script>
+<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time></div>
+        <div class="tags">
 
 </div>
-  </section>
-
-</div>
-
-<aside class="sidebar">
-  
-    <a href="http://www.getsentry.com" title="Sentry &mdash; Error Tracking Made Easy" style="text-decoration:none;"><img src="/images/sentry.png" style="background:inherit;padding:0;border:0;"/></a><section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-  </ul>
-</section>
-
-<section>
-  <h1>Github Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating...</li>
-  </ul>
-  
-  <a href="https://github.com/dcramer">@dcramer</a> on Github
-  
-  <script type="text/javascript">
-    $.domReady(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'dcramer',
-            count: 10,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("zeeg", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
-
+        
     </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - David Cramer -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+</article>
+<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
 
-</footer>
-  
+</div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
 
 <script type="text/javascript">
       var disqus_shortname = 'davidcramer';
       
         
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = '446 http://www.davidcramer.net/?p=446';
-        
-        var disqus_url = 'http://justcramer.com/2009/04/04/refactoring-lifestream';
-        var disqus_script = 'embed.js';
+        var disqus_script = 'count.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -436,35 +267,6 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 </script>
 
 
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script type="text/javascript">
-  var _gauges = _gauges || [];
-  (function() {
-    var t   = document.createElement('script');
-    t.type  = 'text/javascript';
-    t.async = true;
-    t.id    = 'gauges-tracker';
-    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
-    t.src = '//secure.gaug.es/track.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(t, s);
-  })();
-</script>
 
 </body>
 </html>

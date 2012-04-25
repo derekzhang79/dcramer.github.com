@@ -1,98 +1,64 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>David Cramer's Blog</title>
-  <meta name="author" content="David Cramer">
+    <meta charset="utf-8">
+    <title>David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
 
-  
-  <meta name="description" content="One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many &hellip;">
-  
+    
+    <meta name="description" content="Jinja2 and Django-registration One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://justcramer.com/blog/page/4">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">David Cramer's Blog</a></h1>
-  
-    <h2>Python at Scale.</h2>
-  
-</hgroup>
+<body>
+	<header class="inner"><h1><a href="/">Python at Scale</a></h1>
+<h4>David Cramer's Blog</h4>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:justcramer.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/archives/">Archives</a></li>
-  <li><a href="/resume/">Resume</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/09/30/jinja2-and-django-registration">Jinja2 and Django-registration</a></h1>
-    
-    
-      <p class="meta">
-        
+	<div id="content" class="inner">
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-09-30T00:00:00-07:00" pubdate data-updated="true">Sep 30<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many have yet to realize the benefit of class-based views. Today, I&#8217;m going to explain how we approached this for <a href="http://www.djangospot.com">DjangoSpot</a> (<a href="http://www.github.com/dcramer/djangospot">GitHub</a>) and <a href="http://bitbucket.org/ubernostrum/django-registration">django-registration</a>.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/09/30/jinja2-and-django-registration">Jinja2 and Django-registration</a></h1>
+    <div class="entry">
+        <p>One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many have yet to realize the benefit of class-based views. Today, I&#8217;m going to explain how we approached this for <a href="http://www.djangospot.com">DjangoSpot</a> (<a href="http://www.github.com/dcramer/djangospot">GitHub</a>) and <a href="http://bitbucket.org/ubernostrum/django-registration">django-registration</a>.</p>
 
 <p>The goal, as always, is the write the least amount of code. However, extending function-based views is now an easy task. So our approach involves using some tricky Python code (thanks to Chris Leary for the ideas!).</p>
 
@@ -142,23 +108,12 @@ Next up, we need to handle the views. It&#8217;s a similar approach, except we&#
 
 <p>What we&#8217;re doing here, is getting the source code for the actual methods, and simply executing it. To ensure we have all the needed imports, we first import everything from the <code>registration.views</code>. Afterwards, we replace the <code>render_to_response</code> and <code>RequestContext</code> imports with the ones made available in Coffin.</p>
 
-<p>Overall, it&#8217;s a fairly sketchy process, but it works beautiful. We approach the problem in a similar fashion with Coffin and the generic and contrib views in there.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/09/14/using-jinja2-with-django">Using Jinja2 With Django (via Coffin)</a></h1>
-    
-    
-      <p class="meta">
+<p>Overall, it&#8217;s a fairly sketchy process, but it works beautiful. We approach the problem in a similar fashion with Coffin and the generic and contrib views in there.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -170,14 +125,25 @@ Next up, we need to handle the views. It&#8217;s a similar approach, except we&#
   
 
 
-<time datetime="2009-09-14T00:00:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2009</time>
+<time datetime="2009-09-30T00:00:00-07:00" pubdate data-updated="true">Sep 30<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>As an advocate of Jinja2 I figured it was about time I got on board the train. Up until now I had been using Jinja1 at work, and in most projects. The main reasoning behind this was there was no good connector. Now many might say that you don&#8217;t need a connector, you can just throw in a couple of functions and it works. While that might be true, there&#8217;s a lot more that goes into rendering templates than simply parsing standard HTML.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/09/14/using-jinja2-with-django">Using Jinja2 With Django (via Coffin)</a></h1>
+    <div class="entry">
+        <p>As an advocate of Jinja2 I figured it was about time I got on board the train. Up until now I had been using Jinja1 at work, and in most projects. The main reasoning behind this was there was no good connector. Now many might say that you don&#8217;t need a connector, you can just throw in a couple of functions and it works. While that might be true, there&#8217;s a lot more that goes into rendering templates than simply parsing standard HTML.</p>
 
 <p>So as I began the conversion, I found a project called <a href="http://github.com/dcramer/coffin">Coffin</a>. The project was hosted over at LaunchPad, which personally, I wish would disappear from the internet. Among the problem of getting bzr working on my Mac, and servers, so that I could check out the project, I also found that the project wasn&#8217;t very stable.</p>
 
@@ -323,23 +289,12 @@ So let&#8217;s move on to a bit more of the advanced Jinja2 bits, registering yo
 </span><span class='line'><span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">UselessExtension</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Please check out the <a href="http://github.com/dcramer/coffin/blob/master/README.rst">README</a> for more information. Enjoy!</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/07/15/dynamic-keyword-arguments-in-django-urls">Dynamic Keyword Arguments in Django URLs</a></h1>
-    
-    
-      <p class="meta">
+<p>Please check out the <a href="http://github.com/dcramer/coffin/blob/master/README.rst">README</a> for more information. Enjoy!</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -351,14 +306,25 @@ So let&#8217;s move on to a bit more of the advanced Jinja2 bits, registering yo
   
 
 
-<time datetime="2009-07-15T00:00:00-07:00" pubdate data-updated="true">Jul 15<span>th</span>, 2009</time>
+<time datetime="2009-09-14T00:00:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Today I&#8217;m going to talk a little bit about one of our hurdles, and a quick solution we came up with to get around it at <a href="http://www.ibegin.com/">iBegin</a>. We needed the ability to override URLs per-site, which by itself is fairly easy. You simply change the <code>ROOT_URLCONF</code> in your local or per-site settings file. Let&#8217;s take an example:</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/07/15/dynamic-keyword-arguments-in-django-urls">Dynamic Keyword Arguments in Django URLs</a></h1>
+    <div class="entry">
+        <p>Today I&#8217;m going to talk a little bit about one of our hurdles, and a quick solution we came up with to get around it at <a href="http://www.ibegin.com/">iBegin</a>. We needed the ability to override URLs per-site, which by itself is fairly easy. You simply change the <code>ROOT_URLCONF</code> in your local or per-site settings file. Let&#8217;s take an example:</p>
 
 <p>Let&#8217;s say I want <code>/blog/details/&lt;post_slug&gt;</code> on Site A, but on Site B I want that to be <code>/blog/details/&lt;post_id&gt;</code>. This is fairly easy to handle in templates, by simply passing different kwargs to your url resolver, but we needed to be able to handle this in methods like <code>get_absolute_url()</code>. First let&#8217;s explain why we needed this instead of the default resolver.</p>
 
@@ -446,23 +412,12 @@ The first part is our new <code>reverse()</code> method. We can pass in the same
 </span><span class='line'>    <span class="k">return</span> <span class="n">inner</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>That&#8217;s the quick and dirty rundown of how we&#8217;ve solved overloading of views with differing arguments and maintaining callable URL methods on models. Have you come up with a better solution, let me know!</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/07/02/pagination-in-django">Pagination in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>That&#8217;s the quick and dirty rundown of how we&#8217;ve solved overloading of views with differing arguments and maintaining callable URL methods on models. Have you come up with a better solution, let me know!</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -474,14 +429,25 @@ The first part is our new <code>reverse()</code> method. We can pass in the same
   
 
 
-<time datetime="2009-07-02T00:00:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2009</time>
+<time datetime="2009-07-15T00:00:00-07:00" pubdate data-updated="true">Jul 15<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of the common things we do across projects is paginate querysets and lists. Django happens to provide a base Paginator for us, but it&#8217;s usefulness is limited. It requires you to do the same repetitive tasks over and over. We&#8217;re one of those groups of people who believe that not every URL need&#8217;s to be rewritten into a retarded directory structure, and paged entries just so happen to be one of those. For most of our paging needs, we simply use ?p=N.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/07/02/pagination-in-django">Pagination in Django</a></h1>
+    <div class="entry">
+        <p>One of the common things we do across projects is paginate querysets and lists. Django happens to provide a base Paginator for us, but it&#8217;s usefulness is limited. It requires you to do the same repetitive tasks over and over. We&#8217;re one of those groups of people who believe that not every URL need&#8217;s to be rewritten into a retarded directory structure, and paged entries just so happen to be one of those. For most of our paging needs, we simply use ?p=N.</p>
 
 <p>So, let me start by saying I haven&#8217;t looked into any existing pagination solutions, but I believe what we use is a great approach to handling pagination in a generic and reusable approach. In a typical pagination situation, you would do something like this:</p>
 
@@ -851,23 +817,12 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
 
 <p>So to wrap it up, we introduced 2 major concepts. The first being adding context to pagination to decrease the amount of code we write, and the latter being endless pagination, allowing us to do much more efficient paging mechanisms.</p>
 
-<p>What have you done to simplify your pagination in Django?</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/06/29/chuggin-away">Chuggin Away</a></h1>
-    
-    
-      <p class="meta">
+<p>What have you done to simplify your pagination in Django?</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -879,14 +834,25 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
   
 
 
-<time datetime="2009-06-29T00:00:00-07:00" pubdate data-updated="true">Jun 29<span>th</span>, 2009</time>
+<time datetime="2009-07-02T00:00:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I haven&#8217;t made too many posts lately. Whether it&#8217;s been from lack of time, or simply nothing to write about who&#8217;s to say. That doesn&#8217;t mean I haven&#8217;t been keeping busy though.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/06/29/chuggin-away">Chuggin Away</a></h1>
+    <div class="entry">
+        <p>I haven&#8217;t made too many posts lately. Whether it&#8217;s been from lack of time, or simply nothing to write about who&#8217;s to say. That doesn&#8217;t mean I haven&#8217;t been keeping busy though.</p>
 
 <p>We&#8217;ve been hard at work over at <a href="http://www.ibegin.com/">iBegin</a> deploying some new architecture. It&#8217;s a pretty cool feat, but I can&#8217;t say too much about it at the moment. Recently we released an update to iBegin Share as well, which has been much needed. It adds in some more configuration, bug fixes, and overall appeal for the plugin. It also can be automatically updated through WP.org finally :)</p>
 
@@ -894,23 +860,12 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
 
 <p>As for the service we&#8217;ve been rewriting things (again) to bring it more in line with the <a href="http://activitystrea.ms/">Activity Streams</a> spec. This will make it much easier for existing sites to extend it, as well as making it easier for us to pull in activity streams. On top of that, we&#8217;ve got a brand new sexy design (you&#8217;ll see it soon) to go with it. Look more for this on the holiday weekend, as we begin to rollout <a href="http://www.lifestrm.com">lifestrm.com</a>.</p>
 
-<p>One last thing you&#8217;ll notice, is the changes on my blog. Below certain posts you&#8217;ll start seeing a blurb of events that have occurred around the time of that post. It&#8217;s a proof of concept I&#8217;m working on for tighter integration of Lifestream with the blog.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/06/03/the-ea-experience">The EA Experience (EA Store)</a></h1>
-    
-    
-      <p class="meta">
+<p>One last thing you&#8217;ll notice, is the changes on my blog. Below certain posts you&#8217;ll start seeing a blurb of events that have occurred around the time of that post. It&#8217;s a proof of concept I&#8217;m working on for tighter integration of Lifestream with the blog.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -922,14 +877,19 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
   
 
 
-<time datetime="2009-06-03T00:00:00-07:00" pubdate data-updated="true">Jun 3<span>rd</span>, 2009</time>
+<time datetime="2009-06-29T00:00:00-07:00" pubdate data-updated="true">Jun 29<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>(My apologies this rant is long and should probably be called &#8220;The EA <strong>Nightmare</strong>&#8221;)</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/06/03/the-ea-experience">The EA Experience (EA Store)</a></h1>
+    <div class="entry">
+        <p>(My apologies this rant is long and should probably be called &#8220;The EA <strong>Nightmare</strong>&#8221;)</p>
 
 <p>As many of you are aware, yesterday was the launch of one of the more anticipated games this year: <strong>The Sims 3</strong>. So, being a typical gamer, I had to pick it up (and the fact that my girlfriend is nuts about Sims 2). I decided that I would be best served, by going straight to the source. Typically I purchased digital downloads through Steam or Direct2Drive, but since EA has its own digital service it just made sense to purchase from ea.com. Oh boy, was that a bad decision.</p>
 
@@ -959,23 +919,12 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
 
 <p>Let&#8217;s throw in some Google love for EA here:</p>
 
-<p>- <strong>Electronic Arts is terrible</strong><br>- <strong>Ordering online from Electronic Arts</strong><br>- <strong>EA Store</strong></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/04/17/improving-gzipmiddleware-in-django">Improving GZipMiddleware in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>- <strong>Electronic Arts is terrible</strong><br>- <strong>Ordering online from Electronic Arts</strong><br>- <strong>EA Store</strong></p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -987,14 +936,19 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
   
 
 
-<time datetime="2009-04-17T00:00:00-07:00" pubdate data-updated="true">Apr 17<span>th</span>, 2009</time>
+<time datetime="2009-06-03T00:00:00-07:00" pubdate data-updated="true">Jun 3<span>rd</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One issue we had come up over at iBegin lately, is the fact that GZipMiddleware tries to encode ALL responses (with a few minor exceptions). In our cases, we sometimes stream actual binary files over the response. Doing this with the standard middleware causes a unicode error as it&#8217;s trying to encode all of the information before gzipping it.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/04/17/improving-gzipmiddleware-in-django">Improving GZipMiddleware in Django</a></h1>
+    <div class="entry">
+        <p>One issue we had come up over at iBegin lately, is the fact that GZipMiddleware tries to encode ALL responses (with a few minor exceptions). In our cases, we sometimes stream actual binary files over the response. Doing this with the standard middleware causes a unicode error as it&#8217;s trying to encode all of the information before gzipping it.</p>
 
 <p>So to fix this, we simply created a slightly improved middleware to handle the content types a bit better:</p>
 
@@ -1022,42 +976,42 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
 </span><span class='line'><span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ImprovedGZipMiddleware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">process_response</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-17T00:00:00-07:00" pubdate data-updated="true">Apr 17<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
 </div>
-  
-  
 
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/04/14/cleaning-up-with-json-and-sql">Cleaning Up With JSON and SQL in Django</a></h1>
-    
-    
-      <p class="meta">
+</div>
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-04-14T00:00:00-07:00" pubdate data-updated="true">Apr 14<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Most of our projects lately are now using JSON data storage in the database. This makes it very efficient for storing additional data without having to run alters are gigantic data sets. It also allows us to store different data for different kinds of sets within the same table.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/04/14/cleaning-up-with-json-and-sql">Cleaning Up With JSON and SQL in Django</a></h1>
+    <div class="entry">
+        <p>Most of our projects lately are now using JSON data storage in the database. This makes it very efficient for storing additional data without having to run alters are gigantic data sets. It also allows us to store different data for different kinds of sets within the same table.</p>
 
 <p>Doing this in Django we originally created a JSONField. A simple custom field which would convert back and from from JSON to a Python object. Mostly this was going from a dictionary to a text-based form in the database (JSON). Recently in one project I took the time to update the field to fix a couple things as well as add support for it in the forms, and thus making it usable within the admin.</p>
 
@@ -1144,42 +1098,42 @@ Let&#8217;s talk a bit more about endless paging. In some of our use cases, we s
 </span><span class='line'><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_val_from_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 </span><span class='line'><span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_prep_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-14T00:00:00-07:00" pubdate data-updated="true">Apr 14<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
 </div>
-  
-  
 
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/04/04/refactoring-lifestream">Refactoring Lifestream</a></h1>
-    
-    
-      <p class="meta">
+</div>
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it comes to WordPress, but tutorials and what are not spread out so it took a bit of time.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/04/04/refactoring-lifestream">Refactoring Lifestream</a></h1>
+    <div class="entry">
+        <p>For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it comes to WordPress, but tutorials and what are not spread out so it took a bit of time.</p>
 
 <p>During the process, I also took the opportunity to speed up certain areas, such as option calls. Instead of storing options on a per-key basis, I changed it over to simply use a serialized arrays. In such, I added several new commands to the codebase:</p>
 
@@ -1339,23 +1293,12 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 
 <p>From there I decided to go all out, beyond just refactoring it into a class, I began adding some functionality from our upcoming service. Labels were moved out of the feed classes, and instead are now their own class. Each label is reusable, and controls how it&#8217;s events should be rendered. Doing this really opened the door to the possibilities of different styles of rendering for different media types.</p>
 
-<p>So after a nice days work, I&#8217;ve pushed out <a href="http://wordpress.org/extend/plugins/lifestream/">wp-lifestream 0.96</a>, which contains an enormous amount of bug fixes, optimizations, and best of all new features. You can see it running live on my blog, with the new display styles and all. Hopefully tomorrow I will be able to finish up the permalinks for events, which will also give the ability to attach comments to them.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/04/02/problems-uploading-packages-with-setuptools-on-os-x">Problems Uploading Packages With Setuptools on OS X</a></h1>
-    
-    
-      <p class="meta">
+<p>So after a nice days work, I&#8217;ve pushed out <a href="http://wordpress.org/extend/plugins/lifestream/">wp-lifestream 0.96</a>, which contains an enormous amount of bug fixes, optimizations, and best of all new features. You can see it running live on my blog, with the new display styles and all. Hopefully tomorrow I will be able to finish up the permalinks for events, which will also give the ability to attach comments to them.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -1367,14 +1310,19 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
   
 
 
-<time datetime="2009-04-02T00:00:00-07:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2009</time>
+<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>This is mostly a note to myself, but also since my blog is very helpful to fellow Google-users I figured I&#8217;d throw it up here publicly.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/04/02/problems-uploading-packages-with-setuptools-on-os-x">Problems Uploading Packages With Setuptools on OS X</a></h1>
+    <div class="entry">
+        <p>This is mostly a note to myself, but also since my blog is very helpful to fellow Google-users I figured I&#8217;d throw it up here publicly.</p>
 
 <p>Today I needed to update a package on PyPi using setuptools:</p>
 
@@ -1392,125 +1340,50 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 
 <pre><br>[server-login]<br>username:dcramer<br>password:********<br></pre>
 
-<p>Can&#8217;t quite explain it, but as I&#8217;m sure other people have come across this same issue, maybe it will get resolved in the near future.</p></div>
-  
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/5/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-    <a class="next" href="/blog/page/3/">Newer &rarr;</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    <a href="http://www.getsentry.com" title="Sentry &mdash; Error Tracking Made Easy" style="text-decoration:none;"><img src="/images/sentry.png" style="background:inherit;padding:0;border:0;"/></a><section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-  </ul>
-</section>
-
-<section>
-  <h1>Github Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  
-  <a href="https://github.com/dcramer">@dcramer</a> on Github
-  
-  <script type="text/javascript">
-    $.domReady(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'dcramer',
-            count: 10,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("zeeg", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
+<p>Can&#8217;t quite explain it, but as I&#8217;m sure other people have come across this same issue, maybe it will get resolved in the near future.</p>
+        
+        
     </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - David Cramer -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+    <div class="meta">
+        <div class="date">
 
-</footer>
+
+
+
+
+
+
+
   
+
+
+<time datetime="2009-04-02T00:00:00-07:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+
+<nav id="pagenavi">
+    
+        <a href="/blog/page/3/" class="prev">Prev</a>
+    
+    
+        <a href="/blog/page/5/" class="next">Next</a>
+    
+    <a href="/blog/archives" class="center">Blog Archives</a>
+</nav></div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
 
 <script type="text/javascript">
       var disqus_shortname = 'davidcramer';
       
         
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = ''
-        
-        var disqus_url = 'http://justcramer.com/blog/page/4/index.html';
-        var disqus_script = 'embed.js';
+        var disqus_script = 'count.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -1520,35 +1393,6 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 </script>
 
 
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script type="text/javascript">
-  var _gauges = _gauges || [];
-  (function() {
-    var t   = document.createElement('script');
-    t.type  = 'text/javascript';
-    t.async = true;
-    t.id    = 'gauges-tracker';
-    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
-    t.src = '//secure.gaug.es/track.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(t, s);
-  })();
-</script>
 
 </body>
 </html>

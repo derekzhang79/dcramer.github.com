@@ -1,120 +1,75 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>David Cramer's Blog</title>
-  <meta name="author" content="David Cramer">
+    <meta charset="utf-8">
+    <title>David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
 
-  
-  <meta name="description" content="I&#8217;ve been annoyed for the last 6 months of using Jinja, as I&#8217;ve been working on numerous different Django projects, and I&#8217;ve had to &hellip;">
-  
+    
+    <meta name="description" content="Jinja: Refactoring Django Support I&#8217;ve been annoyed for the last 6 months of using Jinja, as I&#8217;ve been working on numerous different &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://justcramer.com/blog/page/8">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">David Cramer's Blog</a></h1>
-  
-    <h2>Python at Scale.</h2>
-  
-</hgroup>
+<body>
+	<header class="inner"><h1><a href="/">Python at Scale</a></h1>
+<h4>David Cramer's Blog</h4>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:justcramer.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/archives/">Archives</a></li>
-  <li><a href="/resume/">Resume</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/01/jinja-refactoring-django-support">Jinja: Refactoring Django Support</a></h1>
-    
-    
-      <p class="meta">
-        
+	<div id="content" class="inner">
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-08-01T00:00:00-07:00" pubdate data-updated="true">Aug 1<span>st</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I&#8217;ve been annoyed for the last 6 months of using Jinja, as I&#8217;ve been working on numerous different Django projects, and I&#8217;ve had to use <code>django-admin.py</code> vs <code>manage.py</code>. The reason for this is simply, that in my settings.py I had used the <code>djangosupport.configure()</code> routine. I tried moving it to other locations, but they didn&#8217;t seem to work.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/01/jinja-refactoring-django-support">Jinja: Refactoring Django Support</a></h1>
+    <div class="entry">
+        <p>I&#8217;ve been annoyed for the last 6 months of using Jinja, as I&#8217;ve been working on numerous different Django projects, and I&#8217;ve had to use <code>django-admin.py</code> vs <code>manage.py</code>. The reason for this is simply, that in my settings.py I had used the <code>djangosupport.configure()</code> routine. I tried moving it to other locations, but they didn&#8217;t seem to work.</p>
 
 <p>So, I&#8217;ve refactored the djangosupport module (based on some previous comments by the Pocoo team), and deprecated the magical <code>djangosupport.configure()</code>. You can now properly import the module via <code>jinja.contrib.djangosupport</code> and use all of the same methods that were available via <code>django.contrib.jinja</code>.</p>
 
 <p>The patch also includes <code>handler404</code>, <code>handler500</code>, and <code>direct_to_template</code> methods.</p>
 
-<p>If you&#8217;re interested, here is the <a href="http://www.pastethat.com/v1amU">diff</a> and a matching <a href="http://www.pastethat.com/GQ8Ck">hg bundle</a>. You can also <a href="http://dev.pocoo.org/projects/jinja/ticket/312">view the ticket on Jinja&#8217;s Trac instance</a>.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/30/wordpress-lifestream-plugin-wp-lifestream">WordPress LifeStream Plugin: Wp-lifestream</a></h1>
-    
-    
-      <p class="meta">
+<p>If you&#8217;re interested, here is the <a href="http://www.pastethat.com/v1amU">diff</a> and a matching <a href="http://www.pastethat.com/GQ8Ck">hg bundle</a>. You can also <a href="http://dev.pocoo.org/projects/jinja/ticket/312">view the ticket on Jinja&#8217;s Trac instance</a>.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -126,34 +81,28 @@
   
 
 
-<time datetime="2008-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2008</time>
+<time datetime="2008-08-01T00:00:00-07:00" pubdate data-updated="true">Aug 1<span>st</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I had recently installed a plugin on my blogged called &#8220;RSS Stream&#8221;. The idea of the plugin is that it can use RSS feeds (and only RSS feeds) from sites to display a mini-feed, or mini-blog, of what you&#8217;re doing. Not being quite content with the plugin, I decided to write my own.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/30/wordpress-lifestream-plugin-wp-lifestream">WordPress LifeStream Plugin: Wp-lifestream</a></h1>
+    <div class="entry">
+        <p>I had recently installed a plugin on my blogged called &#8220;RSS Stream&#8221;. The idea of the plugin is that it can use RSS feeds (and only RSS feeds) from sites to display a mini-feed, or mini-blog, of what you&#8217;re doing. Not being quite content with the plugin, I decided to write my own.</p>
 
 <p>A few hours later, <a href="http://www.davidcramer.net/my-projects/lifestream">wp-lifestream</a> was born. It&#8217;s a very extensible plugin that works with any kind of feed, even if it&#8217;s not XML. The default generic plugin handles both RSS and Atom feeds perfectly, but I had to drop the usage the built-in Magpie and include SimplePIE (since Magpie kept erroring).</p>
 
-<p>By default it includes all of the extensions which were in RSS Stream, as well as a Digg plugin.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/30/new-pluggable-django-object-view-tracking">New Pluggable: Django-object-view-tracking</a></h1>
-    
-    
-      <p class="meta">
+<p>By default it includes all of the extensions which were in RSS Stream, as well as a Digg plugin.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -165,14 +114,19 @@
   
 
 
-<time datetime="2008-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2008</time>
+<time datetime="2008-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I posted another one of my small pluggable apps up on Google code the other day. It&#8217;s called <a href="http://code.google.com/p/django-object-view-tracking/">django-object-view-tracking</a> and is most suited for tracking things such as if a user has viewed a thread in a forum.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/30/new-pluggable-django-object-view-tracking">New Pluggable: Django-object-view-tracking</a></h1>
+    <div class="entry">
+        <p>I posted another one of my small pluggable apps up on Google code the other day. It&#8217;s called <a href="http://code.google.com/p/django-object-view-tracking/">django-object-view-tracking</a> and is most suited for tracking things such as if a user has viewed a thread in a forum.</p>
 
 <p>The API is fairly simple, but may need some improvements based on feedback:</p>
 
@@ -196,23 +150,12 @@
 </span><span class='line'>    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>It was written fairly DRY and I didn&#8217;t do up any tests for it, so I&#8217;m crossing my fingers there&#8217;s no issues :)</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/30/configuration-generation-for-django-sphinx">Configuration Generation for Django-sphinx</a></h1>
-    
-    
-      <p class="meta">
+<p>It was written fairly DRY and I didn&#8217;t do up any tests for it, so I&#8217;m crossing my fingers there&#8217;s no issues :)</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -224,14 +167,19 @@
   
 
 
-<time datetime="2008-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2008</time>
+<time datetime="2008-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I pushed an update to the <a href="http://code.google.com/p/django-sphinx">django-sphinx</a> repository tonight which includes a sample configuration generation tool.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/30/configuration-generation-for-django-sphinx">Configuration Generation for Django-sphinx</a></h1>
+    <div class="entry">
+        <p>I pushed an update to the <a href="http://code.google.com/p/django-sphinx">django-sphinx</a> repository tonight which includes a sample configuration generation tool.</p>
 
 <p>It allows you to generate a source and index config for a Model based on it&#8217;s field type. For example:</p>
 
@@ -291,23 +239,12 @@ index maps
     min_prefix_len  = 0
     min_infix_len   = 0
 }
-</pre></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/27/high-performance-django-at-djangocon">High Performance Django at DjangoCon</a></h1>
-    
-    
-      <p class="meta">
+</pre>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -319,34 +256,28 @@ index maps
   
 
 
-<time datetime="2008-07-27T00:00:00-07:00" pubdate data-updated="true">Jul 27<span>th</span>, 2008</time>
+<time datetime="2008-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I&#8217;m going to be giving a talk at DjangoCon, <a href="http://djangocon.org/program">&#8220;High Performance Django&#8221;</a>. I will be discussing what I&#8217;ve done at the past with <a href="http://www.curse.com">Curse.com</a>, what we do presently for <a href="http://www.ibegin.com">iBegin&#8217;s Crazy Datastore</a>, and general tips for scalability and performance in large web applications.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/27/high-performance-django-at-djangocon">High Performance Django at DjangoCon</a></h1>
+    <div class="entry">
+        <p>I&#8217;m going to be giving a talk at DjangoCon, <a href="http://djangocon.org/program">&#8220;High Performance Django&#8221;</a>. I will be discussing what I&#8217;ve done at the past with <a href="http://www.curse.com">Curse.com</a>, what we do presently for <a href="http://www.ibegin.com">iBegin&#8217;s Crazy Datastore</a>, and general tips for scalability and performance in large web applications.</p>
 
 <p>So why am I telling you all of this? I&#8217;m interested in hearing what specifically you&#8217;ve had a hard time dealing with in your own apps. Hurdles that you&#8217;ve had to come over, or that you are still trying to get over. I&#8217;m looking for good topics to fill in the time, and real world examples that are more than just my own that I may be able to dissect.</p>
 
-<p>if you&#8217;ve got anything, throw me an <a href="mailto:dcramer@gmail.com">email</a>, or leave a comment here about it.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/27/fixing-remote-nano-sessions-in-terminalapp">Fixing Remote Nano Sessions in Terminal.app</a></h1>
-    
-    
-      <p class="meta">
+<p>if you&#8217;ve got anything, throw me an <a href="mailto:dcramer@gmail.com">email</a>, or leave a comment here about it.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -358,14 +289,19 @@ index maps
   
 
 
-<time datetime="2008-07-27T00:00:00-07:00" pubdate data-updated="true">Jul 27<span>th</span>, 2008</time>
+<time datetime="2008-07-27T00:00:00-07:00" pubdate data-updated="true">Jul 27<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of my daily problems occurs when I&#8217;m ssh&#8217;d into a remote server and I&#8217;m using nano to edit configuration files or quick scripts to dump information. The problem being, that it screws up differently on different systems.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/27/fixing-remote-nano-sessions-in-terminalapp">Fixing Remote Nano Sessions in Terminal.app</a></h1>
+    <div class="entry">
+        <p>One of my daily problems occurs when I&#8217;m ssh&#8217;d into a remote server and I&#8217;m using nano to edit configuration files or quick scripts to dump information. The problem being, that it screws up differently on different systems.</p>
 
 <p>So let&#8217;s start with the problems:</p>
 
@@ -375,23 +311,12 @@ index maps
 
 <p><strong>Problem:</strong> Using the up/down arrow keys, and possibly a number of other situations where text moves, causes the display to completely fubar and requires restarting the nano session.</p>
 
-<p><strong>Solution:</strong> Use vi I guess&#8230; I&#8217;ve yet to find a solution for this one :(</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/26/bash-trick-history-searching-ala-ipython">Bash Trick: History Searching Ala iPython</a></h1>
-    
-    
-      <p class="meta">
+<p><strong>Solution:</strong> Use vi I guess&#8230; I&#8217;ve yet to find a solution for this one :(</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -403,34 +328,28 @@ index maps
   
 
 
-<time datetime="2008-07-26T00:00:00-07:00" pubdate data-updated="true">Jul 26<span>th</span>, 2008</time>
+<time datetime="2008-07-27T00:00:00-07:00" pubdate data-updated="true">Jul 27<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Recently I ran across a trick on the net. I use iPython quite a bit, and I love how I can type a partial history command, and then use up/down to cycle through the recently used commands/code lines. I thought it would be pretty cool to have this same technique available in the bash prompt. After a bit of searching, I found some results, so here you go:</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/26/bash-trick-history-searching-ala-ipython">Bash Trick: History Searching Ala iPython</a></h1>
+    <div class="entry">
+        <p>Recently I ran across a trick on the net. I use iPython quite a bit, and I love how I can type a partial history command, and then use up/down to cycle through the recently used commands/code lines. I thought it would be pretty cool to have this same technique available in the bash prompt. After a bit of searching, I found some results, so here you go:</p>
 
 <pre># Enable bash history<br>export HISTCONTROL=erasedups<br>export HISTSIZE=10000<br>shopt -s histappend
 
-<p># These set up/down to do the history searching<br>bind '"\e[A"':history-search-backward<br>bind '"\e[B"':history-search-forward<br></pre></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/06/12/the-woes-of-moving">The Woes of Moving</a></h1>
-    
-    
-      <p class="meta">
+<p># These set up/down to do the history searching<br>bind '"\e[A"':history-search-backward<br>bind '"\e[B"':history-search-forward<br></pre></p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -442,14 +361,19 @@ index maps
   
 
 
-<time datetime="2008-06-12T00:00:00-07:00" pubdate data-updated="true">Jun 12<span>th</span>, 2008</time>
+<time datetime="2008-07-26T00:00:00-07:00" pubdate data-updated="true">Jul 26<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I&#8217;ve been out of touch for a little over a month now as I&#8217;ve been transitioning from the west to east coast. I decided it would be &#8220;fun&#8221; to head back to my hometown for the summer, and fun it has been.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/06/12/the-woes-of-moving">The Woes of Moving</a></h1>
+    <div class="entry">
+        <p>I&#8217;ve been out of touch for a little over a month now as I&#8217;ve been transitioning from the west to east coast. I decided it would be &#8220;fun&#8221; to head back to my hometown for the summer, and fun it has been.</p>
 
 <p>While looking for a place I had been using tethering on my AT&T network (oh, let me mention I&#8217;m in Nebraska), which is pretty cool. What is even more cool is that they trick you into paying an extra $40 for the access when you already pay $40 for unlimited data usage (want to see my $200 cell bill?). Even better, is that there&#8217;s a &#8220;100 mile deadzone where you are&#8221;, oh wow, that&#8217;s great, and I&#8217;m standing next to the cell tower too! What service I do get, is old-school 2k/s network speeds.</p>
 
@@ -461,58 +385,41 @@ index maps
 
 <p>We also released a new version of <a href="http://www.ibegin.com/labs/share/">iBegin Share</a> sometime last week, which addresses a few problems and adds color themes as well as the ability to embed share links in feeds and other similar content (geared mostly towards the Wordpress plugin).</p>
 
-<p>I also threw up a quick Mercurial bundle with some changes to the Django support in <a href="http://jinja.pocoo.org/1">Jinja</a></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/12/django-db-log">Django-db-log</a></h1>
-    
-    
-      <p class="meta">
+<p>I also threw up a quick Mercurial bundle with some changes to the Django support in <a href="http://jinja.pocoo.org/1">Jinja</a></p>
         
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-05-12T00:00:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2008</time>
         
-      </p>
-    
-  </header>
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
-  <div class="entry-content"><p>The question came up today, if there was a database logging solution available for Django. It turned out (to my knowledge) there wasn&#8217;t. So I quickly came up with <a href="http://code.google.com/p/django-db-log">django-db-log</a>. It&#8217;s a simply middleware which will catch exceptions in Django, and log them to the database, allowing you to easily view them via the admin or your own custom application.</p></div>
-  
+
+
+
+
+
+
   
 
 
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/04/gta4-problems-on-ps3">GTA4 Problems on PS3</a></h1>
-    
-    
-      <p class="meta">
+<time datetime="2008-06-12T00:00:00-07:00" pubdate data-updated="true">Jun 12<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
+    </div>
+</article>
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/05/12/django-db-log">Django-db-log</a></h1>
+    <div class="entry">
+        <p>The question came up today, if there was a database logging solution available for Django. It turned out (to my knowledge) there wasn&#8217;t. So I quickly came up with <a href="http://code.google.com/p/django-db-log">django-db-log</a>. It&#8217;s a simply middleware which will catch exceptions in Django, and log them to the database, allowing you to easily view them via the admin or your own custom application.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -524,14 +431,19 @@ index maps
   
 
 
-<time datetime="2008-05-04T00:00:00-07:00" pubdate data-updated="true">May 4<span>th</span>, 2008</time>
+<time datetime="2008-05-12T00:00:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I just got home from <a href="http://www.kelseygroup.com/drillingdown2008/">DDL</a> friday afternoon, eagerly awaiting to try my copy of GTA4. I had ordered it from EB Games[.com] just prior to leaving on tuesday afternoon. Well, it turned out I had put the wrong billing address, so even though they had charged me (Pending&#8230; ?), they couldn&#8217;t ship the item. Luckily though, GTA wasn&#8217;t like the Wii, and I was able to pick one up at the local GameStop near my house.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/05/04/gta4-problems-on-ps3">GTA4 Problems on PS3</a></h1>
+    <div class="entry">
+        <p>I just got home from <a href="http://www.kelseygroup.com/drillingdown2008/">DDL</a> friday afternoon, eagerly awaiting to try my copy of GTA4. I had ordered it from EB Games[.com] just prior to leaving on tuesday afternoon. Well, it turned out I had put the wrong billing address, so even though they had charged me (Pending&#8230; ?), they couldn&#8217;t ship the item. Luckily though, GTA wasn&#8217;t like the Wii, and I was able to pick one up at the local GameStop near my house.</p>
 
 <p>So, I start up the PS3, and throw in the game. You get what people are saying is a 7-minute install, which basically copies a bunch of media and files to the Playstation 3 hard drive (3gb worth) to optimize performance. After this, it then proceeds to automatically start a new game (or load the last auto save) for you. It finished the install, no problems whatsoever (although I&#8217;ve seen lots of reports of the game hanging somewhere around here), and then it went to the black loading screen saying &#8220;Starting a new game&#8230;&#8221;. About 10 minutes later I decided there was a problem.</p>
 
@@ -543,125 +455,50 @@ index maps
 
 <p>I&#8217;m hoping this post helps everyone else get around their issues with the PS3 version. I haven&#8217;t heard of any problems on the 360 version, so XBox owners may be in luck.</p>
 
-<p>Oh, ya, I&#8217;m <strong>zeeg99</strong> on the PS3 if you want to throw me an add :)</p></div>
-  
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/9/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-    <a class="next" href="/blog/page/7/">Newer &rarr;</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    <a href="http://www.getsentry.com" title="Sentry &mdash; Error Tracking Made Easy" style="text-decoration:none;"><img src="/images/sentry.png" style="background:inherit;padding:0;border:0;"/></a><section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-  </ul>
-</section>
-
-<section>
-  <h1>Github Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  
-  <a href="https://github.com/dcramer">@dcramer</a> on Github
-  
-  <script type="text/javascript">
-    $.domReady(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'dcramer',
-            count: 10,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("zeeg", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
+<p>Oh, ya, I&#8217;m <strong>zeeg99</strong> on the PS3 if you want to throw me an add :)</p>
+        
+        
     </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - David Cramer -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+    <div class="meta">
+        <div class="date">
 
-</footer>
+
+
+
+
+
+
+
   
+
+
+<time datetime="2008-05-04T00:00:00-07:00" pubdate data-updated="true">May 4<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+
+<nav id="pagenavi">
+    
+        <a href="/blog/page/7/" class="prev">Prev</a>
+    
+    
+        <a href="/blog/page/9/" class="next">Next</a>
+    
+    <a href="/blog/archives" class="center">Blog Archives</a>
+</nav></div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
 
 <script type="text/javascript">
       var disqus_shortname = 'davidcramer';
       
         
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = ''
-        
-        var disqus_url = 'http://justcramer.com/blog/page/8/index.html';
-        var disqus_script = 'embed.js';
+        var disqus_script = 'count.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -671,35 +508,6 @@ index maps
 </script>
 
 
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script type="text/javascript">
-  var _gauges = _gauges || [];
-  (function() {
-    var t   = document.createElement('script');
-    t.type  = 'text/javascript';
-    t.async = true;
-    t.id    = 'gauges-tracker';
-    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
-    t.src = '//secure.gaug.es/track.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(t, s);
-  })();
-</script>
 
 </body>
 </html>

@@ -1,79 +1,69 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>David Cramer's Blog</title>
-  <meta name="author" content="David Cramer">
+    <meta charset="utf-8">
+    <title>David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
 
-  
-  <meta name="description" content="A while back I posted a quick, and very simplistic guide to setting up django-sphinx within your project. Since that time we&#8217;ve gained a lot of &hellip;">
-  
+    
+    <meta name="description" content="Setting Up Django and Sphinx Full-text Search (Django-sphinx) A while back I posted a quick, and very simplistic guide to setting up django-sphinx &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://justcramer.com/blog/page/5">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">David Cramer's Blog</a></h1>
-  
-    <h2>Python at Scale.</h2>
-  
-</hgroup>
+<body>
+	<header class="inner"><h1><a href="/">Python at Scale</a></h1>
+<h4>David Cramer's Blog</h4>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:justcramer.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/archives/">Archives</a></li>
-  <li><a href="/resume/">Resume</a></li>
-</ul>
+	<div id="content" class="inner">
 
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Setting Up Django and Sphinx Full-text Search (Django-sphinx)</a></h1>
-    
-    
-      <p class="meta">
+
+    <article class="post">
+    <h1 class="title"><a href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Setting Up Django and Sphinx Full-text Search (Django-sphinx)</a></h1>
+    <div class="entry">
+        <p>A while back I posted a quick, and very simplistic guide to setting up django-sphinx within your project. Since that time we&#8217;ve gained a lot of use of the platform. It came to my attention today that the <a href="http://groups.google.com/group/django-nyc">django-nyc</a> group was going to do a presentation on how to setup sphinx within your Django project. This, and many, many questions later, I&#8217;ve decided to rewrite my guide to setting up Sphinx with your project.<br>
         
+        <a href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx" class="more-link">Read on &rarr;</a>
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -85,53 +75,25 @@
   
 
 
-<time datetime="2009-03-25T00:00:00-07:00" pubdate data-updated="true">Mar 25<span>th</span>, 2009</time>
+<time datetime="2009-03-25T00:00:00-07:00" pubdate data-updated="true">Mar 25<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>A while back I posted a quick, and very simplistic guide to setting up django-sphinx within your project. Since that time we&#8217;ve gained a lot of use of the platform. It came to my attention today that the <a href="http://groups.google.com/group/django-nyc">django-nyc</a> group was going to do a presentation on how to setup sphinx within your Django project. This, and many, many questions later, I&#8217;ve decided to rewrite my guide to setting up Sphinx with your project.<br></div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/03/14/scaling-your-frontend-far-futures-headers-and-template-tags">Scaling Your Frontend: Far-Futures Headers and Template Tags</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-03-14T00:00:00-07:00" pubdate data-updated="true">Mar 14<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>One of the many things we do to help optimize our website load times is optimize the frontend by setting far-futures headers. This simply means that media has an Expires tag of sometime in the distant future (maybe a year), and when we make changes, the filename needs to change. The easiest way to do this, is by adding a simple GET parameter.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/03/14/scaling-your-frontend-far-futures-headers-and-template-tags">Scaling Your Frontend: Far-Futures Headers and Template Tags</a></h1>
+    <div class="entry">
+        <p>One of the many things we do to help optimize our website load times is optimize the frontend by setting far-futures headers. This simply means that media has an Expires tag of sometime in the distant future (maybe a year), and when we make changes, the filename needs to change. The easiest way to do this, is by adding a simple GET parameter.</p>
 
 <p>To handle this, we had been using a simple revision system, where we just increment a number in a list of files, and it appends that number to the filename. After realizing how lazy we should have been, I quickly rewrote it to grab the file modification time and use that as the revision number.</p>
 
@@ -179,42 +141,36 @@ Now to link our media files it&#8217;s quick and painless:
 </span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-14T00:00:00-07:00" pubdate data-updated="true">Mar 14<span>th</span>, 2009</time></div>
+        <div class="tags">
+
 </div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/03/12/mac-os-x-security-update-2009-01-perl-fix">Mac OS X Security Update 2009-01 Fix for Perl and Fink</a></h1>
-    
-    
-      <p class="meta">
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-03-12T00:00:00-07:00" pubdate data-updated="true">Mar 12<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>As many users like myself probably have noticed, Apple seriously fucked us with their latest security release. From what I&#8217;ve read, they reverted Perl to an older version which doesn&#8217;t support some common features.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/03/12/mac-os-x-security-update-2009-01-perl-fix">Mac OS X Security Update 2009-01 Fix for Perl and Fink</a></h1>
+    <div class="entry">
+        <p>As many users like myself probably have noticed, Apple seriously fucked us with their latest security release. From what I&#8217;ve read, they reverted Perl to an older version which doesn&#8217;t support some common features.</p>
 
 <p>I began receiving errors such as the following with fink and other applications:</p>
 
@@ -224,23 +180,12 @@ Now to link our media files it&#8217;s quick and painless:
 
 <pre><br>mkdir -p /fixforperl<br>cd !$<br>curl -O http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/IO-1.2301.tar.gz<br>curl -O http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/DB_File-1.819.tar.gz<br>curl -O http://search.cpan.org/CPAN/authors/id/A/AM/AMS/Storable-2.18.tar.gz<br>tar xzf IO-1.2301.tar.gz<br>tar xzf DB_File-1.819.tar.gz<br>tar xzf Storable-2.18.tar.gz<br>cd IO-1.2301 && perl Makefile.PL && make && sudo make install && cd ..<br>cd DB_File-1.819 && perl Makefile.PL && make && sudo make install && cd ..<br>cd Storable-2.18 && perl Makefile.PL && make && sudo make install && cd ..<br></pre>
 
-<p>There may be other libraries which you need to update as well. These are just the ones I&#8217;ve encountered so far. The process is the same for each library. Simply grab the package off of CPAN, run the Makefile.PL, and make install.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/02/28/improved-uuidfield-in-django">Improved UUIDField in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>There may be other libraries which you need to update as well. These are just the ones I&#8217;ve encountered so far. The process is the same for each library. Simply grab the package off of CPAN, run the Makefile.PL, and make install.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -252,36 +197,30 @@ Now to link our media files it&#8217;s quick and painless:
   
 
 
-<time datetime="2009-02-28T00:00:00-08:00" pubdate data-updated="true">Feb 28<span>th</span>, 2009</time>
+<time datetime="2009-03-12T00:00:00-07:00" pubdate data-updated="true">Mar 12<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>So today I went ahead and cleaned up my UUIDField implementation. Originally it was just based off of a snippet. I wanted to swap it over to use a BINARY column in MySQL, after reading on how <a href="http://bret.appspot.com/entry/how-friendfeed-uses-mysql">FriendFeed had been using UUIDs</a>. Due to using Django however, you can&#8217;t use binary data or BLOB columns effectively. It tries to coerce everything to unicode so it ends up failing on any kind of binary data.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/02/28/improved-uuidfield-in-django">Improved UUIDField in Django</a></h1>
+    <div class="entry">
+        <p>So today I went ahead and cleaned up my UUIDField implementation. Originally it was just based off of a snippet. I wanted to swap it over to use a BINARY column in MySQL, after reading on how <a href="http://bret.appspot.com/entry/how-friendfeed-uses-mysql">FriendFeed had been using UUIDs</a>. Due to using Django however, you can&#8217;t use binary data or BLOB columns effectively. It tries to coerce everything to unicode so it ends up failing on any kind of binary data.</p>
 
 <p>Instead of using a BINARY(16) column, I just switched over to a CHAR(32) (previously a CHAR(36)). In doing this I also converted the field to keep everything in the UUID format (to better handle passing around the values, and converting to any format you want).</p>
 
 <p>All in all, the new UUIDField works as intended, and is a nice improvement over the simple &#8220;automatically insert a UUID here&#8221;, which is what it was before.</p>
 
-<p>Grab the code on <a href="https://github.com/dcramer/django-uuidfield">GitHub</a></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/02/22/javascript-widgets-on-nibbits">JavaScript Widgets on Nibbits</a></h1>
-    
-    
-      <p class="meta">
+<p>Grab the code on <a href="https://github.com/dcramer/django-uuidfield">GitHub</a></p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -293,36 +232,30 @@ Now to link our media files it&#8217;s quick and painless:
   
 
 
-<time datetime="2009-02-22T00:00:00-08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2009</time>
+<time datetime="2009-02-28T00:00:00-08:00" pubdate data-updated="true">Feb 28<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Quite a while back I introduced basic JavaScript widgets on Nibbits. These let site owners embed a simple box on their own site which shows basic information, as well as a download link for their maps.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/02/22/javascript-widgets-on-nibbits">JavaScript Widgets on Nibbits</a></h1>
+    <div class="entry">
+        <p>Quite a while back I introduced basic JavaScript widgets on Nibbits. These let site owners embed a simple box on their own site which shows basic information, as well as a download link for their maps.</p>
 
 <p>So, why am I posting about this? Simply to spread the word, and to demo it of course :)</p>
 
 <p><script src="http://www.nibbits.com/wc3/maps/view/125228/widget.js"></script></p>
 
-<p><script src="http://www.nibbits.com/sc/maps/view/125214/widget.js"></script></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/02/09/large-sql-result-sets-in-django">Large SQL Result Sets in Django</a></h1>
-    
-    
-      <p class="meta">
+<p><script src="http://www.nibbits.com/sc/maps/view/125214/widget.js"></script></p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -334,14 +267,19 @@ Now to link our media files it&#8217;s quick and painless:
   
 
 
-<time datetime="2009-02-09T00:00:00-08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2009</time>
+<time datetime="2009-02-22T00:00:00-08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of the repetitive tasks that I always seem to have, is handling large amounts of data in chunks. That is, typically I loop through every row in the database, but the result set is too large, or too slow to take into memory all at once. After reading my code a few too many times, I realized how lazy I had been on the first iteration, and decided to dry it up.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/02/09/large-sql-result-sets-in-django">Large SQL Result Sets in Django</a></h1>
+    <div class="entry">
+        <p>One of the repetitive tasks that I always seem to have, is handling large amounts of data in chunks. That is, typically I loop through every row in the database, but the result set is too large, or too slow to take into memory all at once. After reading my code a few too many times, I realized how lazy I had been on the first iteration, and decided to dry it up.</p>
 
 <p>So, the result, is a couple of useful classes for managing large QuerySet&#8217;s, and cursors in Django.</p>
 
@@ -556,23 +494,12 @@ Want to combine both results?
 </pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">IterableQuerySet</span><span class="p">(</span><span class="n">QuerySetCursor</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">MyModelClass</span><span class="p">)):</span>
 </span><span class='line'>    <span class="k">print</span> <span class="n">r</span>
 </span></code></pre></td></tr></table></div></figure>
-<p>I believe there&#8217;s also some optimization that can be doing with <code>cursor.fetchmany()</code> to also chunk the SQL in memory, but I&#8217;ve yet to research how the cursor classes work internally.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/02/05/lifestreams-evolution-into-a-platform">Lifestream&#8217;s Evolution Into a Platform</a></h1>
-    
-    
-      <p class="meta">
+<p>I believe there&#8217;s also some optimization that can be doing with <code>cursor.fetchmany()</code> to also chunk the SQL in memory, but I&#8217;ve yet to research how the cursor classes work internally.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -584,14 +511,19 @@ Want to combine both results?
   
 
 
-<time datetime="2009-02-05T00:00:00-08:00" pubdate data-updated="true">Feb 5<span>th</span>, 2009</time>
+<time datetime="2009-02-09T00:00:00-08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of the big things I&#8217;ve been talking about, and working on over the past couple of months (although I haven&#8217;t been working much on it), is our new Lifestream service. The goal is to simply create an open platform. A place where a user can sign up and add their feeds much like on FriendFeed, or one of those hundred clones. However, we have a slightly different vision from the limited scope that is FriendFeed.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2009/02/05/lifestreams-evolution-into-a-platform">Lifestream&#8217;s Evolution Into a Platform</a></h1>
+    <div class="entry">
+        <p>One of the big things I&#8217;ve been talking about, and working on over the past couple of months (although I haven&#8217;t been working much on it), is our new Lifestream service. The goal is to simply create an open platform. A place where a user can sign up and add their feeds much like on FriendFeed, or one of those hundred clones. However, we have a slightly different vision from the limited scope that is FriendFeed.</p>
 
 <p>We want to create a platform where this data is open to the user. A platform where they can use this data whenever, wherever, and however they want. Breaking down barriers between the data providers, and the user is not our only goal, but we also want to bring you a platform which goes above and beyond what the others offer. Allowing you to group and tweak your feeds (which are being relabled as sources) to your hearts desire.</p>
 
@@ -605,23 +537,12 @@ Want to combine both results?
 
 <p>Not only are we launching with several extensions, but we will also provide a very simple, themeable homepage for the user much like Pownce or Tumblr. This will allow you to post directly to your Lifestream, but also give you the ability to pull in information like your tweets. Essentially, this opens up an entire new blogging approach which hasn&#8217;t been very well explored.</p>
 
-<p>To the point. The service will be slowly opening up to users over the next month, and we hope to launch a fully open beta within the next 3-6 months. If you&#8217;re an extreme Lifestream fan, and you think you can really contribute in terms of feedback, and quality testing, we&#8217;re looking for you. Simply send me an <a href="mailto:dcramer@gmail.com/">email</a> letting me know that you are interested.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/12/29/denormalizing-model-abstraction-in-django">Denormalizing Model Abstraction in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>To the point. The service will be slowly opening up to users over the next month, and we hope to launch a fully open beta within the next 3-6 months. If you&#8217;re an extreme Lifestream fan, and you think you can really contribute in terms of feedback, and quality testing, we&#8217;re looking for you. Simply send me an <a href="mailto:dcramer@gmail.com/">email</a> letting me know that you are interested.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -633,14 +554,19 @@ Want to combine both results?
   
 
 
-<time datetime="2008-12-29T00:00:00-08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2008</time>
+<time datetime="2009-02-05T00:00:00-08:00" pubdate data-updated="true">Feb 5<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>In the Lifestream service I&#8217;ve been working on, I presented myself with the need to have some class abstraction, but not in the fashion which is available in Django models. I wanted to achieve a base class, which is stored in the database, and then child classes which simply override some methods. It turned out this would be a lot more complex than anticipated.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/12/29/denormalizing-model-abstraction-in-django">Denormalizing Model Abstraction in Django</a></h1>
+    <div class="entry">
+        <p>In the Lifestream service I&#8217;ve been working on, I presented myself with the need to have some class abstraction, but not in the fashion which is available in Django models. I wanted to achieve a base class, which is stored in the database, and then child classes which simply override some methods. It turned out this would be a lot more complex than anticipated.</p>
 
 <p>This is a fairly common approach to class abstraction, especially in Python. It&#8217;s used all over the place in your daily code. Whether you are overriding the save() method on your model, or creating your own admin form by subclassing ModelAdmin. I wanted to accomplish a similar task, but doing so on a model. Let&#8217;s call it backwards abstraction (since abstraction works the other direction in Django). We create a single table, which houses many classes, and possibly even some denormalization for additional data on these classes.</p>
 
@@ -723,23 +649,12 @@ As you can see here, we&#8217;re simply changing how the Twitter events are rend
 
 <p>So without further delay, <strong><a href="http://www.pastethat.com/ta5U1">view the source for TemplateModel</a></strong>.</p>
 
-<p>I&#8217;d be interested in hearing if anyone else has come up with their own solutions, and if you use something like this in your project how well its working for you.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/12/02/singletons-in-django">An Identity Mapper in Django (Formerly Django Singletons)</a></h1>
-    
-    
-      <p class="meta">
+<p>I&#8217;d be interested in hearing if anyone else has come up with their own solutions, and if you use something like this in your project how well its working for you.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -751,14 +666,19 @@ As you can see here, we&#8217;re simply changing how the Twitter events are rend
   
 
 
-<time datetime="2008-12-02T00:00:00-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time>
+<time datetime="2008-12-29T00:00:00-08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>As a sort of challenge to myself, I once again attempted to recreate <a href="http://code.djangoproject.com/ticket/17">ticket #17</a> as a standalone component. After a few hours, and some previous code I had written as a good guide, it seems to be working. So I&#8217;d like to announce <a href="http://github.com/dcramer/django-idmapper/tree/master">django-idmapper</a>.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/12/02/singletons-in-django">An Identity Mapper in Django (Formerly Django Singletons)</a></h1>
+    <div class="entry">
+        <p>As a sort of challenge to myself, I once again attempted to recreate <a href="http://code.djangoproject.com/ticket/17">ticket #17</a> as a standalone component. After a few hours, and some previous code I had written as a good guide, it seems to be working. So I&#8217;d like to announce <a href="http://github.com/dcramer/django-idmapper/tree/master">django-idmapper</a>.</p>
 
 <p>The goal of the project is a simple plug-and-play system for integrating the identity mapper into the ORM components. It allows you it simply define as a model with a different base class (via the SharedMemoryModel class), and all queries against this model (yes even from non-singleton models) are directed through the unique instance cache.</p>
 
@@ -797,23 +717,12 @@ Now in a (sort of) typical query, maybe we want to show every article (or 100, w
 
 <p>Please let me know if you run in to any problems, but so far, the tests are passing :)</p>
 
-<p><strong>Note: I&#8217;ve renamed the project due to the incorrect terminology. My apologies :)</strong></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/12/01/spaceless-html-in-django">Spaceless HTML in Django</a></h1>
-    
-    
-      <p class="meta">
+<p><strong>Note: I&#8217;ve renamed the project due to the incorrect terminology. My apologies :)</strong></p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -825,14 +734,19 @@ Now in a (sort of) typical query, maybe we want to show every article (or 100, w
   
 
 
-<time datetime="2008-12-01T00:00:00-08:00" pubdate data-updated="true">Dec 1<span>st</span>, 2008</time>
+<time datetime="2008-12-02T00:00:00-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of the optimizations (if you want to call it that) that can be done for decreased load-time on a web page, is removing excess white space. In many of our pages at <a href="http://www.ibegin.com">iBegin</a> this saved as much as 100kb. While not every site has some of the 300kb pages that we have, it can still add up very quickly.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/12/01/spaceless-html-in-django">Spaceless HTML in Django</a></h1>
+    <div class="entry">
+        <p>One of the optimizations (if you want to call it that) that can be done for decreased load-time on a web page, is removing excess white space. In many of our pages at <a href="http://www.ibegin.com">iBegin</a> this saved as much as 100kb. While not every site has some of the 300kb pages that we have, it can still add up very quickly.</p>
 
 <p>Django by default provides a <code>&#123;% spaceless %&#125;</code> tag in your templates which will allow you to achieve this effect, but we don&#8217;t use Django&#8217;s template engine (<a href="http://jinja.pocoo.org">Hooray, Jinja!</a>). The tag approach also seemed fairly inappropriate, as we just want to do it across the entire site, no matter what. Instead, we moved it into a middleware, which simply strips all whitespace (using the same method as the built-in tag) from any HTML page.</p>
 
@@ -858,125 +772,50 @@ Now in a (sort of) typical query, maybe we want to show every article (or 100, w
 
 <p>Note, that if you use page caching middleware, placing this in the appropriate place will also allow you to save space in your cache.</p>
 
-<p>Enjoy!</p></div>
-  
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/6/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-    <a class="next" href="/blog/page/4/">Newer &rarr;</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    <a href="http://www.getsentry.com" title="Sentry &mdash; Error Tracking Made Easy" style="text-decoration:none;"><img src="/images/sentry.png" style="background:inherit;padding:0;border:0;"/></a><section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-  </ul>
-</section>
-
-<section>
-  <h1>Github Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  
-  <a href="https://github.com/dcramer">@dcramer</a> on Github
-  
-  <script type="text/javascript">
-    $.domReady(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'dcramer',
-            count: 10,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("zeeg", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
+<p>Enjoy!</p>
+        
+        
     </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - David Cramer -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+    <div class="meta">
+        <div class="date">
 
-</footer>
+
+
+
+
+
+
+
   
+
+
+<time datetime="2008-12-01T00:00:00-08:00" pubdate data-updated="true">Dec 1<span>st</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+
+<nav id="pagenavi">
+    
+        <a href="/blog/page/4/" class="prev">Prev</a>
+    
+    
+        <a href="/blog/page/6/" class="next">Next</a>
+    
+    <a href="/blog/archives" class="center">Blog Archives</a>
+</nav></div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
 
 <script type="text/javascript">
       var disqus_shortname = 'davidcramer';
       
         
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = ''
-        
-        var disqus_url = 'http://justcramer.com/blog/page/5/index.html';
-        var disqus_script = 'embed.js';
+        var disqus_script = 'count.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -986,35 +825,6 @@ Now in a (sort of) typical query, maybe we want to show every article (or 100, w
 </script>
 
 
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script type="text/javascript">
-  var _gauges = _gauges || [];
-  (function() {
-    var t   = document.createElement('script');
-    t.type  = 'text/javascript';
-    t.async = true;
-    t.id    = 'gauges-tracker';
-    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
-    t.src = '//secure.gaug.es/track.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(t, s);
-  })();
-</script>
 
 </body>
 </html>

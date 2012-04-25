@@ -1,98 +1,64 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>David Cramer's Blog</title>
-  <meta name="author" content="David Cramer">
+    <meta charset="utf-8">
+    <title>David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
 
-  
-  <meta name="description" content="A few weeks ago we pushed out an update to Sentry, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value &hellip;">
-  
+    
+    <meta name="description" content="Error Tracing in Sentry A few weeks ago we pushed out an update to Sentry, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220; &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://justcramer.com/blog/page/2">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">David Cramer's Blog</a></h1>
-  
-    <h2>Python at Scale.</h2>
-  
-</hgroup>
+<body>
+	<header class="inner"><h1><a href="/">Python at Scale</a></h1>
+<h4>David Cramer's Blog</h4>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:justcramer.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/archives/">Archives</a></li>
-  <li><a href="/resume/">Resume</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/01/25/error-tracing-in-sentry">Error Tracing in Sentry</a></h1>
-    
-    
-      <p class="meta">
-        
+	<div id="content" class="inner">
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-01-25T00:00:00-08:00" pubdate data-updated="true">Jan 25<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2011/01/25/error-tracing-in-sentry">Error Tracing in Sentry</a></h1>
+    <div class="entry">
+        <p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
 
 <h4>Exposing Sentry ID</h4>
 
@@ -179,23 +145,12 @@
 
 <p><img src="http://f.cl.ly/items/2f1s1X0J231F2F3u0V0d/sentry-id.png"/></p>
 
-<p>You&#8217;ll also notice that all messages are now tagged with their unique Sentry ID as well (per the screenshot).</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/01/13/settings-in-django">Settings in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>You&#8217;ll also notice that all messages are now tagged with their unique Sentry ID as well (per the screenshot).</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -207,14 +162,25 @@
   
 
 
-<time datetime="2011-01-13T00:00:00-08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2011</time>
+<time datetime="2011-01-25T00:00:00-08:00" pubdate data-updated="true">Jan 25<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>, <a class='category' href='/categories/sentry/'>sentry</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a hundred different ways that you can manage it. While I&#8217;m not going to say ours is the best way, it has allowed us a very flexible application config under our varying situations.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2011/01/13/settings-in-django">Settings in Django</a></h1>
+    <div class="entry">
+        <p>I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a hundred different ways that you can manage it. While I&#8217;m not going to say ours is the best way, it has allowed us a very flexible application config under our varying situations.</p>
 
 <h4>Managing Local Settings</h4>
 
@@ -499,23 +465,12 @@ project/conf/settings/dev.py
 </span><span class='line'><span class="n">CACHE_BACKEND</span> <span class="o">=</span> <span class="s">&#39;locmem://&#39;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Hopefully this will save you as much time as it&#8217;s saved us. Simplifying settings like above has made it so a new developer, or a new development machine can be up and running with little to no changes to the application configuration itself.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/01/04/how-to-actually-make-localsolr-work">How to Actually Make LocalSolr Work</a></h1>
-    
-    
-      <p class="meta">
+<p>Hopefully this will save you as much time as it&#8217;s saved us. Simplifying settings like above has made it so a new developer, or a new development machine can be up and running with little to no changes to the application configuration itself.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -527,14 +482,25 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2011-01-04T00:00:00-08:00" pubdate data-updated="true">Jan 4<span>th</span>, 2011</time>
+<time datetime="2011-01-13T00:00:00-08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Today I&#8217;ve been working on integrating geospatial search with our upcoming DISQUS Search product, which happens to rely on Solr. It didn&#8217;t take much work before I stumbled upon <a href="http://www.gissearch.com/localsolr">LocalSolr</a>, which seems to be the defacto gis implementation. The docs were fairly brief, but it <em>seemed</em> easy to get up and running. It just so happens that it wasnt <em>that</em> easy after all. Hoping that this helps someone else out, here&#8217;s my step by step to getting it setup (locally, at least):</p>
+    <article class="post">
+    <h1 class="title"><a href="/2011/01/04/how-to-actually-make-localsolr-work">How to Actually Make LocalSolr Work</a></h1>
+    <div class="entry">
+        <p>Today I&#8217;ve been working on integrating geospatial search with our upcoming DISQUS Search product, which happens to rely on Solr. It didn&#8217;t take much work before I stumbled upon <a href="http://www.gissearch.com/localsolr">LocalSolr</a>, which seems to be the defacto gis implementation. The docs were fairly brief, but it <em>seemed</em> easy to get up and running. It just so happens that it wasnt <em>that</em> easy after all. Hoping that this helps someone else out, here&#8217;s my step by step to getting it setup (locally, at least):</p>
 
 <p>First up, you&#8217;re going to need to grab the localsolr libraries in some form or another. Hidden obscurely on a &#8220;Quick Start&#8221; link, is a tgz of an <a href="http://www.nsshutdown.com/solr-example.tgz">example project</a>. It&#8217;s much like example project included with the actual Solr package, so it should be fairly straightforward. Once I had this, I pulled in my existing configuration to replace the example&#8217;s, and updating it per the docs.</p>
 
@@ -588,23 +554,12 @@ project/conf/settings/dev.py
 </span><span class='line'><span class="nt">&lt;dynamicField</span> <span class="na">name=</span><span class="s">&quot;_local*&quot;</span> <span class="na">type=</span><span class="s">&quot;tdouble&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Now just reindex your data and enjoy. You&#8217;ll need to pass the <code>qt</code> parameter when searching, and set it to <strong>geo</strong> (or whatever you named your requestHandler above).</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/12/30/database-routers-in-django">Database Routers in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>Now just reindex your data and enjoy. You&#8217;ll need to pass the <code>qt</code> parameter when searching, and set it to <strong>geo</strong> (or whatever you named your requestHandler above).</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -616,14 +571,25 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-12-30T00:00:00-08:00" pubdate data-updated="true">Dec 30<span>th</span>, 2010</time>
+<time datetime="2011-01-04T00:00:00-08:00" pubdate data-updated="true">Jan 4<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/solr/'>solr</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Whether you&#8217;re doing master / slave, or partitioning data, when your product gets large enough you&#8217;ll need the ability to route data to various nodes in your database. Django (as of 1.2) out of the box provides a pretty cool solution called a Database Router. Here at DISQUS we have a large set of data, and one this of course brings the need to implement some of these fairly standard solutions.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/30/database-routers-in-django">Database Routers in Django</a></h1>
+    <div class="entry">
+        <p>Whether you&#8217;re doing master / slave, or partitioning data, when your product gets large enough you&#8217;ll need the ability to route data to various nodes in your database. Django (as of 1.2) out of the box provides a pretty cool solution called a Database Router. Here at DISQUS we have a large set of data, and one this of course brings the need to implement some of these fairly standard solutions.</p>
 
 <p>The first solution that many companies will choose is a master / slave setup. This is the most common of all database scaling techniques and is very easy to setup in modern RDBMS solutions. In Django, this also comes very easy with a few lines of code:</p>
 
@@ -821,23 +787,12 @@ project/conf/settings/dev.py
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>A future post will cover how we&#8217;ve started moving to a <code>dictConfigurator</code> to make inheritance in many of our settings much easier.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/12/27/django-bitfield">BitField&#8217;s in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>A future post will cover how we&#8217;ve started moving to a <code>dictConfigurator</code> to make inheritance in many of our settings much easier.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -849,14 +804,25 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-12-27T00:00:00-08:00" pubdate data-updated="true">Dec 27<span>th</span>, 2010</time>
+<time datetime="2010-12-30T00:00:00-08:00" pubdate data-updated="true">Dec 30<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Today we&#8217;re releasing another heavily used component from the DISQUS code base, <a href="https://github.com/disqus/django-bitfield">our BitField class</a>. While not a true BIT field (it uses a BIGINT), it still allows you the convenience of accessing the values as if they were bit flags.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/27/django-bitfield">BitField&#8217;s in Django</a></h1>
+    <div class="entry">
+        <p>Today we&#8217;re releasing another heavily used component from the DISQUS code base, <a href="https://github.com/disqus/django-bitfield">our BitField class</a>. While not a true BIT field (it uses a BIGINT), it still allows you the convenience of accessing the values as if they were bit flags.</p>
 
 <p>When I joined DISQUS about 7 months ago, we were using a Q-like object class to do checks against our BigIntegerField&#8217;s. It worked fairly well, but was just too verbose. To add to that, we had a function which would attach callables to the instance for each flag. This let us do things like <code>instance.FLAG_NAME()</code> to check if it was set, and <code>intance.FLAG_NAME(True)</code> to set the flag. This worked well, but, like many things, we wanted to improve on it. </p>
 
@@ -924,23 +890,12 @@ project/conf/settings/dev.py
 </span><span class='line'>    <span class="k">print</span> <span class="n">f</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Let us know if you have any feedback, and make sure you <a href="http://feeds.feedburner.com/DisqusCode">subscribe to updates</a> from our code blog.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/12/24/blog-refresh">Blog Refresh</a></h1>
-    
-    
-      <p class="meta">
+<p>Let us know if you have any feedback, and make sure you <a href="http://feeds.feedburner.com/DisqusCode">subscribe to updates</a> from our code blog.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -952,14 +907,25 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2010</time>
+<time datetime="2010-12-27T00:00:00-08:00" pubdate data-updated="true">Dec 27<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/24/blog-refresh">Blog Refresh</a></h1>
+    <div class="entry">
+        <p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
 
 <p>The new blog is powered off of <a href="https://github.com/mojombo/jekyll">Jekyll</a> and is running off of the <a href="http://pages.github.com">GitHub Pages technology</a>. I decided to use the <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a> project as a starter for the new design, and it&#8217;s turned out pretty well. If you&#8217;re curious, the source is available on <a href="https://github.com/dcramer/dcramer.github.com">GitHub</a> as always.</p>
 
@@ -987,23 +953,12 @@ project/conf/settings/dev.py
 
 <p>After a few wacky ideas I decided that the simplest solution would just be to write a URL mapper using origin and destination columns. With this in mind, I quickly whipped up a PHP script to dump my entire database of posts into a CSV file. The file converted the old permalinks (on davidcramer.net) to the new style. Finishing up the AppEngine app was fairly straight forward after this was ready. It included a CSV importer (to throw data into my datastore model), and handling the redirect part was painless. Again, if you&#8217;re curious, the <a href="https://github.com/dcramer/davidcramer-redirect">source</a> is on GitHub.</p>
 
-<p>I still have to deal with migrating URLs for Disqus, but let me know if you have any feedback on the new blog, it&#8217;s design, or just anything in general. Thanks!</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/12/21/feature-switches-in-django-with-gargoyle">Feature Switches in Django With Gargoyle</a></h1>
-    
-    
-      <p class="meta">
+<p>I still have to deal with migrating URLs for Disqus, but let me know if you have any feedback on the new blog, it&#8217;s design, or just anything in general. Thanks!</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -1015,14 +970,19 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-12-21T00:00:00-08:00" pubdate data-updated="true">Dec 21<span>st</span>, 2010</time>
+<time datetime="2010-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>A while back we talked about using <a href="http://blog.disqus.com/post/789540337/partial-deployment-with-feature-switches">feature switches</a> to deal with partial deployment. This allows you to easily deploy to portions of your audience, or bring out less finalized features without hiding them behind branches and the likes. This last week we hosted a company hack day here at DISQUS, and myself and <a href="http://anton.kovalyov.net/">Anton Kovalyov</a> decided we&#8217;d open source our switches platform. So the idea was that everyone here had a whole day to work on their projects. We figured that&#8217;d leave us plenty of time left over. In the end it turned out that creating an extensible platform was a bit more work than we had hoped.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/21/feature-switches-in-django-with-gargoyle">Feature Switches in Django With Gargoyle</a></h1>
+    <div class="entry">
+        <p>A while back we talked about using <a href="http://blog.disqus.com/post/789540337/partial-deployment-with-feature-switches">feature switches</a> to deal with partial deployment. This allows you to easily deploy to portions of your audience, or bring out less finalized features without hiding them behind branches and the likes. This last week we hosted a company hack day here at DISQUS, and myself and <a href="http://anton.kovalyov.net/">Anton Kovalyov</a> decided we&#8217;d open source our switches platform. So the idea was that everyone here had a whole day to work on their projects. We figured that&#8217;d leave us plenty of time left over. In the end it turned out that creating an extensible platform was a bit more work than we had hoped.</p>
 
 <p>After hack day, and some sparse hours of finalizing things, we&#8217;re proud to be announcing <a href="https://github.com/disqus/gargoyle">Gargoyle</a> today.</p>
 
@@ -1032,23 +992,12 @@ project/conf/settings/dev.py
 
 <ul><li>Support for IP address (by percent and IP)</li><li>Support for User (by percent, username, is_staff, is_superuser, and is_anonymous)</li><li>Integration using <a href="http://github.com/dcramer/nexus">Nexus</a> (post incoming later this week)</li><li>Easily extensible form-like condition sets for adding your own</li></ul>
 
-<p>Check out the <a href="https://github.com/disqus/gargoyle">README</a> and let us know what you think!</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/12/10/announcing-the-disqus-code-blog">Announcing the DISQUS Code Blog</a></h1>
-    
-    
-      <p class="meta">
+<p>Check out the <a href="https://github.com/disqus/gargoyle">README</a> and let us know what you think!</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -1060,34 +1009,34 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-12-10T00:00:00-08:00" pubdate data-updated="true">Dec 10<span>th</span>, 2010</time>
+<time datetime="2010-12-21T00:00:00-08:00" pubdate data-updated="true">Dec 21<span>st</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>Yesterday we semi-silently launched our <a href="http://code.disqus.com/">engineering blog and project site</a> over at DISQUS. We&#8217;re going to be aggregating posts from all of the engineering team&#8217;s personal blogs, as well as putting all of our open source projects and conference coverage over there. Look for all of the juicy details with what we&#8217;re building in Python and Django, and how we scale those apps.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/10/announcing-the-disqus-code-blog">Announcing the DISQUS Code Blog</a></h1>
+    <div class="entry">
+        <p>Yesterday we semi-silently launched our <a href="http://code.disqus.com/">engineering blog and project site</a> over at DISQUS. We&#8217;re going to be aggregating posts from all of the engineering team&#8217;s personal blogs, as well as putting all of our open source projects and conference coverage over there. Look for all of the juicy details with what we&#8217;re building in Python and Django, and how we scale those apps.</p>
 
 <p>As I&#8217;m sure many will ask what we&#8217;re using to power that site, the answer is GitHub. We originally had looked at using Tumblr to aggregate RSS feeds into a new blog, but their existing tools werent powerful enough. By the time we had written our own (to import a post and tag it appropriately), we realized that their API just wasn&#8217;t responsive (or available) enough. In the end we decided to use <a href="http://github.com">GitHub</a> and the <a href="https://github.com/mojombo/jekyll">Jekyll blog application</a>. Being that this is GitHub, you can also check out the <a href="https://github.com/disqus/disqus.github.com">source to our blog</a> if you dare. We&#8217;re still fairly new to Jekyll, so don&#8217;t use us as best practices just yet.</p>
 
-<p>Oh, and don&#8217;t forget to <a href="http://feeds.feedburner.com/DisqusCode">subscribe</a> to updates :)</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/12/06/tracking-changes-to-fields-in-django">Tracking Changes to Fields in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>Oh, and don&#8217;t forget to <a href="http://feeds.feedburner.com/DisqusCode">subscribe</a> to updates :)</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -1099,36 +1048,36 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-12-06T00:00:00-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2010</time>
+<time datetime="2010-12-10T00:00:00-08:00" pubdate data-updated="true">Dec 10<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine if certain actions need to take place when that instance is updated. We tend to use it like &#8220;if changed&#8221; database triggers. This has been very useful in situations like marking a comment as visible. In many areas this data is denormalized and we need to somehow propagate changes to counters or other similar structures.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/06/tracking-changes-to-fields-in-django">Tracking Changes to Fields in Django</a></h1>
+    <div class="entry">
+        <p>A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine if certain actions need to take place when that instance is updated. We tend to use it like &#8220;if changed&#8221; database triggers. This has been very useful in situations like marking a comment as visible. In many areas this data is denormalized and we need to somehow propagate changes to counters or other similar structures.</p>
 
 <p>What we ended up doing was building a class decorator. This was my first time using such a technique, and it turned out really well. If you&#8217;re not familiar, they work almost identically to function decorators. You might even consider them a class factory, if that better helps you understand whats happening.</p>
 
 <p>So, what we came up with was a decorator we&#8217;ve defined as <code>@track_data</code>. It allows us, at runtime, to specify which attributes we want to maintain history of on a model. This history is available from initialization, and reset whenever the model instance is saved (whether its via .save() or .update()).</p>
 
-<p><script src="https://gist.github.com/730765.js"> </script></p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/11/30/integrating-pyflakes-into-textmate">Integrating PyFlakes Into TextMate</a></h1>
-    
-    
-      <p class="meta">
+<p><script src="https://gist.github.com/730765.js"> </script></p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -1140,14 +1089,25 @@ project/conf/settings/dev.py
   
 
 
-<time datetime="2010-11-30T00:00:00-08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2010</time>
+<time datetime="2010-12-06T00:00:00-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve is showing a tooltip, and only when you save the file. There&#8217;s been a few attempts at doing this with things like JSLint and PyLint, but most of them fall short. Today I decided to correct that.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2010/11/30/integrating-pyflakes-into-textmate">Integrating PyFlakes Into TextMate</a></h1>
+    <div class="entry">
+        <p>One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve is showing a tooltip, and only when you save the file. There&#8217;s been a few attempts at doing this with things like JSLint and PyLint, but most of them fall short. Today I decided to correct that.</p>
 
 <p>A great bundle out there for JavaScript developers exists already, <a href="https://github.com/johnmuhl/javascript-tools-tmbundle">JavaScript Tools TextMate Bundle</a>. I&#8217;m not entirely sure who the original author is, but all in all, the bundle does its job well. It hooks the save hotkey and runs JSLint on your file, and gives you a bunch of other shiny tools as well. With Python there&#8217;s a few out there, but none really fit the workflow that I think is ideal: automation.</p>
 
@@ -1161,125 +1121,56 @@ project/conf/settings/dev.py
 
 <p><img src="http://dl.dropbox.com/u/116385/Screenshots/arlbt8ptszvb.png"/></p>
 
-<p>Anyways, without further adieu, check out the <a href="https://github.com/dcramer/python-tools-tmbundle">Python Tools TextMate Bundle</a> on GitHub.</p></div>
-  
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/3/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-    <a class="next" href="/">Newer &rarr;</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    <a href="http://www.getsentry.com" title="Sentry &mdash; Error Tracking Made Easy" style="text-decoration:none;"><img src="/images/sentry.png" style="background:inherit;padding:0;border:0;"/></a><section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-  </ul>
-</section>
-
-<section>
-  <h1>Github Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  
-  <a href="https://github.com/dcramer">@dcramer</a> on Github
-  
-  <script type="text/javascript">
-    $.domReady(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'dcramer',
-            count: 10,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("zeeg", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
+<p>Anyways, without further adieu, check out the <a href="https://github.com/dcramer/python-tools-tmbundle">Python Tools TextMate Bundle</a> on GitHub.</p>
+        
+        
     </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - David Cramer -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+    <div class="meta">
+        <div class="date">
 
-</footer>
+
+
+
+
+
+
+
   
+
+
+<time datetime="2010-11-30T00:00:00-08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
+
+<nav id="pagenavi">
+    
+        <a href="/" class="prev">Prev</a>
+    
+    
+        <a href="/blog/page/3/" class="next">Next</a>
+    
+    <a href="/blog/archives" class="center">Blog Archives</a>
+</nav></div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
 
 <script type="text/javascript">
       var disqus_shortname = 'davidcramer';
       
         
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = ''
-        
-        var disqus_url = 'http://justcramer.com/blog/page/2/index.html';
-        var disqus_script = 'embed.js';
+        var disqus_script = 'count.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -1289,35 +1180,6 @@ project/conf/settings/dev.py
 </script>
 
 
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script type="text/javascript">
-  var _gauges = _gauges || [];
-  (function() {
-    var t   = document.createElement('script');
-    t.type  = 'text/javascript';
-    t.async = true;
-    t.id    = 'gauges-tracker';
-    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
-    t.src = '//secure.gaug.es/track.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(t, s);
-  })();
-</script>
 
 </body>
 </html>

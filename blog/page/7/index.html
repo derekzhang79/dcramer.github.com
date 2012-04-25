@@ -1,98 +1,64 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>David Cramer's Blog</title>
-  <meta name="author" content="David Cramer">
+    <meta charset="utf-8">
+    <title>David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
 
-  
-  <meta name="description" content="Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form submission on websites, which is typically spam, &hellip;">
-  
+    
+    <meta name="description" content="Dealing With Automated Form Submission (Spam) Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  
-  <link rel="canonical" href="http://justcramer.com/blog/page/7">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">David Cramer's Blog</a></h1>
-  
-    <h2>Python at Scale.</h2>
-  
-</hgroup>
+<body>
+	<header class="inner"><h1><a href="/">Python at Scale</a></h1>
+<h4>David Cramer's Blog</h4>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="http://feeds.feedburner.com/DavidCramernet" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:justcramer.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/archives/">Archives</a></li>
-  <li><a href="/resume/">Resume</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/09/11/dealing-with-automated-form-submission-spam">Dealing With Automated Form Submission (Spam)</a></h1>
-    
-    
-      <p class="meta">
-        
+	<div id="content" class="inner">
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-09-11T00:00:00-07:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form submission on websites, which is typically spam, or something else you don&#8217;t want happening. I added our routines to the new iBegin&#8217;s submission system today, and thought that I&#8217;d share with the world what we&#8217;re doing. I&#8217;m also curious as to what everyone else does to solve these problems, without burdening the user.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/09/11/dealing-with-automated-form-submission-spam">Dealing With Automated Form Submission (Spam)</a></h1>
+    <div class="entry">
+        <p>Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form submission on websites, which is typically spam, or something else you don&#8217;t want happening. I added our routines to the new iBegin&#8217;s submission system today, and thought that I&#8217;d share with the world what we&#8217;re doing. I&#8217;m also curious as to what everyone else does to solve these problems, without burdening the user.</p>
 
 <p>On Curse we implemented a middleware, which on any POST request, would confirm that a user had filled in a Captcha box within the last N hours, or had verified themselves as a human being in some other fashion (a text message was our method).</p>
 
@@ -140,64 +106,47 @@ And our Django form validation:
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
 </span></code></pre></td></tr></table></div></figure>
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00-07:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time></div>
+        <div class="tags">
+
 </div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/09/09/djangocon-2008-is-over">DjangoCon 2008 Is Over</a></h1>
-    
-    
-      <p class="meta">
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-09-09T00:00:00-07:00" pubdate data-updated="true">Sep 9<span>th</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Just got back home this evening from DjangoCon. It was really a lot of fun. It&#8217;s always great to be able to put a face to a name, or a 100 faces to names, in this case. I met a lot of really cool people, and some of the presentations were fantastic (especially Cal Henderson&#8217;s).</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/09/09/djangocon-2008-is-over">DjangoCon 2008 Is Over</a></h1>
+    <div class="entry">
+        <p>Just got back home this evening from DjangoCon. It was really a lot of fun. It&#8217;s always great to be able to put a face to a name, or a 100 faces to names, in this case. I met a lot of really cool people, and some of the presentations were fantastic (especially Cal Henderson&#8217;s).</p>
 
 <p>My presentation went fairly good. I was pretty nervous so I went to my slides way too fast and didn&#8217;t go into the details like I had planned out. I will know next time to make more slides, and to have more notes on what I want to talk about. For anyone who is interested, you can view the slides on <a href="http://www.slideshare.net/zeeg/django-con-high-performance-django-presentation/1?from=email&type=comment_onslide&subtype=slideshow">SlideShare</a>.</p>
 
 <p>After hearing a lot of the opinions from people, I think the core Django team is going to take into serious consideration some of the feature requests I&#8217;ve wanted for a while (mostly database related). At least a good 5-10% of the speakers brought up singletons (ticket #17), and several others brought up denormalization and database clustering. I was really glad to see I wasn&#8217;t as crazy as I had thought, and the only person who really needed these features.</p>
 
-<p>A big thanks to everyone who made DjangoCon &#8216;08 possible, hope to be able to go to the next one as well :)</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/09/07/django-debug-toolbar">Django Debug Toolbar</a></h1>
-    
-    
-      <p class="meta">
+<p>A big thanks to everyone who made DjangoCon &#8216;08 possible, hope to be able to go to the next one as well :)</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -209,14 +158,19 @@ And our Django form validation:
   
 
 
-<time datetime="2008-09-07T00:00:00-07:00" pubdate data-updated="true">Sep 7<span>th</span>, 2008</time>
+<time datetime="2008-09-09T00:00:00-07:00" pubdate data-updated="true">Sep 9<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>After the presentation yesterday evening, and Cal Anderson showing Pownce&#8217;s debug toolbar for a moment, it seemed like a great idea to create a pluggable out of it. It turned out I wasn&#8217;t the only one with this idea.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/09/07/django-debug-toolbar">Django Debug Toolbar</a></h1>
+    <div class="entry">
+        <p>After the presentation yesterday evening, and Cal Anderson showing Pownce&#8217;s debug toolbar for a moment, it seemed like a great idea to create a pluggable out of it. It turned out I wasn&#8217;t the only one with this idea.</p>
 
 <p>I ended up creating a few &#8220;panels&#8221; inside of an overlay toolbar, which showed things like SQL queries, profile output, and cache hits/misses. At the same time, <a href="http://www.twitter.com/robhudson">Rob Hudson</a> had created a pluggable framework for handling these &#8220;panels&#8221;. After somehow running into each other in the lounge at the hotel, we successfully managed to add my panels to the <a href="http://github.com/dcramer/django-debug-toolbar/tree/master">django-debug-toolbar project</a>.</p>
 
@@ -228,60 +182,43 @@ And our Django form validation:
 
 <p>(We haven&#8217;t implemented a profile module solution completely yet into the panel system)</p>
 
-<p>[gallery]</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/09/06/high-performance-django">High Performance Django</a></h1>
-    
-    
-      <p class="meta">
+<p>[gallery]</p>
         
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-09-06T00:00:00-07:00" pubdate data-updated="true">Sep 6<span>th</span>, 2008</time>
         
-      </p>
-    
-  </header>
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
-  <div class="entry-content"><p>Below you will find resources from my presentation on High Performance Django.</p>
 
-<ul><br><li><a href="http://www.slideshare.net/zeeg/django-con-high-performance-django-presentation/">Slides</a></li><br><li><a href="http://www.pastethat.com/dlnsr">Profiling Middleware</a></li><br><li>Template Engine Benchmarks: <a href="http://dev.pocoo.org/hg/jinja2-main/file/tip/examples/rwbench/">Real-world Example</a>, <a href="http://dev.pocoo.org/hg/jinja2-main/file/80ed3eaab7d3/examples/basic/">Benchmark Testcase</a></li><br></ul></div>
+
+
+
+
+
   
-  
 
 
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/25/wordpress-lifestream-updates">WordPress LifeStream Plugin Updates</a></h1>
-    
-    
-      <p class="meta">
+<time datetime="2008-09-07T00:00:00-07:00" pubdate data-updated="true">Sep 7<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
+    </div>
+</article>
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/09/06/high-performance-django">High Performance Django</a></h1>
+    <div class="entry">
+        <p>Below you will find resources from my presentation on High Performance Django.</p>
+
+<ul><br><li><a href="http://www.slideshare.net/zeeg/django-con-high-performance-django-presentation/">Slides</a></li><br><li><a href="http://www.pastethat.com/dlnsr">Profiling Middleware</a></li><br><li>Template Engine Benchmarks: <a href="http://dev.pocoo.org/hg/jinja2-main/file/tip/examples/rwbench/">Real-world Example</a>, <a href="http://dev.pocoo.org/hg/jinja2-main/file/80ed3eaab7d3/examples/basic/">Benchmark Testcase</a></li><br></ul>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -293,14 +230,19 @@ And our Django form validation:
   
 
 
-<time datetime="2008-08-25T00:00:00-07:00" pubdate data-updated="true">Aug 25<span>th</span>, 2008</time>
+<time datetime="2008-09-06T00:00:00-07:00" pubdate data-updated="true">Sep 6<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>This weekend I took the opportunity to implement a bunch of changes, and fixes, into the wp-lifestream plugin which I created. It got a quick overhaul on the extensibility end, allowing you to do much more with complex feeds. To demonstrate the power, I went ahead and built the much-requested Pandora feed plugin.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/25/wordpress-lifestream-updates">WordPress LifeStream Plugin Updates</a></h1>
+    <div class="entry">
+        <p>This weekend I took the opportunity to implement a bunch of changes, and fixes, into the wp-lifestream plugin which I created. It got a quick overhaul on the extensibility end, allowing you to do much more with complex feeds. To demonstrate the power, I went ahead and built the much-requested Pandora feed plugin.</p>
 
 <p>The plugin itself, pulls from three different feeds, and displays different labels based on which feed the data comes from. The new feed format allows you to store a key, which specifies the a sort-of sub-feed within the feed. The changes also allow you to make the labels on all feeds dynamic, by overriding two new functions: <code>get_label_single()</code> and <code>get_label_plural()</code>.</p>
 
@@ -312,23 +254,12 @@ And our Django form validation:
 
 <p>Among the TODO, when I get more time, is support for WPMU, and as always, more feeds.</p>
 
-<p>If you think there&#8217;s something that would make a good addition, feel free to let me know. Either drop me an <a href="mailto:dcramer@gmail.com">email</a> or post a comment on the <a href="/my-projects/lifestream">project page</a>.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/23/logging-in-with-email-addresses-in-django">Logging in With Email Addresses in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>If you think there&#8217;s something that would make a good addition, feel free to let me know. Either drop me an <a href="mailto:dcramer@gmail.com">email</a> or post a comment on the <a href="/my-projects/lifestream">project page</a>.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -340,14 +271,19 @@ And our Django form validation:
   
 
 
-<time datetime="2008-08-23T00:00:00-07:00" pubdate data-updated="true">Aug 23<span>rd</span>, 2008</time>
+<time datetime="2008-08-25T00:00:00-07:00" pubdate data-updated="true">Aug 25<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>One of the tasks that seems to come up every single project we do, is changing the auth backend to accept email addresses. Since it&#8217;s such a common task for us, it can&#8217;t be that rare to want this functionality. So, here&#8217;s a quick and simply backend which accomplishes this, using the built-in <em>django.contrib.auth</em> module.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/23/logging-in-with-email-addresses-in-django">Logging in With Email Addresses in Django</a></h1>
+    <div class="entry">
+        <p>One of the tasks that seems to come up every single project we do, is changing the auth backend to accept email addresses. Since it&#8217;s such a common task for us, it can&#8217;t be that rare to want this functionality. So, here&#8217;s a quick and simply backend which accomplishes this, using the built-in <em>django.contrib.auth</em> module.</p>
 
 <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -404,42 +340,36 @@ Then in your settings:
 </span><span class='line'><span class="s">&#39;django.contrib.auth.backends.ModelBackend&#39;</span>
 </span><span class='line'><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-23T00:00:00-07:00" pubdate data-updated="true">Aug 23<span>rd</span>, 2008</time></div>
+        <div class="tags">
+
 </div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/13/a-better-paginator-in-django">A Better Paginator in Django</a></h1>
-    
-    
-      <p class="meta">
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-08-13T00:00:00-07:00" pubdate data-updated="true">Aug 13<span>th</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>One of the tasks that I seem to repeatedly do across multiple projects, is extend the built-in paginator from Django. The built-in is fairly nice, but it&#8217;s quite honestly extremely confusing as you have to pass around a paginator instance as well as a paginator.page() instance in order to get useful pagination inside of a template.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/13/a-better-paginator-in-django">A Better Paginator in Django</a></h1>
+    <div class="entry">
+        <p>One of the tasks that I seem to repeatedly do across multiple projects, is extend the built-in paginator from Django. The built-in is fairly nice, but it&#8217;s quite honestly extremely confusing as you have to pass around a paginator instance as well as a paginator.page() instance in order to get useful pagination inside of a template.</p>
 
 <p>After the Nth time of someone coming up with questions about the paginator, and seeing Brian Rosner&#8217;s not-very-smart &#8220;smart_page_range&#8221; code (his words, not mine!), I figured it might be useful to throw this out to the public.</p>
 
@@ -536,42 +466,36 @@ Then in your settings:
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">return</span> <span class="n">context</span>
 </span></code></pre></td></tr></table></div></figure>
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-13T00:00:00-07:00" pubdate data-updated="true">Aug 13<span>th</span>, 2008</time></div>
+        <div class="tags">
+
 </div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/12/updating-to-mysql-51-from-a-fink-installation">Updating to MySQL 5.1 From a Fink Installation</a></h1>
-    
-    
-      <p class="meta">
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-08-12T00:00:00-07:00" pubdate data-updated="true">Aug 12<span>th</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Today I went through the fun task of updating my local MySQL installation to 5.1 in order to try out then new partitioning. The challenge here, was that I wanted to keep everything for fink in order (the same paths, and for the most part, the same options).</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/12/updating-to-mysql-51-from-a-fink-installation">Updating to MySQL 5.1 From a Fink Installation</a></h1>
+    <div class="entry">
+        <p>Today I went through the fun task of updating my local MySQL installation to 5.1 in order to try out then new partitioning. The challenge here, was that I wanted to keep everything for fink in order (the same paths, and for the most part, the same options).</p>
 
 <p>So first, you need to download the <a href="http://dev.mysql.com/downloads/mysql/5.1.html#source">source</a> for MySQL 5.1. Don&#8217;t get the Mac OS installer or tar!</p>
 
@@ -583,23 +507,12 @@ Then in your settings:
 
 <p>Now go grab some lunch, the configure is going to take a good 30 minutes depending on how powerful your Mac is.</p>
 
-<p>The rest is simply your standard <code>sudo make install</code>.</p></div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/08/custom-fields-in-django">Custom Fields in Django</a></h1>
-    
-    
-      <p class="meta">
+<p>The rest is simply your standard <code>sudo make install</code>.</p>
         
+        
+    </div>
+    <div class="meta">
+        <div class="date">
 
 
 
@@ -611,14 +524,19 @@ Then in your settings:
   
 
 
-<time datetime="2008-08-08T00:00:00-07:00" pubdate data-updated="true">Aug 8<span>th</span>, 2008</time>
+<time datetime="2008-08-12T00:00:00-07:00" pubdate data-updated="true">Aug 12<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
         
-      </p>
-    
-  </header>
+    </div>
+</article>
 
 
-  <div class="entry-content"><p>I was helping someone today in the <a href="irc://irc.freenode.net/django">Django IRC channel</a> and the question came across about storing a denormalized data set in a single field. Typically I do such things by either serializing the data, or by separating the values with a token (comma for example).</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/08/custom-fields-in-django">Custom Fields in Django</a></h1>
+    <div class="entry">
+        <p>I was helping someone today in the <a href="irc://irc.freenode.net/django">Django IRC channel</a> and the question came across about storing a denormalized data set in a single field. Typically I do such things by either serializing the data, or by separating the values with a token (comma for example).</p>
 
 <p>Django has a built-in field type for <a href="http://www.djangoproject.com/documentation/model-api/#commaseparatedintegerfield">CommaSeparatedIntegerField</a>, but most of the time I&#8217;m storing strings, as I already have the integers available elsewhere. As I began to answer the person&#8217;s question by giving him an example of usage of serialization + custom properties, until I realized that it would be much easier to just write this as a Field subclass.</p>
 
@@ -725,42 +643,36 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
 </span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_val_from_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 </span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_db_prep_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-08T00:00:00-07:00" pubdate data-updated="true">Aug 8<span>th</span>, 2008</time></div>
+        <div class="tags">
+
 </div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/02/more-updates-to-django-sphinx">More Updates to Django-sphinx</a></h1>
-    
-    
-      <p class="meta">
         
+    </div>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-08-02T00:00:00-07:00" pubdate data-updated="true">Aug 2<span>nd</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I was working on our search for the new <a href="http://www.ibegin.com/">iBegin</a> today, which utilizes Sphinx, Django, and obviously, <a href="http://code.google.com/p/django-sphinx/">django-sphinx</a>. Being the person who hates doing tedious work, I found a few issues in the newly done configuration generation.</p>
+    <article class="post">
+    <h1 class="title"><a href="/2008/08/02/more-updates-to-django-sphinx">More Updates to Django-sphinx</a></h1>
+    <div class="entry">
+        <p>I was working on our search for the new <a href="http://www.ibegin.com/">iBegin</a> today, which utilizes Sphinx, Django, and obviously, <a href="http://code.google.com/p/django-sphinx/">django-sphinx</a>. Being the person who hates doing tedious work, I found a few issues in the newly done configuration generation.</p>
 
 <ul><li>Errors hardcore in 0.98</li><li>It wasn&#8217;t generating attributes for floats (latitude/longitude)</li><li>Didn&#8217;t work with custom index names</li></ul>
 
@@ -768,125 +680,50 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
 
 <ul><li>There is now an included api for 0.98, as well as proper configuration generation. To use it simply do the following in <code>settings.py</code>:<pre>SPHINX_API_VERSION = 0x113</pre><br></li><li>The api support is very flexible for future versions (just requires override templates and inclusion of the api).</li><li>The generation command via manage.py now properly generates sample config for ANY model with Sphinx attached to it.</li><li>You can now pass the <code>UpdateAttributes()</code> command via <code>instance.sphinx.update(kwargs)</code>.</li></ul>
 
-<p>As always, grab the code over at <a href="http://code.google.com/p/django-sphinx/">Google</a> and make sure to subscribe to the <a href="http://groups.google.com/group/django-sphinx">Google group</a> to be spammed with updates.</p></div>
-  
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/8/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-    <a class="next" href="/blog/page/6/">Newer &rarr;</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    <a href="http://www.getsentry.com" title="Sentry &mdash; Error Tracking Made Easy" style="text-decoration:none;"><img src="/images/sentry.png" style="background:inherit;padding:0;border:0;"/></a><section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/11/10/scaling-schema-changes">Scaling Schema Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/08/05/extending-django-nose">Integrating Django with Nose at DISQUS</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-  </ul>
-</section>
-
-<section>
-  <h1>Github Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  
-  <a href="https://github.com/dcramer">@dcramer</a> on Github
-  
-  <script type="text/javascript">
-    $.domReady(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'dcramer',
-            count: 10,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("zeeg", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/zeeg" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @zeeg</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
+<p>As always, grab the code over at <a href="http://code.google.com/p/django-sphinx/">Google</a> and make sure to subscribe to the <a href="http://groups.google.com/group/django-sphinx">Google group</a> to be spammed with updates.</p>
+        
+        
     </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - David Cramer -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+    <div class="meta">
+        <div class="date">
 
-</footer>
+
+
+
+
+
+
+
   
+
+
+<time datetime="2008-08-02T00:00:00-07:00" pubdate data-updated="true">Aug 2<span>nd</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+
+<nav id="pagenavi">
+    
+        <a href="/blog/page/6/" class="prev">Prev</a>
+    
+    
+        <a href="/blog/page/8/" class="next">Next</a>
+    
+    <a href="/blog/archives" class="center">Blog Archives</a>
+</nav></div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
 
 <script type="text/javascript">
       var disqus_shortname = 'davidcramer';
       
         
-        // var disqus_developer = 1;
-        
-            var disqus_identifier = ''
-        
-        var disqus_url = 'http://justcramer.com/blog/page/7/index.html';
-        var disqus_script = 'embed.js';
+        var disqus_script = 'count.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -896,35 +733,6 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
 </script>
 
 
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script type="text/javascript">
-  var _gauges = _gauges || [];
-  (function() {
-    var t   = document.createElement('script');
-    t.type  = 'text/javascript';
-    t.async = true;
-    t.id    = 'gauges-tracker';
-    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
-    t.src = '//secure.gaug.es/track.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(t, s);
-  })();
-</script>
 
 </body>
 </html>
