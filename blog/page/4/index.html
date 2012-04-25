@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="As an advocate of Jinja2 I figured it was about time I got on board the train. Up until now I had been using Jinja1 at work, and in most projects. &hellip;">
+  <meta name="description" content="One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,91 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/09/30/jinja2-and-django-registration">Jinja2 and Django-registration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-09-30T00:00:00-07:00" pubdate data-updated="true">Sep 30<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already have built-in views, and many have yet to realize the benefit of class-based views. Today, I&#8217;m going to explain how we approached this for <a href="http://www.djangospot.com">DjangoSpot</a> (<a href="http://www.github.com/dcramer/djangospot">GitHub</a>) and <a href="http://bitbucket.org/ubernostrum/django-registration">django-registration</a>.</p>
+
+<p>The goal, as always, is the write the least amount of code. However, extending function-based views is now an easy task. So our approach involves using some tricky Python code (thanks to Chris Leary for the ideas!).</p>
+
+<p>Let&#8217;s talk about requirements real quick. You&#8217;ll need Django 1.1 (or newer), <a href="http://jinja.pocoo.org/2">Jinja2</a>, and <a href="http://www.github.com/dcramer/coffin">Coffin</a> 0.3.1 or newer (which as of writing, is not on PyPi).</p>
+
+<p>First off, we&#8217;re going to use <code>inspect.getsource</code> to retrieve source code for functions, and <code>exec</code> to evaluate that source code. One thing to note here, is that if the function you are trying to modify is using a decorator, it may not be possible to get the actual functions source code. Some, however, can be obtained by using <code>my_function.func_var_name</code>.</p>
+
+<p>So let&#8217;s take a look at our <code>urls.py</code> in <code>djangospot.accounts.urls</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">inspect</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">registration</span> <span class="kn">import</span> <span class="n">urls</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>\
+</span><span class='line'>     <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;django.contrib.auth&#39;</span><span class="p">,</span> <span class="s">&#39;coffin.contrib.auth&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see above, we&#8217;re importing the <code>urls</code> from django registration, and then running <code>getsource</code> on it. This gets us the source code from that entire file. From there, we simply swap out <code>django.contrib.auth</code> for our drop-in <code>coffin.contrib.auth</code>.
+
+Next up, we need to handle the views. It&#8217;s a similar approach, except we&#8217;re not doing any tricky string replacement:
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">inspect</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">registration.views</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">coffin.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">coffin.template</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">activate</span><span class="p">)</span>
+</span><span class='line'><span class="k">exec</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">register</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>What we&#8217;re doing here, is getting the source code for the actual methods, and simply executing it. To ensure we have all the needed imports, we first import everything from the <code>registration.views</code>. Afterwards, we replace the <code>render_to_response</code> and <code>RequestContext</code> imports with the ones made available in Coffin.</p>
+
+<p>Overall, it&#8217;s a fairly sketchy process, but it works beautiful. We approach the problem in a similar fashion with Coffin and the generic and contrib views in there.</p></div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1314,45 +1399,6 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Setting Up Django and Sphinx Full-text Search (Django-sphinx)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-03-25T00:00:00-07:00" pubdate data-updated="true">Mar 25<span>th</span>, 2009</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>A while back I posted a quick, and very simplistic guide to setting up django-sphinx within your project. Since that time we&#8217;ve gained a lot of use of the platform. It came to my attention today that the <a href="http://groups.google.com/group/django-nyc">django-nyc</a> group was going to do a presentation on how to setup sphinx within your Django project. This, and many, many questions later, I&#8217;ve decided to rewrite my guide to setting up Sphinx with your project.<br></div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1370,6 +1416,10 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
+      </li>
+    
+      <li class="post">
         <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
       </li>
     
@@ -1383,10 +1433,6 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
     
       <li class="post">
         <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/06/24/europython">EuroPython</a>
       </li>
     
   </ul>

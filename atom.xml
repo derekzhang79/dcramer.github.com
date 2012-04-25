@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://dcramer.github.com/atom.xml" rel="self"/>
   <link href="http://dcramer.github.com/"/>
-  <updated>2012-04-18T17:43:53-07:00</updated>
+  <updated>2012-04-24T22:25:49-07:00</updated>
   <id>http://dcramer.github.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,167 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Sticking With Standards]]></title>
+    <link href="http://dcramer.github.com/2012/04/24/sticking-with-standards"/>
+    <updated>2012-04-24T22:23:00-07:00</updated>
+    <id>http://dcramer.github.com/2012/04/24/sticking-with-standards</id>
+    <content type="html"><![CDATA[<p>More and more I&#8217;m seeing the &#8220;requirements.txt pattern&#8221; come up. This generally refers to projects (but not just), and
+seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
+Python world, and because I have an opinion on everything, I want to share mine.</p>
+
+
+
+
+<h3>requirements.txt</h3>
+
+
+
+
+<p>Let&#8217;s first talk about what this pattern actually is. As you should already be familiar with pip (if you&#8217;re not, this
+post is not for you), the idea of this is that whatever your&#8217;e doing, is installable by pointing pip at a requirements.txt
+file which contains a list of your projects dependencies. This has some obvious benefits, one being that you can
+mark repositories as dependencies.</p>
+
+
+
+
+<p>Another benefit of this is when have a large project (like DISQUS) and your dependencies can vary between environments. For
+example, we have several various requirements files for disqus-web (our largest package):</p>
+
+
+
+
+<pre>
+requirements/global.txt
+requirements/production.txt
+requirements/development.txt
+</pre>
+
+
+
+
+<p>These end up being pretty obvious, and when an app has specific needs there&#8217;s no reason not to approach the problem this
+way. That said, you dont <strong>need</strong> to do things this way, and in every project other than our main repository,
+including our open source work, all dependencies are specified completely in setup.py. Even in this case, we could just
+as easily specify our core requirements as part of the package and simple have additional files which label the production
+and development dependencies.</p>
+
+
+
+
+<h3>setup.py is the right choice</h3>
+
+
+
+
+<p>A common argument for not using setup.py is that a library is not the same as an app (or larger project). Why not? We
+employ the same metadata in everything. Each contains a list of dependencies, some various metadata, and possibly a list
+of extra resources (such as scripts, or documentation). Fundamentally they&#8217;re identical. Additionally, if pip is your
+thing, it <strong>does not prevent you from using setup.py</strong>. Let&#8217;s take an example setup.py:</p>
+
+
+
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Clever hack to avoid requiring Nose</span>
+</span><span class='line'><span class="k">if</span> <span class="s">&#39;nosetests&#39;</span> <span class="o">==</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+</span><span class='line'>    <span class="n">setup_requires</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nose&gt;=1.0&#39;</span><span class="p">]</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">setup_requires</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">tests_require</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;nose&gt;=1.0&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;unittest2==0.5.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">requires</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;Flask==0.8&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;redis==2.4.11&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;hiredis==0.1.1&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;nydus==0.8.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="n">setup</span><span class="p">(</span>
+</span><span class='line'>    <span class="n">name</span><span class="o">=</span><span class="s">&#39;something-sexy&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">version</span><span class="o">=</span><span class="s">&#39;1.0.0&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author</span><span class="o">=</span><span class="s">&quot;DISQUS&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author_email</span><span class="o">=</span><span class="s">&quot;dev@disqus.com&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">package_dir</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="s">&#39;src&#39;</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">tests_require</span><span class="o">=</span><span class="n">tests_require</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">setup_requires</span><span class="o">=</span><span class="n">setup_requires</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>Now, in our case, this is probably a service on Disqus, which means we&#8217;re not listing it as a dependancy. In every
+single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. Usually this
+is done with setuptools, and the (albeit, somewhat broken) <code>develop</code> command. Even if you want to use pip,
+that&#8217;s not a problem:</p>
+
+
+
+
+<pre>
+pip install -e .
+</pre>
+
+
+
+
+<p>What&#8217;s even more important is that you <strong>stick with standards</strong>, especially in our growing ecosystem of
+open source and widely available libraries. There&#8217;s absolutely no reason to have to explain to a developer that they
+need to run some arbitrary command to get your neat tool to install. Following the well defined and adopted standards
+ensures that is never the case.</p>
+
+
+
+
+<p>Keep it simple. Keep it obvious.</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
@@ -1744,74 +1905,6 @@ project/conf/settings/dev.py
 <p><img src="http://dl.dropbox.com/u/116385/Screenshots/arlbt8ptszvb.png"/></p>
 
 <p>Anyways, without further adieu, check out the <a href="https://github.com/dcramer/python-tools-tmbundle">Python Tools TextMate Bundle</a> on GitHub.</p>]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Keeping your logging compatible with Sentry]]></title>
-    <link href="http://dcramer.github.com/2010/10/19/keeping-your-logging-compatible-with-sentry"/>
-    <updated>2010-10-19T00:00:00-07:00</updated>
-    <id>http://dcramer.github.com/2010/10/19/keeping-your-logging-compatible-with-sentry</id>
-    <content type="html"><![CDATA[<p>Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with <a href="http://github.com/dcramer/django-sentry">Sentry</a>, and in the end gives us some very ugly exception logging.</p>
-
-<p>Let&#8217;s take a simple example (we&#8217;re going to use Celery for this one):</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
-</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-</span><span class='line'>            <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-</span><span class='line'>            <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
-</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-The functionality is pretty obvious. The logger is set via something similar to:
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;celery&#39;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now the big issue with this, is it doesnt use the standardized logging storage for exceptions. This isn&#8217;t an issue if you&#8217;re logging to a text file, or something that just streams the messages, but once you start using something as powerful as Sentry, it is. To fix this, we need to make one simple adjustment:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># import the sys module</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
-</span><span class='line'><span class="k">try</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-</span><span class='line'><span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
-</span><span class='line'>    <span class="c"># append exc_info=sys.exc_info</span>
-</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-</span><span class='line'>        <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span>
-</span><span class='line'>        <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">),</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
-</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now we&#8217;ll pass along the exception, just like we would had we used <code>logging.exception</code> over </code>logging.error</code>, and apps like Sentry can take advantage of this.</p>
-
-<p>&#8212;&#8211;</p>
-
-<p>For those unaware, Sentry is a logging application built on top of Django. It allows you to efficiently log exceptions (and other messages, if you want) to a database. This gives you the benefit of being able to have a higher level overview of what&#8217;s going on in your environment, especially with bug tracking.</p>]]></content>
   </entry>
   
 </feed>

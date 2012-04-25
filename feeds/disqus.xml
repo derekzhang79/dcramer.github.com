@@ -2,9 +2,25 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-04-18T17:43:53-07:00</updated>
+    <updated>2012-04-24T22:25:49-07:00</updated>
     <id>http://justcramer.com/</id>
 
+    
+        
+            <entry>
+                <title>Sticking With Standards</title>
+                <link href="http://justcramer.com/2012/04/24/sticking-with-standards"/>
+                <updated>2012-04-24T22:23:00-07:00</updated>
+                <id>id:/2012/04/24/sticking-with-standards</id>
+                <content type="html">More and more I&amp;#8217;m seeing the &amp;#8220;requirements.txt pattern&amp;#8221; come up. This generally refers to projects (but not just), and
+seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
+Python world, and because I have an &amp;hellip;</content>
+                <author>
+                    <name>David Cramer</name>
+                    <url>http://justcramer.com/</url>
+                </author>
+            </entry>
+        
     
         
             <entry>
@@ -133,20 +149,6 @@ We&amp;#8217;re going to jump right into this one &amp;hellip;</content>
                 <updated>2011-01-13T00:00:00-08:00</updated>
                 <id>id:/2011/01/13/settings-in-django</id>
                 <content type="html">I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a hundred different ways that you can manage it. While I&amp;#8217;m not going to say ours is the best way, it has allowed us a very flexible application &amp;hellip;</content>
-                <author>
-                    <name>David Cramer</name>
-                    <url>http://justcramer.com/</url>
-                </author>
-            </entry>
-        
-    
-        
-            <entry>
-                <title>How to actually make LocalSolr work</title>
-                <link href="http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work"/>
-                <updated>2011-01-04T00:00:00-08:00</updated>
-                <id>id:/2011/01/04/how-to-actually-make-localsolr-work</id>
-                <content type="html">Today I&amp;#8217;ve been working on integrating geospatial search with our upcoming DISQUS Search product, which happens to rely on Solr. It didn&amp;#8217;t take much work before I stumbled upon LocalSolr, which seems to be the defacto gis implementation. The docs were fairly brief, but it seemed easy to &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>

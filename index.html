@@ -9,7 +9,8 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="Something we&#8217;ve been casually working on at Disqus for quite some time is an improved pagination method for threaded comments. This is &hellip;">
+  <meta name="description" content="More and more I&#8217;m seeing the &#8220;requirements.txt pattern&#8221; come up. This generally refers to projects (but not just), and
+seems to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +64,194 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-24T22:23:00-07:00" pubdate data-updated="true">Apr 24<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>More and more I&#8217;m seeing the &#8220;requirements.txt pattern&#8221; come up. This generally refers to projects (but not just), and
+seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
+Python world, and because I have an opinion on everything, I want to share mine.</p>
+
+
+
+
+<h3>requirements.txt</h3>
+
+
+
+
+<p>Let&#8217;s first talk about what this pattern actually is. As you should already be familiar with pip (if you&#8217;re not, this
+post is not for you), the idea of this is that whatever your&#8217;e doing, is installable by pointing pip at a requirements.txt
+file which contains a list of your projects dependencies. This has some obvious benefits, one being that you can
+mark repositories as dependencies.</p>
+
+
+
+
+<p>Another benefit of this is when have a large project (like DISQUS) and your dependencies can vary between environments. For
+example, we have several various requirements files for disqus-web (our largest package):</p>
+
+
+
+
+<pre>
+requirements/global.txt
+requirements/production.txt
+requirements/development.txt
+</pre>
+
+
+
+
+<p>These end up being pretty obvious, and when an app has specific needs there&#8217;s no reason not to approach the problem this
+way. That said, you dont <strong>need</strong> to do things this way, and in every project other than our main repository,
+including our open source work, all dependencies are specified completely in setup.py. Even in this case, we could just
+as easily specify our core requirements as part of the package and simple have additional files which label the production
+and development dependencies.</p>
+
+
+
+
+<h3>setup.py is the right choice</h3>
+
+
+
+
+<p>A common argument for not using setup.py is that a library is not the same as an app (or larger project). Why not? We
+employ the same metadata in everything. Each contains a list of dependencies, some various metadata, and possibly a list
+of extra resources (such as scripts, or documentation). Fundamentally they&#8217;re identical. Additionally, if pip is your
+thing, it <strong>does not prevent you from using setup.py</strong>. Let&#8217;s take an example setup.py:</p>
+
+
+
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Clever hack to avoid requiring Nose</span>
+</span><span class='line'><span class="k">if</span> <span class="s">&#39;nosetests&#39;</span> <span class="o">==</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+</span><span class='line'>    <span class="n">setup_requires</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nose&gt;=1.0&#39;</span><span class="p">]</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">setup_requires</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">tests_require</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;nose&gt;=1.0&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;unittest2==0.5.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">requires</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;Flask==0.8&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;redis==2.4.11&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;hiredis==0.1.1&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;nydus==0.8.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="n">setup</span><span class="p">(</span>
+</span><span class='line'>    <span class="n">name</span><span class="o">=</span><span class="s">&#39;something-sexy&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">version</span><span class="o">=</span><span class="s">&#39;1.0.0&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author</span><span class="o">=</span><span class="s">&quot;DISQUS&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author_email</span><span class="o">=</span><span class="s">&quot;dev@disqus.com&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">package_dir</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="s">&#39;src&#39;</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">tests_require</span><span class="o">=</span><span class="n">tests_require</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">setup_requires</span><span class="o">=</span><span class="n">setup_requires</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>Now, in our case, this is probably a service on Disqus, which means we&#8217;re not listing it as a dependancy. In every
+single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. Usually this
+is done with setuptools, and the (albeit, somewhat broken) <code>develop</code> command. Even if you want to use pip,
+that&#8217;s not a problem:</p>
+
+
+
+
+<pre>
+pip install -e .
+</pre>
+
+
+
+
+<p>What&#8217;s even more important is that you <strong>stick with standards</strong>, especially in our growing ecosystem of
+open source and widely available libraries. There&#8217;s absolutely no reason to have to explain to a developer that they
+need to run some arbitrary command to get your neat tool to install. Following the well defined and adopted standards
+ensures that is never the case.</p>
+
+
+
+
+<p>Keep it simple. Keep it obvious.</p>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1206,128 +1395,6 @@ id  | timestamp         | title
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/01/25/error-tracing-in-sentry">Error Tracing in Sentry</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-01-25T00:00:00-08:00" pubdate data-updated="true">Jan 25<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
-
-<h4>Exposing Sentry ID</h4>
-
-<p>The new IDs are generated automatically when a message is processed (by the client), so you won&#8217;t need to make any changes on that end. Likely, however, you&#8217;re going to want to expose these at your application level for a couple of different reasons. The first one we&#8217;re going to cover is your customer&#8217;s experience.</p>
-
-<p>The easiest way to expose this information in a useful manner, is by <strong>creating a modified 500.html</strong>. In DISQUS&#8217; case, we mention the error reference ID to the end-user, so that when they&#8217;re reporting a problem they can pass along this information.</p>
-
-<h5>Create a custom 500 handler</h5>
-
-<p>The first thing you&#8217;re going to need to do is to create a custom 500 handler. This defined in <code>urls.py</code>, so we&#8217;re just going to go ahead and create the view in-place.</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">handler500</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
-</span><span class='line'><span class="sd">    An error handler which exposes the request object to the error template.</span>
-</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
-</span><span class='line'>    <span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">loader</span>
-</span><span class='line'>    <span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseServerError</span>
-</span><span class='line'>    <span class="kn">from</span> <span class="nn">disqus.context_processors</span> <span class="kn">import</span> <span class="n">default</span>
-</span><span class='line'>    <span class="kn">import</span> <span class="nn">logging</span>
-</span><span class='line'>    <span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="n">default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">(),</span> <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
-</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">context</span><span class="p">[</span><span class="s">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">t</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;500.html&#39;</span><span class="p">)</span> <span class="c"># You need to create a 500.html template.</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">HttpResponseServerError</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">Context</span><span class="p">(</span><span class="n">context</span><span class="p">)))</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>We&#8217;re going to expose the request object to our 500.html in the above. Keep in mind, that doing this allows you to add some logic into your template, and you&#8217;re going to need to be very careful that this logic can&#8217;t raise a new exception.</p>
-
-<h5>Tweaking your 500.html</h5>
-
-<p>The next thing you&#8217;ll need to do is to tweak your 500.html template to actually show the Sentry ID. Assuming the request object was passed into Sentry, it will attach the last error seen under <code>request.sentry['id']</code>. Given this, we can easily report it to the end-user in our template:</p>
-
-<pre>
-&lt;p&gt;The Disqus team has been alerted and we're on the case. For more information, check out &lt;a href="http://status.disqus.com"&gt;Disqus Status &raquo;&lt;/a&gt;&lt;/p&gt;
-&#123;% if request.sentry.id %&#125;
-    &lt;p&gt;If you need assistance, you may reference this error as &lt;strong&gt;&#123;&#123; request.sentry.id &#125;&#125;&lt;/strong&gt;.&lt;/p&gt;
-&#123;% endif %&#125;
-</pre>
-
-<h4>Sentry ID as a response header</h4>
-
-<p>The other quick solution to get access to this variable is simply by enabling an included response middleware, <code>SentryResponseErrorIdMiddleware</code>. Just pop open your <code>settings.py</code> and append it to your <code>MIDDLEWARE_CLASSES</code>:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span>
-</span><span class='line'>    <span class="o">...</span><span class="p">,</span>
-</span><span class='line'>    <span class="s">&#39;sentry.client.middleware.SentryResponseErrorIdMiddleware&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now if you check your response headers after hitting an error, you should see <code>X-Sentry-ID</code>.</p>
-
-<h4>Find errors by ID</h4>
-
-<p>Sentry makes it very easy to pull up error messages by ID. The one requirement is that you&#8217;re going to need to ensure <code>sentry.filters.SearchFilter</code> is included within <code>SENTRY_FILTERS</code> (it&#8217;s enabled by default). Once done, Sentry will discover if you&#8217;re entering a UUID hex value (the Sentry ID) in the search box, and it will jump directly to that error&#8217;s page.</p>
-
-<p><img src="http://f.cl.ly/items/2f1s1X0J231F2F3u0V0d/sentry-id.png"/></p>
-
-<p>You&#8217;ll also notice that all messages are now tagged with their unique Sentry ID as well (per the screenshot).</p></div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1343,6 +1410,10 @@ id  | timestamp         | title
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
+      </li>
+    
+      <li class="post">
         <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
       </li>
     
@@ -1356,10 +1427,6 @@ id  | timestamp         | title
     
       <li class="post">
         <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/06/24/europython">EuroPython</a>
       </li>
     
   </ul>

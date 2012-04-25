@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="(Because I didn&#8217;t know what else to call it). Anyways, I updated to Firefox 3 when RC1 came out. I figure, &#8220;hey, it&#8217;s about to be &hellip;">
+  <meta name="description" content="I&#8217;ve finally completed what I&#8217;ll call &#8220;phase 1&#8221; of the caching layer. It handles the easiest, and for my cases, the most &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,79 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/21/caching-layer-for-django-orm">Caching Layer for Django ORM</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-21T00:00:00-08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&#8217;ve finally completed what I&#8217;ll call &#8220;phase 1&#8221; of the caching layer. It handles the easiest, and for my cases, the most useful level of cache invalidation: removing objects.</p>
+
+<p><strong>&#8220;Phase 1&#8221; Features:</strong><br><ul><li>Automatic caching of querysets.</li><li>Invalidating querysets when an object is removed.</li><li>Caching querysets objects in a key by key basis (per-object caching).</li><li>Automatic invalidation of per-object caches.</li></ul></p>
+
+<p><a href="http://code.google.com/p/django-orm-cache/">Grab the code from Google</a> and look it over if you&#8217;re interested. This is still very much in a &#8220;It probably doesn&#8217;t work correctly&#8221; phase, and the code will have a lot of cleanup and structure changes before it&#8217;s done.</p>
+
+<p>Here&#8217;s a quick rundown of the intended functionality and SQL usage:</p>
+
+<pre>
+class MyModel(CachedModel): [...]
+
+MyModel.objects.create(name="Test") [1 query]
+
+MyModel.objects.all() [1 query ]
+[Test,]
+
+MyModel.objects.create(name="Test2") [1 query]
+
+MyModel.objects.all() [no queries]
+[Test,]
+
+MyModel.objects.create(name="Test3") [1 query]
+
+MyModel.objects.all().reset() [1 query]
+>>> [Test, Test2, Test3]
+
+MyModel.objects.get(name="Test2").delete() [1 query]
+
+MyModel.objects.all() [2 queries]
+[Test, Test3]
+
+z = MyModel.objects.get(name="Test")
+z.name = "Test Changed"
+z.save() [1 query]
+
+MyModel.objects.all() [no queries]
+[Test Changed, Test3]
+</pre>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -633,45 +706,6 @@ source files_file_en : base
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2007/11/14/dpaste-was-down">Dpaste Was Down</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2007-11-14T00:00:00-08:00" pubdate data-updated="true">Nov 14<span>th</span>, 2007</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>So today, being the usual day, I needed a pastebin, that wasn&#8217;t <a href="http://www.pastebin.com">slow</a>, or <a href="http://www.pastebin.ca">bogged up</a> with ads and stuff. I hopped on over to <a href="http://www.dpaste.com/">dpaste.com</a> as I usually would, to find that the domain was temporarily expired (it&#8217;s back up now). Being that the site was down for a little bit, and the project was small, I took an hour to write a pastebin (in PHP, I know).</p>
-
-<p>So, here you have it, with enough features to hold you over, and robust enough to be slashdotted: <a href="http://www.pastethat.com/">PasteThat.</a></p>
-
-<p>The featureset:<br><ul><br><li>Pastes are generated with a unique key &#8211; I myself don&#8217;t want random people reading my pastes :)</li><br><li>Pastes never expire &#8211; there&#8217;s really no storage limitation on my system</li><br><li>It uses the Geshi syntax highlighter &#8211; which seems slow, so I&#8217;ll have to optimize it if people actually use the site</li><br><li>It will remember your name and syntax if you let it set a cookie.</li><br><li>It automatically adjusts the size of the textarea based on your browser window&#8217;s size.</li><br><li>You can post follow ups (and with comments as soon as I get home), as well as view followups for a post.</li><br></ul><br>TODO (when I feel like it and am not busy with work)<br><ul><br><li>Add tags to each paste</li><br><li>Add a public boolean for each paste</li><br><li>Allow people to browse public pastes by tags/date/traffic</li><br></ul><br>The simple goal: A robust and simplified pastebin that has many uses.. and I won&#8217;t ever have to worry about not being able to use.</p></div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/13/">&larr; Older</a>
@@ -689,6 +723,10 @@ source files_file_en : base
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
+      </li>
+    
+      <li class="post">
         <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
       </li>
     
@@ -702,10 +740,6 @@ source files_file_en : base
     
       <li class="post">
         <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/06/24/europython">EuroPython</a>
       </li>
     
   </ul>

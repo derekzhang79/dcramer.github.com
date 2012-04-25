@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a &hellip;">
+  <meta name="description" content="A few weeks ago we pushed out an update to Sentry, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,128 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/01/25/error-tracing-in-sentry">Error Tracing in Sentry</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-01-25T00:00:00-08:00" pubdate data-updated="true">Jan 25<span>th</span>, 2011</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A few weeks ago we pushed out an update to <a href="http://github.com/dcramer/django-sentry">Sentry</a>, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220;Sentry ID&#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very powerful: trace errors from the customer or developer down to the precise request and log entry.</p>
+
+<h4>Exposing Sentry ID</h4>
+
+<p>The new IDs are generated automatically when a message is processed (by the client), so you won&#8217;t need to make any changes on that end. Likely, however, you&#8217;re going to want to expose these at your application level for a couple of different reasons. The first one we&#8217;re going to cover is your customer&#8217;s experience.</p>
+
+<p>The easiest way to expose this information in a useful manner, is by <strong>creating a modified 500.html</strong>. In DISQUS&#8217; case, we mention the error reference ID to the end-user, so that when they&#8217;re reporting a problem they can pass along this information.</p>
+
+<h5>Create a custom 500 handler</h5>
+
+<p>The first thing you&#8217;re going to need to do is to create a custom 500 handler. This defined in <code>urls.py</code>, so we&#8217;re just going to go ahead and create the view in-place.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">handler500</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="sd">    An error handler which exposes the request object to the error template.</span>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">loader</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseServerError</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">disqus.context_processors</span> <span class="kn">import</span> <span class="n">default</span>
+</span><span class='line'>    <span class="kn">import</span> <span class="nn">logging</span>
+</span><span class='line'>    <span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="n">default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">(),</span> <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+</span><span class='line'>        <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span><span class="p">[</span><span class="s">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">t</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;500.html&#39;</span><span class="p">)</span> <span class="c"># You need to create a 500.html template.</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">HttpResponseServerError</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">Context</span><span class="p">(</span><span class="n">context</span><span class="p">)))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>We&#8217;re going to expose the request object to our 500.html in the above. Keep in mind, that doing this allows you to add some logic into your template, and you&#8217;re going to need to be very careful that this logic can&#8217;t raise a new exception.</p>
+
+<h5>Tweaking your 500.html</h5>
+
+<p>The next thing you&#8217;ll need to do is to tweak your 500.html template to actually show the Sentry ID. Assuming the request object was passed into Sentry, it will attach the last error seen under <code>request.sentry['id']</code>. Given this, we can easily report it to the end-user in our template:</p>
+
+<pre>
+&lt;p&gt;The Disqus team has been alerted and we're on the case. For more information, check out &lt;a href="http://status.disqus.com"&gt;Disqus Status &raquo;&lt;/a&gt;&lt;/p&gt;
+&#123;% if request.sentry.id %&#125;
+    &lt;p&gt;If you need assistance, you may reference this error as &lt;strong&gt;&#123;&#123; request.sentry.id &#125;&#125;&lt;/strong&gt;.&lt;/p&gt;
+&#123;% endif %&#125;
+</pre>
+
+<h4>Sentry ID as a response header</h4>
+
+<p>The other quick solution to get access to this variable is simply by enabling an included response middleware, <code>SentryResponseErrorIdMiddleware</code>. Just pop open your <code>settings.py</code> and append it to your <code>MIDDLEWARE_CLASSES</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span>
+</span><span class='line'>    <span class="o">...</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;sentry.client.middleware.SentryResponseErrorIdMiddleware&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now if you check your response headers after hitting an error, you should see <code>X-Sentry-ID</code>.</p>
+
+<h4>Find errors by ID</h4>
+
+<p>Sentry makes it very easy to pull up error messages by ID. The one requirement is that you&#8217;re going to need to ensure <code>sentry.filters.SearchFilter</code> is included within <code>SENTRY_FILTERS</code> (it&#8217;s enabled by default). Once done, Sentry will discover if you&#8217;re entering a UUID hex value (the Sentry ID) in the search box, and it will jump directly to that error&#8217;s page.</p>
+
+<p><img src="http://f.cl.ly/items/2f1s1X0J231F2F3u0V0d/sentry-id.png"/></p>
+
+<p>You&#8217;ll also notice that all messages are now tagged with their unique Sentry ID as well (per the screenshot).</p></div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1046,101 +1168,6 @@ project/conf/settings/dev.py
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/10/19/keeping-your-logging-compatible-with-sentry">Keeping Your Logging Compatible With Sentry</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-10-19T00:00:00-07:00" pubdate data-updated="true">Oct 19<span>th</span>, 2010</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Something I&#8217;ve noticed while digging around in various libraries, is the inconsistent use of logging. This creates some problems with <a href="http://github.com/dcramer/django-sentry">Sentry</a>, and in the end gives us some very ugly exception logging.</p>
-
-<p>Let&#8217;s take a simple example (we&#8217;re going to use Celery for this one):</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
-</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-</span><span class='line'>            <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-</span><span class='line'>            <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
-</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-The functionality is pretty obvious. The logger is set via something similar to:
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;celery&#39;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now the big issue with this, is it doesnt use the standardized logging storage for exceptions. This isn&#8217;t an issue if you&#8217;re logging to a text file, or something that just streams the messages, but once you start using something as powerful as Sentry, it is. To fix this, we need to make one simple adjustment:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># import the sys module</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
-</span><span class='line'><span class="k">try</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">eta</span> <span class="o">=</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-</span><span class='line'><span class="k">except</span> <span class="ne">OverflowError</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span>
-</span><span class='line'>    <span class="c"># append exc_info=sys.exc_info</span>
-</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-</span><span class='line'>        <span class="s">&quot;Couldn&#39;t convert eta </span><span class="si">%s</span><span class="s"> to timestamp: </span><span class="si">%r</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span>
-</span><span class='line'>        <span class="n">task</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">exc</span><span class="p">),</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
-</span><span class='line'><span class="n">task</span><span class="o">.</span><span class="n">acknowledge</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now we&#8217;ll pass along the exception, just like we would had we used <code>logging.exception</code> over </code>logging.error</code>, and apps like Sentry can take advantage of this.</p>
-
-<p>&#8212;&#8211;</p>
-
-<p>For those unaware, Sentry is a logging application built on top of Django. It allows you to efficiently log exceptions (and other messages, if you want) to a database. This gives you the benefit of being able to have a higher level overview of what&#8217;s going on in your environment, especially with bug tracking.</p></div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -1158,6 +1185,10 @@ The functionality is pretty obvious. The logger is set via something similar to:
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
+      </li>
+    
+      <li class="post">
         <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
       </li>
     
@@ -1171,10 +1202,6 @@ The functionality is pretty obvious. The logger is set via something similar to:
     
       <li class="post">
         <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/06/24/europython">EuroPython</a>
       </li>
     
   </ul>

@@ -9,7 +9,7 @@
   <meta name="author" content="David Cramer">
 
   
-  <meta name="description" content="Just got back home this evening from DjangoCon. It was really a lot of fun. It&#8217;s always great to be able to put a face to a name, or a 100 &hellip;">
+  <meta name="description" content="Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form submission on websites, which is typically spam, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,89 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/11/dealing-with-automated-form-submission-spam">Dealing With Automated Form Submission (Spam)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00-07:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form submission on websites, which is typically spam, or something else you don&#8217;t want happening. I added our routines to the new iBegin&#8217;s submission system today, and thought that I&#8217;d share with the world what we&#8217;re doing. I&#8217;m also curious as to what everyone else does to solve these problems, without burdening the user.</p>
+
+<p>On Curse we implemented a middleware, which on any POST request, would confirm that a user had filled in a Captcha box within the last N hours, or had verified themselves as a human being in some other fashion (a text message was our method).</p>
+
+<p>Now in iBegin, and my websites, we use two different methods to prevent spam. One is the <em>honeypot</em> method, which insert a text field with no value. This field is hidden with CSS, and if a value is passed on submission we assume that it&#8217;s a bot or something else trying to submit the form.</p>
+
+<p>The second method, requires the user have JavaScript enabled, but is very similar. We insert another text field, and set the value to &#8216;hello&#8217;. This field is also hidden with CSS, and on submission, we verify the value is still &#8216;hello&#8217;.</p>
+
+<p>If either of this fail, the form will throw a validation error, and of course log the attempt. So far, in all of my use-cases, it has worked very well, and the only &#8220;spam&#8221; I&#8217;ve seen are real users doing it themselves.</p>
+
+<p>So for a more technical look, here&#8217;s a sample of the code from our submission page for business listings:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;p&gt;&lt;div</span> <span class="na">style=</span><span class="s">&quot;display:none;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>These fields are present to prevent automated submission systems. If you see it, please do not fill in a value.
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span><span class="kd">var</span> <span class="nx">varname</span><span class="o">=</span><span class="s1">&#39;nospam1&#39;</span><span class="p">;</span><span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">&#39;&lt;inp&#39;</span><span class="o">+</span><span class="s1">&#39;ut name=&quot;&#39;</span><span class="o">+</span><span class="nx">varname</span><span class="o">+</span><span class="s1">&#39;&quot; type=&quot;text&quot; value=&quot;1&quot;/&gt;&#39;</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;nospam2&quot;</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+And our Django form validation:
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s">&#39;POST&#39;</span><span class="p">:</span>
+</span><span class='line'><span class="n">form</span> <span class="o">=</span> <span class="n">BusinessForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="n">initial</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="n">hidden</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nospam1&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&#39;hello&#39;</span><span class="p">:</span>
+</span><span class='line'><span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;`nospam1` value not set properly on form submission form </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;REMOTE_ADDR&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;noip&gt;&#39;</span><span class="p">),))</span>
+</span><span class='line'><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="s">&#39;__all__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;There was an unknown error submitting your request.&#39;</span>
+</span><span class='line'><span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nospam2&#39;</span><span class="p">):</span>
+</span><span class='line'><span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;`nospam2` value set on form submission form </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;REMOTE_ADDR&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;noip&gt;&#39;</span><span class="p">),))</span>
+</span><span class='line'><span class="n">form</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="s">&#39;__all__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;There was an unknown error submitting your request.&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -692,47 +775,6 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/08/01/jinja-refactoring-django-support">Jinja: Refactoring Django Support</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-08-01T00:00:00-07:00" pubdate data-updated="true">Aug 1<span>st</span>, 2008</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I&#8217;ve been annoyed for the last 6 months of using Jinja, as I&#8217;ve been working on numerous different Django projects, and I&#8217;ve had to use <code>django-admin.py</code> vs <code>manage.py</code>. The reason for this is simply, that in my settings.py I had used the <code>djangosupport.configure()</code> routine. I tried moving it to other locations, but they didn&#8217;t seem to work.</p>
-
-<p>So, I&#8217;ve refactored the djangosupport module (based on some previous comments by the Pocoo team), and deprecated the magical <code>djangosupport.configure()</code>. You can now properly import the module via <code>jinja.contrib.djangosupport</code> and use all of the same methods that were available via <code>django.contrib.jinja</code>.</p>
-
-<p>The patch also includes <code>handler404</code>, <code>handler500</code>, and <code>direct_to_template</code> methods.</p>
-
-<p>If you&#8217;re interested, here is the <a href="http://www.pastethat.com/v1amU">diff</a> and a matching <a href="http://www.pastethat.com/GQ8Ck">hg bundle</a>. You can also <a href="http://dev.pocoo.org/projects/jinja/ticket/312">view the ticket on Jinja&#8217;s Trac instance</a>.</p></div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -750,6 +792,10 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2012/04/24/sticking-with-standards">Sticking With Standards</a>
+      </li>
+    
+      <li class="post">
         <a href="/2012/04/08/using-arrays-as-materialized-paths-in-postgres">Using Arrays as Materialized Paths in Postgres</a>
       </li>
     
@@ -763,10 +809,6 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
     
       <li class="post">
         <a href="/2011/07/20/python-and-os-x-lion">Python and OS X Lion</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2011/06/24/europython">EuroPython</a>
       </li>
     
   </ul>
