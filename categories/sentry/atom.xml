@@ -4,7 +4,7 @@
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-04-25T01:58:42-07:00</updated>
+  <updated>2012-05-03T11:25:42-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -46,53 +46,30 @@
 <p>The first thing you're going to need to do is to create a custom 500 handler. This defined in <code>urls.py</code>, so we're just going to go ahead and create the view in-place.</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">handler500</span><span class="p">(</span><span class="n">request</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&quot;&quot;&quot;</span>
-</span><span class='line'><span class="s">An error handler which exposes the request object to the error template.</span>
-</span><span class='line'><span class="s">&quot;&quot;&quot;</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">loader</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseServerError</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">disqus.context_processors</span> <span class="kn">import</span> <span class="n">default</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">logging</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'><span class="k">try</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="n">default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
-</span><span class='line'><span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">(),</span> <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;request&#39;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
-</span><span class='line'>    <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">context</span><span class="p">[</span><span class="s">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">t</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;500.html&#39;</span><span class="p">)</span> <span class="c"># You need to create a 500.html template.</span>
-</span><span class='line'><span class="k">return</span> <span class="n">HttpResponseServerError</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">Context</span><span class="p">(</span><span class="n">context</span><span class="p">)))</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+def handler500(request):</p>
+
+<pre><code>"""
+An error handler which exposes the request object to the error template.
+"""
+from django.template import Context, loader
+from django.http import HttpResponseServerError
+from disqus.context_processors import default
+import logging
+import sys
+try:
+    context = default(request)
+except Exception, e:
+    logging.error(e, exc_info=sys.exc_info(), extra={'request': request})
+    context = {}
+
+context['request'] = request
+
+t = loader.get_template('500.html') # You need to create a 500.html template.
+return HttpResponseServerError(t.render(Context(context)))
+</code></pre>
+
+<p>{% endcodeblock %}</p>
 
 <p>We're going to expose the request object to our 500.html in the above. Keep in mind, that doing this allows you to add some logic into your template, and you're going to need to be very careful that this logic can't raise a new exception.</p>
 
@@ -127,21 +104,15 @@
 <p>The other quick solution to get access to this variable is simply by enabling an included response middleware, <code>SentryResponseErrorIdMiddleware</code>. Just pop open your <code>settings.py</code> and append it to your <code>MIDDLEWARE_CLASSES</code>:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;...</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;sentry.client.middleware.SentryResponseErrorIdMiddleware&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+MIDDLEWARE_CLASSES = (</p>
+
+<pre><code>...,
+'sentry.client.middleware.SentryResponseErrorIdMiddleware',
+</code></pre>
+
+<p>)
+{% endcodeblock %}</p>
 
 <p>Now if you check your response headers after hitting an error, you should see <code>X-Sentry-ID</code>.</p>
 

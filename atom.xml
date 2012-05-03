@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-04-25T01:58:42-07:00</updated>
+  <updated>2012-05-03T11:25:15-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,124 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Using Travis-CI with Python and Django]]></title>
+    <link href="http://justcramer.com/2012/05/03/using-travis-ci"/>
+    <updated>2012-05-03T11:13:00-07:00</updated>
+    <id>http://justcramer.com/2012/05/03/using-travis-ci</id>
+    <content type="html"><![CDATA[<p>I&#8217;ve been using <a href="http://travis-ci.org">Travis-CI</a> for a few weeks now. Both my personal projects,
+and even several of the libraries we maintain at DISQUS rely on it for CI. I figured it was about time to confess
+my undenying love for Travis, and throw up some notes about the defaults we use in our projects.</p>
+
+<p>Getting started with Travis-CI is pretty easy. It involves putting a <code>.travis.yml</code> file in the root of
+your project, and configuring the hooks between GitHub and Travis. While it&#8217;s not always easy to get the hooks configured
+when you&#8217;re using organizations, I&#8217;m not going to talk much about that. What I do want to share is how we&#8217;ve structured
+our configuration files for our Django and Python projects.</p>
+
+<p>A basic <code>.travis.yml</code> might look something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Most of the projects themselves use Django, which also means they need to test several Django versions. Travis makes
+this very simple with its matrix builds. In our case, we need to setup a DJANGO matrix, and ensure it gets installed:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We use a custom
+version of pyflakes which allows us to filter out warnings, as those are never critical errors:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>When all is said and done, we end up with something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Travis will automatically matrix each environment variable with each Python version, so you&#8217;ll get
+a test run for every combination of the two. Pretty easy, right?</p>]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Sticking With Standards]]></title>
@@ -1851,28 +1969,6 @@ project/conf/settings/dev.py
 <p>So, what we came up with was a decorator we&#8217;ve defined as <code>@track_data</code>. It allows us, at runtime, to specify which attributes we want to maintain history of on a model. This history is available from initialization, and reset whenever the model instance is saved (whether its via .save() or .update()).</p>
 
 <p><script src="https://gist.github.com/730765.js"> </script></p>]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Integrating PyFlakes Into TextMate]]></title>
-    <link href="http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate"/>
-    <updated>2010-11-30T00:00:00-08:00</updated>
-    <id>http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate</id>
-    <content type="html"><![CDATA[<p>One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve is showing a tooltip, and only when you save the file. There&#8217;s been a few attempts at doing this with things like JSLint and PyLint, but most of them fall short. Today I decided to correct that.</p>
-
-<p>A great bundle out there for JavaScript developers exists already, <a href="https://github.com/johnmuhl/javascript-tools-tmbundle">JavaScript Tools TextMate Bundle</a>. I&#8217;m not entirely sure who the original author is, but all in all, the bundle does its job well. It hooks the save hotkey and runs JSLint on your file, and gives you a bunch of other shiny tools as well. With Python there&#8217;s a few out there, but none really fit the workflow that I think is ideal: automation.</p>
-
-<p>So based off the amazing JS tools bundle, I created a similar setup to use my <a href="https://github.com/dcramer/pyflakes">PyFlakes fork</a>. It hooks the save command, just like the JSLint bundle, and also gives you a quick lint HTML output by using Command + Shift + V (I&#8217;m not a big fan of the Control and Option keys, they dont feel right).</p>
-
-<p>Upon saving, you get a nice tooltip describing the error, and whether its a <strong>W</strong>arning or <strong>E</strong>rror:</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/pzu3w~8_dtjp.png"/></p>
-
-<p>If for some reason you have too many errors, or you want to bring this up in a more visible fashion, it also gives you the ability to render the results in a new window:</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/arlbt8ptszvb.png"/></p>
-
-<p>Anyways, without further adieu, check out the <a href="https://github.com/dcramer/python-tools-tmbundle">Python Tools TextMate Bundle</a> on GitHub.</p>]]></content>
   </entry>
   
 </feed>

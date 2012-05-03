@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Jinja2 and Django-registration One of the many issues which one must overcome with Jinja2 is using it with 3rd party modules. A lot of these already &hellip;">
+    <meta name="description" content="Windows 7 Network Issues on EVGA 780i Motherboard Just thought I&#8217;d throw up the resolution I found for my networking issues on Windows 7. I&# &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,39 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2009/12/22/windows-7-network-issues-on-evga-780i-motherboard">Windows 7 Network Issues on EVGA 780i Motherboard</a></h1>
+    <div class="entry">
+        <p>Just thought I&#8217;d throw up the resolution I found for my networking issues on Windows 7. I&#8217;ve had these non-stop for as many weeks as I can remember. Originally, they were happening via my wireless connection (which uses generic Broadcom drivers). So I figured that maybe the drivers were to blame, and I switched to an ethernet cable. Once I had made the change, I noticed the internet dieing periodically, or after I started downloading large files. Right clicking the network connection and going to diagnose would fix it, with an error noting that the gateway had been invalid (it was being reset to 0.0.0.0).</p>
+
+<p>So, my first step was to update to EVGA&#8217;s latest drivers for Windows 7 64-bit. That didn&#8217;t change anything, which was a huge disappointment. After much Googling though, I found a solution which suggested using the Windows Vista 64 bit drivers. Not that it makes much sense, but it seems to have worked for me and many others.</p>
+
+<p>The conclusion: Install Windows Vista drivers for your EVGA motherboard if you&#8217;re using Windows 7. This is pretty quick:<br><ul><br><li>Download the correct motherboard drivers for Windows Vista</li><br><li>Extract them by running the original setup.py (don&#8217;t continue installing once they&#8217;ve been extracted).</li><br><li>Right click Computer -> Properties.</li><br><li>Click &#8220;Device Manager&#8221; on the left sidebar.</li><br><li>Find your Network adapters page, and look for &#8220;NVIDIA nForce &#8230;&#8221;. Right click this and click &#8220;Update driver software&#8221;.</li><br><li>Click on &#8220;Browse my computer for driver software&#8221;.</li><br><li>In the search box, click Browse, and locate the folder where you extracted the drivers. Should look like &#8220;C:\NVIDIA\nForceWinVista64Eng\15.51\Ethernet&#8221;</li><br><li>Enjoy no more network loss.</li><br></ul></p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-12-22T00:00:00-08:00" pubdate data-updated="true">Dec 22<span>nd</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1322,53 +1355,6 @@ From here I moved on to change all the translation calls <code>__</code>, and <c
 
 
 <time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2009/04/02/problems-uploading-packages-with-setuptools-on-os-x">Problems Uploading Packages With Setuptools on OS X</a></h1>
-    <div class="entry">
-        <p>This is mostly a note to myself, but also since my blog is very helpful to fellow Google-users I figured I&#8217;d throw it up here publicly.</p>
-
-<p>Today I needed to update a package on PyPi using setuptools:</p>
-
-<pre>python setup.py sdist register upload</pre>
-
-<p>The problem was, no matter what I did, I always seemed to get this error:</p>
-
-<pre><strong>Upload failed (401): You must be identified to edit package information</strong></pre>
-
-<p>I also noticed that while it was asking me to save my login information, and I hit Y everytime, it still asked me for the username and password. It turned out that it was saving the information incorrectly as follows:</p>
-
-<pre><br>[pypi]<br>username:dcramer<br>password:*******<br></pre>
-
-<p>Changing it out to this solved the problems:</p>
-
-<pre><br>[server-login]<br>username:dcramer<br>password:********<br></pre>
-
-<p>Can&#8217;t quite explain it, but as I&#8217;m sure other people have come across this same issue, maybe it will get resolved in the near future.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-04-02T00:00:00-07:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2009</time></div>
         <div class="tags">
 
 </div>

@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Dealing With Automated Form Submission (Spam) Recently I&#8217;ve been incorporating alternative techniques to Captcha to prevent automated form &hellip;">
+    <meta name="description" content="What&#8217;s Wrong With Django Templates The author of Jinja, an alternative solution to Django templates, made a great post about what is wrong &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,39 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/09/17/whats-wrong-with-django-templates">What&#8217;s Wrong With Django Templates</a></h1>
+    <div class="entry">
+        <p>The author of Jinja, an alternative solution to Django templates, made a <a href="http://lucumr.pocoo.org/cogitations/2008/09/16/why-jinja-is-not-django-and-why-django-should-have-a-look-at-it/">great post</a> about what is wrong with the Django template engine. It&#8217;s a great read if you have any doubts that the philosophy behind Django&#8217;s template engine makes sense.</p>
+
+<p>The truest quote of them all:</p>
+
+<blockquote><br>I like the custom tag system in Django, and I wouln’t want to see it go away if the template engine is improved. But for example “ifnotequal foo bar” “endifnotequal” is no way better than “if foo != bar” “endif”.<br></blockquote>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-17T00:00:00-07:00" pubdate data-updated="true">Sep 17<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -672,43 +705,6 @@ An alternative to the CommaSeparatedIntegerField, it allows you to store any sep
 
 
 <time datetime="2008-08-08T00:00:00-07:00" pubdate data-updated="true">Aug 8<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/08/02/more-updates-to-django-sphinx">More Updates to Django-sphinx</a></h1>
-    <div class="entry">
-        <p>I was working on our search for the new <a href="http://www.ibegin.com/">iBegin</a> today, which utilizes Sphinx, Django, and obviously, <a href="http://code.google.com/p/django-sphinx/">django-sphinx</a>. Being the person who hates doing tedious work, I found a few issues in the newly done configuration generation.</p>
-
-<ul><li>Errors hardcore in 0.98</li><li>It wasn&#8217;t generating attributes for floats (latitude/longitude)</li><li>Didn&#8217;t work with custom index names</li></ul>
-
-<p>So tonight, after a few hours, I&#8217;ve refactored a good chunk of the manager code, as well as the config generation code. Among the updates include:</p>
-
-<ul><li>There is now an included api for 0.98, as well as proper configuration generation. To use it simply do the following in <code>settings.py</code>:<pre>SPHINX_API_VERSION = 0x113</pre><br></li><li>The api support is very flexible for future versions (just requires override templates and inclusion of the api).</li><li>The generation command via manage.py now properly generates sample config for ANY model with Sphinx attached to it.</li><li>You can now pass the <code>UpdateAttributes()</code> command via <code>instance.sphinx.update(kwargs)</code>.</li></ul>
-
-<p>As always, grab the code over at <a href="http://code.google.com/p/django-sphinx/">Google</a> and make sure to subscribe to the <a href="http://groups.google.com/group/django-sphinx">Google group</a> to be spammed with updates.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-08-02T00:00:00-07:00" pubdate data-updated="true">Aug 2<span>nd</span>, 2008</time></div>
         <div class="tags">
 
 </div>

@@ -7,7 +7,8 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Sticking With Standards More and more I&#8217;m seeing the &#8220;requirements.txt pattern&#8221; come up. This generally refers to projects (but &hellip;">
+    <meta name="description" content="Using Travis-CI With Python and Django I&#8217;ve been using Travis-CI for a few weeks now. Both my personal projects,
+and even several of the &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +65,151 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2012/05/03/using-travis-ci">Using Travis-CI With Python and Django</a></h1>
+    <div class="entry">
+        <p>I&#8217;ve been using <a href="http://travis-ci.org">Travis-CI</a> for a few weeks now. Both my personal projects,
+and even several of the libraries we maintain at DISQUS rely on it for CI. I figured it was about time to confess
+my undenying love for Travis, and throw up some notes about the defaults we use in our projects.</p>
+
+<p>Getting started with Travis-CI is pretty easy. It involves putting a <code>.travis.yml</code> file in the root of
+your project, and configuring the hooks between GitHub and Travis. While it&#8217;s not always easy to get the hooks configured
+when you&#8217;re using organizations, I&#8217;m not going to talk much about that. What I do want to share is how we&#8217;ve structured
+our configuration files for our Django and Python projects.</p>
+
+<p>A basic <code>.travis.yml</code> might look something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Most of the projects themselves use Django, which also means they need to test several Django versions. Travis makes
+this very simple with its matrix builds. In our case, we need to setup a DJANGO matrix, and ensure it gets installed:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We use a custom
+version of pyflakes which allows us to filter out warnings, as those are never critical errors:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>When all is said and done, we end up with something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Travis will automatically matrix each environment variable with each Python version, so you&#8217;ll get
+a test run for every combination of the two. Pretty easy, right?</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-03T11:13:00-07:00" pubdate data-updated="true">May 3<span>rd</span>, 2012</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/ci/'>ci</a>, <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>, <a class='category' href='/categories/python/'>python</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1301,60 +1447,6 @@ id  | timestamp         | title
 <div class="cat">
   
     <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
-  
-</div>
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2011/02/08/using-os-x-media-keys-in-rdio-desktop">Using OS X Media Keys in Rdio</a></h1>
-    <div class="entry">
-        <p><strong>Update:</strong> Use <a href="http://fluidapp.com/">Fluid</a>, with <a href="http://media.wilsonminer.com/share/shrapnel/fluid/rdio-fluid.png">this awesome icon by Wilson Miner</a>, and name it &#8220;Rdio Desktop&#8221; and follow these same instructions for a much better experience. You will also need to edit the macros and change Next/Previous track to use arrow keys instead of ctrl+arrow.</p>
-
-<p>I&#8217;m not going into much details, as it&#8217;s been a <strong>long frustrating day</strong> dealing with a number of things today, but I wanted to share how I managd to actually get Rdio Desktop to not suck (well, more like make it bearable). What do I mean by this? After many hours I discovered how I could <strong>remap the media keys on my OS X keyboard to work with Rdio Desktop</strong>. Ugh.</p>
-
-<h4>Remapping media keys to function keys</h4>
-
-<p>To get us started, you&#8217;ll want to install <a href="http://pqrs.org/macosx/keyremap4macbook/">KeyRemap4MacBook</a> will allow you to use your existing function keys, and simple swap the media keys so that they actually send normal function keypresses. This is needed because Apple doesn&#8217;t feel it nescesary to allow you to remap them otherwise.</p>
-
-<p>Pop it open and search for <strong>media</strong>. Tick the box next to whichever setting applies to your keyboard.</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/keyremap4macbook.png"/></p>
-
-<h4>Creating macros for Rdio Desktop</h4>
-
-<p>Now that we can actually bind go the media keys, you&#8217;re going to need to create some macros to work with the Air app. Why do you have to do this? Because <strong>Adobe Air is a crappy framework that no one should ever build apps with</strong>. To do this you&#8217;re going to need to install <a href="http://www.keyboardmaestro.com/main/">KeyboardMaestro</a>. Now while I had to follow a <a href="http://benwyrosdick.com/post/3168861463/rdio-macro-keys">guide to creating these macros</a>, I find that a pretty big waste of time. So save yourself some time, and download and run the macros I created via the aforementioned guide over at <a href="http://dl.dropbox.com/u/116385/Rdio%20Macros.kmmacros">DropBox</a>, and you&#8217;re good to go.
-
-<h4>Complain to developers</h4>
-
-<p>Hopefully you found this guide very quickly and didn&#8217;t waste time digging for solutions. However, many people didn&#8217;t have it so easy. I encourage you to complain to any developer you ever meet who thinks its a good idea to build an Adobe <strong>{Air,Flash,Anything else that sucks}</strong> application and explain to them how much hell they put people through.</p>
-
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-02-08T00:00:00-08:00" pubdate data-updated="true">Feb 8<span>th</span>, 2011</time></div>
-        <div class="tags">
-
-<div class="cat">
-  
-    <a class='category' href='/categories/howto/'>howto</a>
   
 </div>
 

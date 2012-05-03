@@ -2,9 +2,27 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-04-25T01:58:42-07:00</updated>
+    <updated>2012-05-03T11:25:15-07:00</updated>
     <id>http://justcramer.com/</id>
 
+    
+        
+            <entry>
+                <title>Using Travis-CI with Python and Django</title>
+                <link href="http://justcramer.com/2012/05/03/using-travis-ci"/>
+                <updated>2012-05-03T11:13:00-07:00</updated>
+                <id>id:/2012/05/03/using-travis-ci</id>
+                <content type="html">I&amp;#8217;ve been using Travis-CI for a few weeks now. Both my personal projects,
+and even several of the libraries we maintain at DISQUS rely on it for CI. I figured it was about time to confess
+my undenying love for Travis, and throw up some notes about the defaults we use in our projects.
+
+Getting &amp;hellip;</content>
+                <author>
+                    <name>David Cramer</name>
+                    <url>http://justcramer.com/</url>
+                </author>
+            </entry>
+        
     
         
             <entry>
@@ -135,20 +153,6 @@ We&amp;#8217;re going to jump right into this one &amp;hellip;</content>
                 <updated>2011-01-25T00:00:00-08:00</updated>
                 <id>id:/2011/01/25/error-tracing-in-sentry</id>
                 <content type="html">A few weeks ago we pushed out an update to Sentry, bumping it&amp;#8217;s version to 1.6.0. Among the changes was a new &amp;#8220;Sentry ID&amp;#8221; value which is created by the client, rather than relying on the server. This seems like something insignificant, but it allows you to do something very &amp;hellip;</content>
-                <author>
-                    <name>David Cramer</name>
-                    <url>http://justcramer.com/</url>
-                </author>
-            </entry>
-        
-    
-        
-            <entry>
-                <title>Settings in Django</title>
-                <link href="http://justcramer.com/2011/01/13/settings-in-django"/>
-                <updated>2011-01-13T00:00:00-08:00</updated>
-                <id>id:/2011/01/13/settings-in-django</id>
-                <content type="html">I want to talk a bit about how we handle our large amounts of application configuration over at DISQUS. Every app has it, and it seems like theres a hundred different ways that you can manage it. While I&amp;#8217;m not going to say ours is the best way, it has allowed us a very flexible application &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>

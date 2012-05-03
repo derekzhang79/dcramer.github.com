@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Error Tracing in Sentry A few weeks ago we pushed out an update to Sentry, bumping it&#8217;s version to 1.6.0. Among the changes was a new &#8220; &hellip;">
+    <meta name="description" content="Using OS X Media Keys in Rdio Update: Use Fluid, with this awesome icon by Wilson Miner, and name it &#8220;Rdio Desktop&#8221; and follow these &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,60 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2011/02/08/using-os-x-media-keys-in-rdio-desktop">Using OS X Media Keys in Rdio</a></h1>
+    <div class="entry">
+        <p><strong>Update:</strong> Use <a href="http://fluidapp.com/">Fluid</a>, with <a href="http://media.wilsonminer.com/share/shrapnel/fluid/rdio-fluid.png">this awesome icon by Wilson Miner</a>, and name it &#8220;Rdio Desktop&#8221; and follow these same instructions for a much better experience. You will also need to edit the macros and change Next/Previous track to use arrow keys instead of ctrl+arrow.</p>
+
+<p>I&#8217;m not going into much details, as it&#8217;s been a <strong>long frustrating day</strong> dealing with a number of things today, but I wanted to share how I managd to actually get Rdio Desktop to not suck (well, more like make it bearable). What do I mean by this? After many hours I discovered how I could <strong>remap the media keys on my OS X keyboard to work with Rdio Desktop</strong>. Ugh.</p>
+
+<h4>Remapping media keys to function keys</h4>
+
+<p>To get us started, you&#8217;ll want to install <a href="http://pqrs.org/macosx/keyremap4macbook/">KeyRemap4MacBook</a> will allow you to use your existing function keys, and simple swap the media keys so that they actually send normal function keypresses. This is needed because Apple doesn&#8217;t feel it nescesary to allow you to remap them otherwise.</p>
+
+<p>Pop it open and search for <strong>media</strong>. Tick the box next to whichever setting applies to your keyboard.</p>
+
+<p><img src="http://dl.dropbox.com/u/116385/Screenshots/keyremap4macbook.png"/></p>
+
+<h4>Creating macros for Rdio Desktop</h4>
+
+<p>Now that we can actually bind go the media keys, you&#8217;re going to need to create some macros to work with the Air app. Why do you have to do this? Because <strong>Adobe Air is a crappy framework that no one should ever build apps with</strong>. To do this you&#8217;re going to need to install <a href="http://www.keyboardmaestro.com/main/">KeyboardMaestro</a>. Now while I had to follow a <a href="http://benwyrosdick.com/post/3168861463/rdio-macro-keys">guide to creating these macros</a>, I find that a pretty big waste of time. So save yourself some time, and download and run the macros I created via the aforementioned guide over at <a href="http://dl.dropbox.com/u/116385/Rdio%20Macros.kmmacros">DropBox</a>, and you&#8217;re good to go.
+
+<h4>Complain to developers</h4>
+
+<p>Hopefully you found this guide very quickly and didn&#8217;t waste time digging for solutions. However, many people didn&#8217;t have it so easy. I encourage you to complain to any developer you ever meet who thinks its a good idea to build an Adobe <strong>{Air,Flash,Anything else that sucks}</strong> application and explain to them how much hell they put people through.</p>
+
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-02-08T00:00:00-08:00" pubdate data-updated="true">Feb 8<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/howto/'>howto</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1106,55 +1160,6 @@ project/conf/settings/dev.py
 <div class="cat">
   
     <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
-  
-</div>
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2010/11/30/integrating-pyflakes-into-textmate">Integrating PyFlakes Into TextMate</a></h1>
-    <div class="entry">
-        <p>One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve is showing a tooltip, and only when you save the file. There&#8217;s been a few attempts at doing this with things like JSLint and PyLint, but most of them fall short. Today I decided to correct that.</p>
-
-<p>A great bundle out there for JavaScript developers exists already, <a href="https://github.com/johnmuhl/javascript-tools-tmbundle">JavaScript Tools TextMate Bundle</a>. I&#8217;m not entirely sure who the original author is, but all in all, the bundle does its job well. It hooks the save hotkey and runs JSLint on your file, and gives you a bunch of other shiny tools as well. With Python there&#8217;s a few out there, but none really fit the workflow that I think is ideal: automation.</p>
-
-<p>So based off the amazing JS tools bundle, I created a similar setup to use my <a href="https://github.com/dcramer/pyflakes">PyFlakes fork</a>. It hooks the save command, just like the JSLint bundle, and also gives you a quick lint HTML output by using Command + Shift + V (I&#8217;m not a big fan of the Control and Option keys, they dont feel right).</p>
-
-<p>Upon saving, you get a nice tooltip describing the error, and whether its a <strong>W</strong>arning or <strong>E</strong>rror:</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/pzu3w~8_dtjp.png"/></p>
-
-<p>If for some reason you have too many errors, or you want to bring this up in a more visible fashion, it also gives you the ability to render the results in a new window:</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/arlbt8ptszvb.png"/></p>
-
-<p>Anyways, without further adieu, check out the <a href="https://github.com/dcramer/python-tools-tmbundle">Python Tools TextMate Bundle</a> on GitHub.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-11-30T00:00:00-08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2010</time></div>
-        <div class="tags">
-
-<div class="cat">
-  
-    <a class='category' href='/categories/disqus/'>disqus</a>
   
 </div>
 
