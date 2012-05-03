@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-03T12:09:29-07:00</updated>
+  <updated>2012-05-03T12:18:27-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -66,8 +66,9 @@ this very simple with its matrix builds. In our case, we need to setup a DJANGO 
 </span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We use a custom
-version of pyflakes which allows us to filter out warnings, as those are never critical errors:</p>
+<p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We also use a custom
+version of pyflakes which allows us to filter out warnings, as those are never critical errors. Add this in is pretty
+simple using the <code>before_script</code> hook, which gets run before the tests are run in <code>script</code>.</p>
 
 <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
