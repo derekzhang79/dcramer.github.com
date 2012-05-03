@@ -1,0 +1,125 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>What Powers Curse - David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
+
+    
+    <meta name="description" content="What Powers Curse Since we&#8217;re having some issues at Curse (hardware now :P) and because our technologies page doesnt explain everything, below &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
+
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css?1" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+    
+
+</head>
+
+<body>
+	<header class="inner"><h1><a href="/">David Cramer's Blog</a></h1>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
+
+</header>
+	<div id="content" class="inner"><article class="post">
+    <h1 class="title">What Powers Curse</h1>
+    <div class="entry"><p>Since we&#8217;re having some issues at Curse (hardware now :P) and because our technologies page doesnt explain everything, below are more technical details.</p>
+
+<p>Software:<br><ul><br><li>Apache2  + mod_python for the web servers</li><br><li>lighttpd + fcgi (mostly for static, we had SEVERE issues using fcgi for the entire Django site, weakref stuff, never found a solution)</li><br><li>memcached &#8211; every web server runs a copy and I believe we have 2gb allocated per-server</li><br><li>Squid + lighttpd for managing requests between anonymous and logged in users</li><br><li>Sphinx &#8211; our full-text search; the code may not reflect the current version (i&#8217;ll update it soon) but check out <a href="http://www.djangosnippets.org/snippets/231/">djangosnippets</a></li><br><li>MySQL &#8211; until someone can prove us wrong with facts saying PostgreSQL can scale better</li><br></ul><br>Hardware:<br><ul><br><li>5 web servers (8 yesterday): 4-8GB of memory, 2x intel core duos, memcached + apache2</li><br><li>2 static servers (one runs a small adserver script, another runs our sphinx search daemon): lighttpd + fcgi</li><br><li>2 media (download) server (running small python apps to generate images/similar): lighttpd + fcgi</li><br><li>2 cache servers: squid + lighttpd</li><br><li>2 sql servers (one is inactive but replicated): 2x intel core duos, MySQL, 6GB of memory (being upgraded :P)</li><br><li>1 dev/deployment server: the stats aren&#8217;t anything out of the ordinary &#8211; it runs various daemons as well as powering cursebeta.com</li><br></ul><br>What happens under the hood:<br><ul><br><li>The cache servers run both lighttpd and squid, forwarding requests to logged in users past the squid caches.</li><br><li>The squid caches then round robin to the web servers (which has caused extra stress due to the hardware not matching, we&#8217;re working on changing this now).</li><br><li>The web servers rely heavily on memcached for key components. We cache every django.contrib.contenttypes request, every django.contrib.sites request, etc..</li><br><li>We have modified various components of Django, with patches similar to what&#8217;s linked above, and with changes to select_related and some smaller systems (nothing major).</li><br><li>Most accessors to common are cached &#8211; the method we use is messy so I&#8217;ll post more when we change it.</li><br><li>Anonymous sessions are disabled &#8211; we&#8217;re still trying to manage a way to enable them and not destroy the website.</li><br><li>We use a lot of custom middleware, including a custom internationalization backend to handle our URL schemas + handle translations in the database (vs compiled files &#8211; yes, we know it&#8217;s slower)</li><br></ul></p></div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-05-24T00:00:00-07:00" pubdate data-updated="true">May 24<span>th</span>, 2007</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+</div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+</body>
+</html>

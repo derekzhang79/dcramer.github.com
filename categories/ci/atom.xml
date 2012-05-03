@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ci | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/ci/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-03T11:25:42-07:00</updated>
+  <updated>2012-05-03T11:59:41-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -18,7 +18,7 @@
     <link href="http://justcramer.com/2012/05/03/using-travis-ci"/>
     <updated>2012-05-03T11:13:00-07:00</updated>
     <id>http://justcramer.com/2012/05/03/using-travis-ci</id>
-    <content type="html"><![CDATA[<p>I've been using <a href="http://travis-ci.org">Travis-CI</a> for a few weeks now. Both my personal projects,
+    <content type="html"><![CDATA[<p>I've been using <a href="http://travis-ci.org">Travis-CI</a> for a while now. Both my personal projects,
 and even several of the libraries we maintain at DISQUS rely on it for Continuous Integration. I figured it was about time to confess
 my undenying love for Travis, and throw up some notes about the defaults we use in our projects.</p>
 
@@ -36,69 +36,106 @@ our configuration files for our Django and Python projects.</p>
 <p>A basic <code>.travis.yml</code> might look something like this:</p>
 
 
-<p>{% codeblock lang:yaml %}
-language: python
-python:
-  - "2.6"
-  - "2.7"
-install:
-  - pip install -q -e . --use-mirrors
-script:
-  - python setup.py test
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Most of the projects themselves use Django, which also means they need to test several Django versions. Travis makes
 this very simple with its matrix builds. In our case, we need to setup a DJANGO matrix, and ensure it gets installed:</p>
 
 
-<p>{% codeblock lang:yaml %}
-env:
-  - DJANGO=1.2.7
-  - DJANGO=1.3.1
-  - DJANGO=1.4
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install -q -e . --use-mirrors
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We use a custom
 version of pyflakes which allows us to filter out warnings, as those are never critical errors:</p>
 
 
-<p>{% codeblock lang:yaml %}
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install pep8 --use-mirrors
-  - pip install https://github.com/dcramer/pyflakes/tarball/master
-  - pip install -q -e . --use-mirrors
-script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 src"
-  - pyflakes -x W src
-  - python setup.py test
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>When all is said and done, we end up with something like this:</p>
 
 
-<p>{% codeblock lang:yaml %}
-language: python
-python:
-  - "2.6"
-  - "2.7"
-env:
-  - DJANGO=1.2.7
-  - DJANGO=1.3.1
-  - DJANGO=1.4
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install pep8 --use-mirrors
-  - pip install https://github.com/dcramer/pyflakes/tarball/master
-  - pip install -q -e . --use-mirrors
-script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 src"
-  - pyflakes -x W src
-  - python setup.py test
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Travis will automatically matrix each environment variable with each Python version, so you'll get
 a test run for every combination of the two. Pretty easy, right?</p>

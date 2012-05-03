@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-03T11:25:15-07:00</updated>
+  <updated>2012-05-03T11:59:41-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -18,8 +18,8 @@
     <link href="http://justcramer.com/2012/05/03/using-travis-ci"/>
     <updated>2012-05-03T11:13:00-07:00</updated>
     <id>http://justcramer.com/2012/05/03/using-travis-ci</id>
-    <content type="html"><![CDATA[<p>I&#8217;ve been using <a href="http://travis-ci.org">Travis-CI</a> for a few weeks now. Both my personal projects,
-and even several of the libraries we maintain at DISQUS rely on it for CI. I figured it was about time to confess
+    <content type="html"><![CDATA[<p>I&#8217;ve been using <a href="http://travis-ci.org">Travis-CI</a> for a while now. Both my personal projects,
+and even several of the libraries we maintain at DISQUS rely on it for Continuous Integration. I figured it was about time to confess
 my undenying love for Travis, and throw up some notes about the defaults we use in our projects.</p>
 
 <p>Getting started with Travis-CI is pretty easy. It involves putting a <code>.travis.yml</code> file in the root of

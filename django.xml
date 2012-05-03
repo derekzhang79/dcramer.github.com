@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-05-03T11:25:15-07:00</updated>
+    <updated>2012-05-03T11:59:41-07:00</updated>
     <id>http://justcramer.com/</id>
 
     
@@ -12,11 +12,9 @@
                 <link href="http://justcramer.com/2012/05/03/using-travis-ci"/>
                 <updated>2012-05-03T11:13:00-07:00</updated>
                 <id>http://justcramer.com/2012/05/03/using-travis-ci</id>
-                <content type="html">I&amp;#8217;ve been using Travis-CI for a few weeks now. Both my personal projects,
-and even several of the libraries we maintain at DISQUS rely on it for CI. I figured it was about time to confess
-my undenying love for Travis, and throw up some notes about the defaults we use in our projects.
-
-Getting &amp;hellip;</content>
+                <content type="html">I&amp;#8217;ve been using Travis-CI for a while now. Both my personal projects,
+and even several of the libraries we maintain at DISQUS rely on it for Continuous Integration. I figured it was about time to confess
+my undenying love for Travis, and throw up some notes about the defaults we use in our &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>

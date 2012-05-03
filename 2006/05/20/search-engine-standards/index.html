@@ -1,0 +1,149 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Search Engine Standards - David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
+
+    
+    <meta name="description" content="Search Engine Standards Just some notes, so I can hand these out to people: Every page should have an h1The H1 should specifically tell what that &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
+
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css?1" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+    
+
+</head>
+
+<body>
+	<header class="inner"><h1><a href="/">David Cramer's Blog</a></h1>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
+
+</header>
+	<div id="content" class="inner"><article class="post">
+    <h1 class="title">Search Engine Standards</h1>
+    <div class="entry"><p>Just some notes, so I can hand these out to people:</p>
+
+<p><strong>Every page should have an h1</strong><br>The H1 should specifically tell what that page is. It should not be filled w/ keywords, keep it compact and simple. If your page has news about a game, the h1 should be &#8220;Name of Game News&#8221;. Ok?</p>
+
+<p><strong>The title should be very similar to the h1</strong><br>In most cases, your title can match your h1. Although you may want additional keywords and the added ability to brand the site name. A good structure is H1 Name - Category/Section Name - Site Name</p>
+
+<p>Although for your Index, this is the exception. Your main page (www.blah.com) is a good area to describe what your site is about in the title. Include many keywords but keep it less than 255 characters. &#8220;My Site - Game News, Game Forums, Game Porn&#8221; you get the jist.</p>
+
+<p><strong>Now we have h1 we need h2</strong><br>In my experiences I&#8217;ve followed all of these rules, and I&#8217;ve never used anything to much extend beyond h1 and h2. My rules for h2 are use it for navigation (section) headers, and article titles.</p>
+
+<p>In your nav you may have a section called forums,and list links under it. Forums would be in h2, the links of course should be in a standard list<br>If you have news on your page, make each news title an h2 (I&#8217;ve also seen these pushed to h3 but I believe they have a lot of weight and sticking w/ my routine, I&#8217;ve used h2).</p>
+
+<p><strong>Keyworded links and titles</strong><br>So you have a webpage, and when you link to stuff you say &#8220;click here&#8221; as the link name. Find a new career path (or keep reading). No one searches for &#8220;click here&#8221; so why would you say the page your linking to is about &#8220;click here&#8221;. Your link&#8217;s name should be about what the page is about, makes sense don&#8217;t it?</p>
+
+<p>There *are* exceptions where you need to link something w/ some retarded text, or an image, etc.. This is where the title attribute comes into use. <a title="World of Warcraft" href="http://mmotheatre.com/~dcramer/mysite">CLICK HERE</a> - This basically changes the name of the link to &#8220;World of Warcraft&#8221; in a search engine&#8217;s eyes.</p>
+
+<p>Keep your html clean, small, and prefix it with an x for even more luck<br>If you can&#8217;t figure out XHTML transitional, refer to finding a new career path. Overloading your page w/ tables, extra attributes, and well, improper tags hurts you not only in bandwidth costs (xhtml vs html) but it can also hurt your SE ranking. This is where using headers, proper linking, and lists comes into play as well.</p>
+
+<p>Use tags as they were meant to be used. It&#8217;s not like you&#8217;re sticking your link in an IMG tag are you? So why would you stick paragraph in div, or your list in a table.</p>
+
+<p><strong>URL Rewriting</strong><br>I dont think this does as much as everyone thinks, but it&#8217;s still a nice touch.<br>Most sites have dynamic content, and pages will look something like /myscript.php?someID=5. I prefer to take this, and say for example myscript shows articles. We can use mod_rewrite (google it) and do /articles/5/this-is-fake-words-blah-blah.html.<br>Try this, can&#8217;t say I never did anything for you:</p>
+
+<p>function safe_name($string)<br>{<br>if (!trim($string))<br>return false;<br>$string = preg_replace(&#8216;/[^a-zA-Z0-9_-s.]/&#8217;, &#8221;, $string);<br>$string = preg_replace(&#8216;/s/&#8217;, &#8216;-&#8216;, $string);<br>$string = strtolower($string); // make the string all lowercase values</p>
+
+<p>return $string;<br>}</p>
+
+<p>Already follow all these rules? Congratulations! You are one of the few people who seem to understand this not so complicated concept!<br>Anyways, agree or not, my methods are proven effective, check out <a href="http://www.nibbits.com/">Nibbits</a> for my latest example of finely tuned SE content as well as proof on <a href="http://www.wowguru.com/">World of Warcraft Guru</a>.<br><ul /></p></div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-05-20T00:00:00-07:00" pubdate data-updated="true">May 20<span>th</span>, 2006</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+</div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+</body>
+</html>

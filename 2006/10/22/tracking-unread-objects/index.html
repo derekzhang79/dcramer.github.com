@@ -1,0 +1,137 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tracking Unread Objects - David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
+
+    
+    <meta name="description" content="Tracking Unread Objects Recently I&#8217;ve had to develop forum software for a website, and one problem we ran into was the most robust way to &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
+
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css?1" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+    
+
+</head>
+
+<body>
+	<header class="inner"><h1><a href="/">David Cramer's Blog</a></h1>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
+
+</header>
+	<div id="content" class="inner"><article class="post">
+    <h1 class="title">Tracking Unread Objects</h1>
+    <div class="entry"><p>Recently I&#8217;ve had to develop forum software for a website, and one problem we ran into was the most robust way to track unread posts.</p>
+
+<p>After giving this some thought, I came up with two feasable options. We&#8217;ll start by taking a look at the first.</p>
+
+<p><strong>Pure Post Tracking</strong></p>
+
+<p>Method one is to create a table:<br><blockquote>&#8220;forum_views&#8221;<br>postID (IntegerField)<br>userID (IntegerField)<br>Index (postID, userID)</blockquote><br>Everytime a user would view a post (that was marked as unread) we would insert a row into the table. To output the list of posts, or threads, we would be join the thread with this table.</p>
+
+<p>Cons:<br><ul><br><li>In order to show the list of threads, or forums, you have to use a LEFT JOIN with the Thread and Views table (even on the forum index) which can be extremely slow on high load websites.</li><br><li>A different queryset is used for each user, so there&#8217;s no worthwhile caching for this method.</li><br><li>Upon viewing a thread you have to perform a query for each post that is marked as unread.</li><br></ul><br>Pros:<br><ul><br><li>It gives exact tracking on if a user has viewed a post.</li><br></ul><br>Obviously, the pros do NOT outweigh the cons, so let&#8217;s move on to the other method:</p>
+
+<p><strong>Session Time Tracking</strong></p>
+
+<p>The idea of this is simple, and extremely quick. Our first step is to modify our User table if it&#8217;s not already setup properly. We need to add one field:<br><blockquote>&#8220;users&#8221;<br>lastVisitTime (DateTimeField)</blockquote><br>Ok now we have a field in our users table, which tracks the last time they visited the website. Now, obviously, the first obstacle is keeping the last visit time, as the time they last visisted the site, and not the last time they viewed a page. The way we will do this is quite simple:<br><ol><br><li>First and foremost, we validate their login details, if they&#8217;re not anonymous.</li><br><li>Next we check for a session variable, let&#8217;s call it &#8220;user_lastvisit&#8221;.</li><br><li>If this variable does not exist, we will set it to the data in our table for lastVisitTime, or -1 (if they&#8217;re anonymous, or have no lastVisitTime)</li><br><li>If they are not anonymous, we now need to update our User table lastVisitTime with the current time.</li><br></ol><br>Now, as you can see, we have the session variable, user_lastvisit, and we can use this in our template, or view, in a loop over all of the <strong>cached</strong> query results, to see if the last reply time is greater than the last visit time.</p>
+
+<p>Cons:<br><ul><br><li>It&#8217;s generic tracking; the minute the session is destroyed it marks all threads as read.</li><br><li>It does not track on a per-thread basis, although it could be combined with example #1 to do so.</li><br></ul><br>Pros:<br><ul><br><li>Extremely robust and quick, works well with caching solutions.</li><br><li>No large database overhead for tracking views.</li><br><li>No added database load for marking threads as read.</li><br></ul><br>If you want accurate tracking, I would recommend tracking views as said in example #1, with the views table, and then using example #2 for tracking on lists. The accurate tracking is most notably usable in search results.</p></div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-10-22T00:00:00-07:00" pubdate data-updated="true">Oct 22<span>nd</span>, 2006</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
+<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+</div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+</body>
+</html>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: postgresql | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/postgresql/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-03T11:25:42-07:00</updated>
+  <updated>2012-05-03T11:59:41-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -153,59 +153,97 @@ child_id | value
 <p>The schema and data storage is pretty straightforward, the bigger challenge is actually implementing the logic in your application (or if you're insane, within SQL triggers). We end up with a mess of SQL statements, with a singular goal to bring everything down to an atomic, transactionless nature. As an example, creating a new child probably resemebles something like the following:</p>
 
 
-<p>{% codeblock lang:sql %}
-INSERT INTO postsort (</p>
-
-<pre><code>tree_id,
-child_id,
-value
-</code></pre>
-
-<p>)
-SELECT t2.tree_id,</p>
-
-<pre><code>   %(child_id)d as child_id,
-   (t2.value || %(value)s::numeric[]) as value
-</code></pre>
-
-<p>FROM postsort as t2
-WHERE t2.tree_id = %(tree_id)d
-  AND t2.child_id = %(parent_child_id)d
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">postsort</span> <span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">tree_id</span><span class="p">,</span>
+</span><span class='line'><span class="n">child_id</span><span class="p">,</span>
+</span><span class='line'><span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
+</span><span class='line'><span class="k">SELECT</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span><span class="p">,</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>   <span class="o">%</span><span class="p">(</span><span class="n">child_id</span><span class="p">)</span><span class="n">d</span> <span class="k">as</span> <span class="n">child_id</span><span class="p">,</span>
+</span><span class='line'>   <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">value</span> <span class="o">||</span> <span class="o">%</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="n">s</span><span class="p">::</span><span class="nb">numeric</span><span class="p">[])</span> <span class="k">as</span> <span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">FROM</span> <span class="n">postsort</span> <span class="k">as</span> <span class="n">t2</span>
+</span><span class='line'><span class="k">WHERE</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">d</span>
+</span><span class='line'>  <span class="k">AND</span> <span class="n">t2</span><span class="p">.</span><span class="n">child_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">parent_child_id</span><span class="p">)</span><span class="n">d</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Once you've populated the table, queries become amazingly simple:</p>
 
 
-<p>{% codeblock lang:sql %}
-SELECT child_id
-FROM postsort
-WHERE tree_id = %(tree_id)s
-ORDER BY value
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SELECT</span> <span class="n">child_id</span>
+</span><span class='line'><span class="k">FROM</span> <span class="n">postsort</span>
+</span><span class='line'><span class="k">WHERE</span> <span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">s</span>
+</span><span class='line'><span class="k">ORDER</span> <span class="k">BY</span> <span class="n">value</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>What's even more cool, aside from a lot of custom SQL we had to create for this to work in Django, is the fact that we were able to easily prototype and implement arrays within the Django ORM:</p>
 
 
-<p>{% codeblock lang:python %}
-class NumericArrayField(models.Field):</p>
-
-<pre><code>__metaclass__ = models.SubfieldBase
-
-def db_type(self):
-    return "numeric[]"
-
-def get_prep_value(self, value):
-    if value:
-        value = map(float, value)
-    return value
-
-def to_python(self, value):
-    if value:
-        value = map(float, value)
-    return value
-</code></pre>
-
-<p>{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">NumericArrayField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Field</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SubfieldBase</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">db_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;numeric[]&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_prep_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">to_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, and has pushed us into a new direction in what we can do with SQL. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
 
