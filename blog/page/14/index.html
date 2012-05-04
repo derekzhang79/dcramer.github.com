@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Wowhead.com Joins the IGE Parade Wowhead.com, a very popular, World of Warcraft site with growth records spiking as high (if not higher) than Curse &hellip;">
+    <meta name="description" content="Inline Blocks &#8211; the Answer to Sprites We&#8217;ve been working a lot on the new design at Curse lately, and one thing we&#8217;ve used heavily &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,59 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2007/07/02/inline-blocks-the-answer-to-sprites">Inline Blocks &#8211; the Answer to Sprites</a></h1>
+    <div class="entry">
+        <p>We&#8217;ve been working a lot on the new design at Curse lately, and one thing we&#8217;ve used heavily are CSS sprites. The only issue we had with these is they have to be a block element (or an inline-block element) in order to display them properly.</p>
+
+<p>My first solution was to simply float them and wrap them in a fixed height container. This worked, but you can&#8217;t use text-align when they are floated. About a week later while I was looking at some cool CSS trick I found a better solution: inline-block wrappers.</p>
+
+<p>&#8220;inline-block&#8220; is a value usable on display, which makes your element act like a block element, but without clearing content around it. The problem arises though, that inline-block does not work in older browsers.</p>
+
+<p>The solution: wrap your block element in a container using inline-block styles. Below is the example and solution.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nc">.inline</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">display</span><span class="o">:</span> <span class="o">-</span><span class="n">moz</span><span class="o">-</span><span class="k">inline</span><span class="o">-</span><span class="k">block</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">display</span><span class="o">:</span> <span class="o">-</span><span class="n">moz</span><span class="o">-</span><span class="k">inline</span><span class="o">-</span><span class="n">box</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">display</span><span class="o">:</span> <span class="k">inline</span><span class="o">-</span><span class="k">block</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="ni">&amp;lt;</span>span class=&quot;inline&quot;<span class="ni">&amp;gt;&amp;lt;</span>div<span class="ni">&amp;gt;</span>My inline block element<span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;&amp;lt;</span>/span<span class="ni">&amp;gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>For those interested, here are a couple of links of this in use:<br><ul><br><li><a href="http://images.curse.com/">Image Gallery Display<br></a></li><br><li><a href="http://downloads.curse.com/details/8354/">Download Now/Add to Favorites Buttons</a></li><br></ul></p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-07-02T00:00:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2007</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -337,37 +390,6 @@
 
 
 <time datetime="2006-11-15T00:00:00-08:00" pubdate data-updated="true">Nov 15<span>th</span>, 2006</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2006/10/29/a-better-object-tracking">A Better Object Tracking</a></h1>
-    <div class="entry">
-        <p>After having built the system on our new CMS, and a couple suggestions from a friend, I came up with a better tracking system as I originally <a href="http://www.davidcramer.net/other/27/tracking-unread-objects.html">detailed on my blog</a>. The new system is combination of the second method detailed in the post, and a much more accurate solution.</p>
-
-<p>We continue to track the last login time in our session (and database, if they&#8217;re logged in), but we now also track a time for each object they have viewed. Whenever they view an object, you update a list in your session w/ that object&#8217;s key, and the current time. Now you simply compare the time they viewed that object (if it exists) with the last updated time, and you have a quick, database-free, tracking solution.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2006-10-29T00:00:00-07:00" pubdate data-updated="true">Oct 29<span>th</span>, 2006</time></div>
         <div class="tags">
 
 </div>

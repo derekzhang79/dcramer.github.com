@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Problems Uploading Packages With Setuptools on OS X This is mostly a note to myself, but also since my blog is very helpful to fellow Google-users I &hellip;">
+    <meta name="description" content="Refactoring Lifestream For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,195 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2009/04/04/refactoring-lifestream">Refactoring Lifestream</a></h1>
+    <div class="entry">
+        <p>For a while now I&#8217;ve been wanting to rewrite Lifestream into a contained OO pattern. It seems to be the &#8220;best practice&#8221; when it comes to WordPress, but tutorials and what are not spread out so it took a bit of time.</p>
+
+<p>During the process, I also took the opportunity to speed up certain areas, such as option calls. Instead of storing options on a per-key basis, I changed it over to simply use a serialized arrays. In such, I added several new commands to the codebase:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="x">function _populate_option_cache()</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    if (!$this-&gt;_optioncache)</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $this-&gt;_optioncache = get_option(&#39;lifestream_options&#39;);</span>
+</span><span class='line'><span class="x">        if (!$this-&gt;_optioncache) $this-&gt;_optioncache = $this-&gt;_options;</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Fetches the value of an option. Returns `null` if the option is not set.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function get_option($option, $default=null)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option_cache();</span>
+</span><span class='line'><span class="x">    $value = $this-&gt;_optioncache[$option];</span>
+</span><span class='line'><span class="x">    if (!$value) {</span>
+</span><span class='line'><span class="x">        return $default;</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">    return $value;</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Removes an option.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function delete_option($option)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option-cache();</span>
+</span><span class='line'><span class="x">    unset($this-&gt;_optioncache[$option]);</span>
+</span><span class='line'><span class="x">    update_option(&#39;lifestream_options&#39;, $this-&gt;_optioncache);</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Updates the value of an option.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function update_option($option, $value)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option_cache();</span>
+</span><span class='line'><span class="x">    $this-&gt;_optioncache[$option] = $value;</span>
+</span><span class='line'><span class="x">    update_option(&#39;lifestream_options&#39;, $this-&gt;_optioncache);</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">/**</span>
+</span><span class='line'><span class="x">* Sets an option if it doesn&#39;t exist.</span>
+</span><span class='line'><span class="x">*/</span>
+</span><span class='line'><span class="x">function add_option($option, $value)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    $this-&gt;_populate_option_cache();</span>
+</span><span class='line'><span class="x">    if (!array_key_exists($option, $this-&gt;_optioncache))</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $this-&gt;_optioncache[$option] = $value;</span>
+</span><span class='line'><span class="x">        add_option(&#39;lifestream_options&#39;, serialize($this-&gt;_optioncache));</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+From here I moved on to change all the translation calls <code>__</code>, and <code>_e</code> into using a built-in version of which automatically handles the sprintf calls, and the namespace.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="x">function __($text, $params=null)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    if (!is_array($params))</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $params = func_get_args();</span>
+</span><span class='line'><span class="x">        $params = array_slice($params, 1);</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">    return vsprintf(__($text, &#39;lifestream&#39;), $params);</span>
+</span><span class='line'><span class="x">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="x">function _e($text, $params=null)</span>
+</span><span class='line'><span class="x">{</span>
+</span><span class='line'><span class="x">    if (!is_array($params))</span>
+</span><span class='line'><span class="x">    {</span>
+</span><span class='line'><span class="x">        $params = func_get_args();</span>
+</span><span class='line'><span class="x">        $params = array_slice($params, 1);</span>
+</span><span class='line'><span class="x">    }</span>
+</span><span class='line'><span class="x">    echo vsprintf(__($text, &#39;lifestream&#39;), $params);</span>
+</span><span class='line'><span class="x">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>These two things alone cleaned up a LOT of the plugin, and the efficiency gain from the options change is amazing.</p>
+
+<p>From there I decided to go all out, beyond just refactoring it into a class, I began adding some functionality from our upcoming service. Labels were moved out of the feed classes, and instead are now their own class. Each label is reusable, and controls how it&#8217;s events should be rendered. Doing this really opened the door to the possibilities of different styles of rendering for different media types.</p>
+
+<p>So after a nice days work, I&#8217;ve pushed out <a href="http://wordpress.org/extend/plugins/lifestream/">wp-lifestream 0.96</a>, which contains an enormous amount of bug fixes, optimizations, and best of all new features. You can see it running live on my blog, with the new display styles and all. Hopefully tomorrow I will be able to finish up the permalinks for events, which will also give the ability to attach comments to them.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -725,74 +914,6 @@ As you can see here, we&#8217;re simply changing how the Twitter events are rend
 
 
 <time datetime="2008-12-29T00:00:00-08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/12/02/singletons-in-django">An Identity Mapper in Django (Formerly Django Singletons)</a></h1>
-    <div class="entry">
-        <p>As a sort of challenge to myself, I once again attempted to recreate <a href="http://code.djangoproject.com/ticket/17">ticket #17</a> as a standalone component. After a few hours, and some previous code I had written as a good guide, it seems to be working. So I&#8217;d like to announce <a href="http://github.com/dcramer/django-idmapper/tree/master">django-idmapper</a>.</p>
-
-<p>The goal of the project is a simple plug-and-play system for integrating the identity mapper into the ORM components. It allows you it simply define as a model with a different base class (via the SharedMemoryModel class), and all queries against this model (yes even from non-singleton models) are directed through the unique instance cache.</p>
-
-<p>In many cases, this can provide a nice decrease of memory usage, and you may even see a nice speed bonus (as we did with Curse).</p>
-
-<p>Here is a nice and dirty quick example of a situation which would gain from this benefit:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">idmapper</span> <span class="kn">import</span> <span class="n">models</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">Category</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">SharedMemoryModel</span><span class="p">):</span>
-</span><span class='line'><span class="c"># We have 5 categories</span>
-</span><span class='line'><span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">Article</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">SharedMemoryModel</span><span class="p">):</span>
-</span><span class='line'><span class="c"># And 100 articles</span>
-</span><span class='line'><span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-</span><span class='line'><span class="n">category</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Category</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-Now in a (sort of) typical query, maybe we want to show every article (or 100, which isn&#8217;t too unreasonable). We also want to show the category they are in:
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">article_list</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s">&#39;category&#39;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-<p>What we have achieved here, is only having a maximum of N (where N is the number of categories) unique instances of category in memory here. Since we only have five, this means that we only created five category instances. This gives us a savings of the time it takes to create the additional 95 category objects, as well as the memory they would have consumed.</p>
-
-<p>Please let me know if you run in to any problems, but so far, the tests are passing :)</p>
-
-<p><strong>Note: I&#8217;ve renamed the project due to the incorrect terminology. My apologies :)</strong></p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-12-02T00:00:00-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time></div>
         <div class="tags">
 
 </div>

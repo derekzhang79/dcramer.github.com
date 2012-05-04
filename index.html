@@ -7,8 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Using Travis-CI With Python and Django I&#8217;ve been using Travis-CI for a while now. Both my personal projects,
-and even several of the libraries &hellip;">
+    <meta name="description" content="Distributing Work Without Celery We&#8217;ve been migrating a lot of data to various places lately at DISQUS. These generally have been things like &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -65,6 +64,130 @@ and even several of the libraries &hellip;">
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2012/05/04/distributing-work-without-celery">Distributing Work Without Celery</a></h1>
+    <div class="entry">
+        <p>We&#8217;ve been migrating a lot of data to various places lately at DISQUS. These generally have been things like running
+consistancy checks on our PostgreSQL shards, or creating a new system which requires a certain form of denormalized data. It
+generally involves iterating through the results of an entire table (and sometimes even more), and performing some action
+based on that row. We never care about results, we just want to be able to finish as quickly as possible.</p>
+
+<p>Generally, we&#8217;d just create a simple <code>do_something.py</code> that would look something like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">RangeQuerySetWrapper</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+</span><span class='line'>    <span class="n">do_something</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Note: RangeQuerySetWrapper is a wrapper around Django&#8217;s ORM that efficiently iterates a table.</p>
+
+<p>Eventually we came up with an internal tool to make this a bit more bearable. Mostly to handle resuming processes based
+on the last primary key, and to track status. It evolved into a slightly more complex, but still simple utility we called
+Taskmaster:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">do_something</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">tm</span> <span class="o">=</span> <span class="n">Taskmaster</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">tm</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>This used to never be much of a problem. We&#8217;d just spin up some utility server and max the CPUs on that single machine
+to get data processed in a day or less. Lately however, we&#8217;ve grown beyond the bounds of what is reasonable for a single
+machine to take care of, and we&#8217;ve had to look towards other solutions.</p>
+
+<p>As with most people, we rely on Celery and RabbitMQ for distributing asyncrhonous tasks in our application. Unfortunately
+that&#8217;s not quite the ideal fit out of the box for us in these situations. The root of the problem stems from the fact that
+we may need to run through a billion objects, and without some effort, that would mean every single task would need to
+fit into a RabbitMQ instance.</p>
+
+<p>Given that we can&#8217;t simply queue every task and then distribute them to some Celery workers, and even more so that we
+simply dont want to bring up Celery machines/write throwaway Celery code for a simple script, we chose to take a different
+route. That route ended up with a simple distributed buffer queue, built on the 
+<a href="http://docs.python.org/library/multiprocessing.html">Python multiprocessing module</a>.</p>
+
+<p>We&#8217;ve called that project <a href="https://github.com/dcramer/taskmaster">Taskmaster</a>.</p>
+
+<p>Taskmaster takes advantage of the remote management capabilities built into the multiprocessing module. This makes it
+very simple to just throw in a capped Queue and have workers connect, get and execute jobs, and control state via that
+single master process. In the end, we came up with an API looking something like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># spawn the master process
+</span><span class='line'>$ tm-master do_something:get_jobs --host=0.0.0.0:5050
+</span><span class='line'>
+</span><span class='line'># run a slave
+</span><span class='line'>$ tm-slave do_something:handle_job --host=192.168.0.1:5050</span></code></pre></td></tr></table></div></figure>
+
+<p>Implementing the iterator and the callback are just as simple as they used to be:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">get_jobs</span><span class="p">(</span><span class="n">last</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+</span><span class='line'>    <span class="c"># ``last`` will only be passed if previous state was available</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">RangeQuerySetWrapper</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">min_id</span><span class="o">=</span><span class="n">last</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">yield</span> <span class="n">obj</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">handle_job</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">print</span> <span class="s">&quot;Got </span><span class="si">%r</span><span class="s">!&quot;</span> <span class="o">%</span> <span class="n">obj</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now under the hood Taskmaster will continue to iterate on <code>get_jobs</code> whenever the size of the queue is
+under the threshold (which defaults to 10,000 items). This means we have a constant memory footprint and can just spin
+slaves to process the data.</p>
+
+<p>Taskmaster is still new, but if you&#8217;re in need of these kinds of one-off migration scripts, we encourage you to <a href="https://github.com/dcramer/taskmaster">try
+it out</a> and see if it fits.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-04T15:12:00-07:00" pubdate data-updated="true">May 4<span>th</span>, 2012</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/python/'>python</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1365,89 +1488,6 @@ index = http://my.chishop/simple</pre>
 <div class="cat">
   
     <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>, <a class='category' href='/categories/python/'>python</a>
-  
-</div>
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2011/03/08/building-cursors-for-the-disqus-api">Building Cursors for the Disqus API</a></h1>
-    <div class="entry">
-        <p>This last week we&#8217;ve been implementing cursors for the Disqus API (3.0). If you&#8217;re not familiar, the concept is like cursors in your database: create a marker for where you are with your result set so you can iterate through a large set of results efficiently. Think of it like a snapshot. A marker that lets us retrieve the results you were previously looking for, and return a subset of those results.</p>
-
-<h3>LIMIT/OFFSET is Bad</h3>
-
-<p>One of the big questions I&#8217;ve seen come up, is &#8220;Why not just use LIMIT and OFFSET?&#8221; To answer this, you must understand how LIMIT/OFFSET actually works. For this we&#8217;ll use your typical database example. You come in, request all results that rhyme with RICK, and there are approximately 1000 results. You first ask it for the first 100, which is very easy, as it can yield one row as it gets it, which means it just returns the first 100 rows that match the result set. Fast forward, and now you are asking it for rows 900-1000. The database now must iterate through the first 900 results before it can start returning a row (since it doesnt have a pointer to tell it how to get to result 900). In summary, LIMIT/OFFSET is VERY slow on large result sets.</p>
-
-<h3>Range Selectors</h3>
-
-<p>The typical solution to avoiding the above pattern is to switch to range selectors. Using some kind of index, you tell it exactly where you need to start and stop. Using the above example, we would say &#8220;I want RICK results that have an ID greater than 900 and less than 1000&#8221;, which will get you approximately the same thing. With this solution, however, you have to worry about gaps in your ranges. The result set, 900 to 1000, could have anywhere between 0 and 100 rows, which isn&#8217;t what you really want.</p>
-
-<h3>Non-Unique Ranges</h3>
-
-<p>There is one final thing we had to take into account when designing our cursors. We use them for both timestamp and incremental ID sorting (ideally timestamp-only), which works great, but presents the problem of conflicts. It&#8217;s very unlikely that two sets of data will have the exact datetime (down to the microsecond), but it happens, especially on very large data sets (like ours). To combat this, we have to actually combine range offsets with row offsets.</p>
-
-<pre>
-id  | timestamp         | title
--------------------------------
-1   | 1299061169.043267 | foo
-2   | 1299061169.043267 | bar
-3   | 1299061170.034193 | baz
-</pre>
-
-<h3>Combining Selectors</h3>
-
-<p>Our final result consists of generating range offsets with row offsets. We start by generating the absolute highest range identifier we can from a result set (typically the last row in the result), and then we append a row offset on to this (usually 0). In the case where the last row is identical to one or more rows (from end to start) we just increment this offset number. The resulting database logic turns into something like <code>SELECT FROM posts WHERE timestamp > 2012-10-12T08:12:56.34153 LIMIT 50 OFFSET 5</code>. Remember, the key here is that the &#8220;timestamp&#8221; value we&#8217;re sending is continually changing as we paginate through the cursor, which allows us to keep these queries very efficient.</p>
-
-<p>I should note, that we also had to deal with doing the opposite operation of paginating forward, being the obvious &#8220;previous results&#8221;. This had its own set of problems that we basically had to reverse all of our operations. Given that we are at the cursor we see above, we need to generate a &#8220;previous cursor&#8221; object. To do this, we just take the first row in the series (again, doing the same offset calculations), and set a directional flag. The result is almost more documentation than code, just because of how complicated the logic can appear.</p>
-
-<p>The end result of our cursors in the API, looks a little bit like this:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="s2">&quot;cursor&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>        <span class="s2">&quot;prev&quot;</span><span class="o">:</span> <span class="s2">&quot;1299061169043267:0:1&quot;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s2">&quot;hasNext&quot;</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
-</span><span class='line'>        <span class="s2">&quot;next&quot;</span><span class="o">:</span> <span class="s2">&quot;1299061158809627:0:0&quot;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s2">&quot;hasPrev&quot;</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
-</span><span class='line'>        <span class="s2">&quot;total&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">},</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>The logic is a bit fuzzy, and we have to do some best guesses in places (such as determining if there is actually a valid previous cursor), but the database queries end up about as efficient as we can hope for. We end up with <code>(N results + 1)</code> rows when we&#8217;re paginating forward, and <code>(N results + 2)</code> when pulling up previous cursors. To avoid confusion, this is literally <strong>one</strong> query for every request, period. There&#8217;s no additional overhead for doing counts or determining what your next or previous cursors are. That&#8217;s one optimized SQL statement to fetch your results, calculate your next, and previous cursors.</p>
-
-<p>Since I feel bad for not leaving you all with much code, check out some of the <a href="https://github.com/disqus/django-db-utils">database utilities that we use at Disqus</a> to make life with Django QuerySets a bit easier.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-03-08T00:00:00-08:00" pubdate data-updated="true">Mar 8<span>th</span>, 2011</time></div>
-        <div class="tags">
-
-<div class="cat">
-  
-    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
   
 </div>
 

@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Using OS X Media Keys in Rdio Update: Use Fluid, with this awesome icon by Wilson Miner, and name it &#8220;Rdio Desktop&#8221; and follow these &hellip;">
+    <meta name="description" content="Building Cursors for the Disqus API This last week we&#8217;ve been implementing cursors for the Disqus API (3.0). If you&#8217;re not familiar, the &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,89 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2011/03/08/building-cursors-for-the-disqus-api">Building Cursors for the Disqus API</a></h1>
+    <div class="entry">
+        <p>This last week we&#8217;ve been implementing cursors for the Disqus API (3.0). If you&#8217;re not familiar, the concept is like cursors in your database: create a marker for where you are with your result set so you can iterate through a large set of results efficiently. Think of it like a snapshot. A marker that lets us retrieve the results you were previously looking for, and return a subset of those results.</p>
+
+<h3>LIMIT/OFFSET is Bad</h3>
+
+<p>One of the big questions I&#8217;ve seen come up, is &#8220;Why not just use LIMIT and OFFSET?&#8221; To answer this, you must understand how LIMIT/OFFSET actually works. For this we&#8217;ll use your typical database example. You come in, request all results that rhyme with RICK, and there are approximately 1000 results. You first ask it for the first 100, which is very easy, as it can yield one row as it gets it, which means it just returns the first 100 rows that match the result set. Fast forward, and now you are asking it for rows 900-1000. The database now must iterate through the first 900 results before it can start returning a row (since it doesnt have a pointer to tell it how to get to result 900). In summary, LIMIT/OFFSET is VERY slow on large result sets.</p>
+
+<h3>Range Selectors</h3>
+
+<p>The typical solution to avoiding the above pattern is to switch to range selectors. Using some kind of index, you tell it exactly where you need to start and stop. Using the above example, we would say &#8220;I want RICK results that have an ID greater than 900 and less than 1000&#8221;, which will get you approximately the same thing. With this solution, however, you have to worry about gaps in your ranges. The result set, 900 to 1000, could have anywhere between 0 and 100 rows, which isn&#8217;t what you really want.</p>
+
+<h3>Non-Unique Ranges</h3>
+
+<p>There is one final thing we had to take into account when designing our cursors. We use them for both timestamp and incremental ID sorting (ideally timestamp-only), which works great, but presents the problem of conflicts. It&#8217;s very unlikely that two sets of data will have the exact datetime (down to the microsecond), but it happens, especially on very large data sets (like ours). To combat this, we have to actually combine range offsets with row offsets.</p>
+
+<pre>
+id  | timestamp         | title
+-------------------------------
+1   | 1299061169.043267 | foo
+2   | 1299061169.043267 | bar
+3   | 1299061170.034193 | baz
+</pre>
+
+<h3>Combining Selectors</h3>
+
+<p>Our final result consists of generating range offsets with row offsets. We start by generating the absolute highest range identifier we can from a result set (typically the last row in the result), and then we append a row offset on to this (usually 0). In the case where the last row is identical to one or more rows (from end to start) we just increment this offset number. The resulting database logic turns into something like <code>SELECT FROM posts WHERE timestamp > 2012-10-12T08:12:56.34153 LIMIT 50 OFFSET 5</code>. Remember, the key here is that the &#8220;timestamp&#8221; value we&#8217;re sending is continually changing as we paginate through the cursor, which allows us to keep these queries very efficient.</p>
+
+<p>I should note, that we also had to deal with doing the opposite operation of paginating forward, being the obvious &#8220;previous results&#8221;. This had its own set of problems that we basically had to reverse all of our operations. Given that we are at the cursor we see above, we need to generate a &#8220;previous cursor&#8221; object. To do this, we just take the first row in the series (again, doing the same offset calculations), and set a directional flag. The result is almost more documentation than code, just because of how complicated the logic can appear.</p>
+
+<p>The end result of our cursors in the API, looks a little bit like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="s2">&quot;cursor&quot;</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s2">&quot;prev&quot;</span><span class="o">:</span> <span class="s2">&quot;1299061169043267:0:1&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;hasNext&quot;</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;next&quot;</span><span class="o">:</span> <span class="s2">&quot;1299061158809627:0:0&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;hasPrev&quot;</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;total&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+</span><span class='line'>      <span class="p">},</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The logic is a bit fuzzy, and we have to do some best guesses in places (such as determining if there is actually a valid previous cursor), but the database queries end up about as efficient as we can hope for. We end up with <code>(N results + 1)</code> rows when we&#8217;re paginating forward, and <code>(N results + 2)</code> when pulling up previous cursors. To avoid confusion, this is literally <strong>one</strong> query for every request, period. There&#8217;s no additional overhead for doing counts or determining what your next or previous cursors are. That&#8217;s one optimized SQL statement to fetch your results, calculate your next, and previous cursors.</p>
+
+<p>Since I feel bad for not leaving you all with much code, check out some of the <a href="https://github.com/disqus/django-db-utils">database utilities that we use at Disqus</a> to make life with Django QuerySets a bit easier.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-03-08T00:00:00-08:00" pubdate data-updated="true">Mar 8<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1114,47 +1197,6 @@ project/conf/settings/dev.py
 
 
 <time datetime="2010-12-10T00:00:00-08:00" pubdate data-updated="true">Dec 10<span>th</span>, 2010</time></div>
-        <div class="tags">
-
-<div class="cat">
-  
-    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
-  
-</div>
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2010/12/06/tracking-changes-to-fields-in-django">Tracking Changes to Fields in Django</a></h1>
-    <div class="entry">
-        <p>A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine if certain actions need to take place when that instance is updated. We tend to use it like &#8220;if changed&#8221; database triggers. This has been very useful in situations like marking a comment as visible. In many areas this data is denormalized and we need to somehow propagate changes to counters or other similar structures.</p>
-
-<p>What we ended up doing was building a class decorator. This was my first time using such a technique, and it turned out really well. If you&#8217;re not familiar, they work almost identically to function decorators. You might even consider them a class factory, if that better helps you understand whats happening.</p>
-
-<p>So, what we came up with was a decorator we&#8217;ve defined as <code>@track_data</code>. It allows us, at runtime, to specify which attributes we want to maintain history of on a model. This history is available from initialization, and reset whenever the model instance is saved (whether its via .save() or .update()).</p>
-
-<p><script src="https://gist.github.com/730765.js"> </script></p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-12-06T00:00:00-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2010</time></div>
         <div class="tags">
 
 <div class="cat">

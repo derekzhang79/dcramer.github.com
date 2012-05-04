@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Integrating PyFlakes Into TextMate One of the things I really dislike about TextMate is we have no inline-error checking. The best you can achieve &hellip;">
+    <meta name="description" content="Tracking Changes to Fields in Django A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,47 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/06/tracking-changes-to-fields-in-django">Tracking Changes to Fields in Django</a></h1>
+    <div class="entry">
+        <p>A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine if certain actions need to take place when that instance is updated. We tend to use it like &#8220;if changed&#8221; database triggers. This has been very useful in situations like marking a comment as visible. In many areas this data is denormalized and we need to somehow propagate changes to counters or other similar structures.</p>
+
+<p>What we ended up doing was building a class decorator. This was my first time using such a technique, and it turned out really well. If you&#8217;re not familiar, they work almost identically to function decorators. You might even consider them a class factory, if that better helps you understand whats happening.</p>
+
+<p>So, what we came up with was a decorator we&#8217;ve defined as <code>@track_data</code>. It allows us, at runtime, to specify which attributes we want to maintain history of on a model. This history is available from initialization, and reset whenever the model instance is saved (whether its via .save() or .update()).</p>
+
+<p><script src="https://gist.github.com/730765.js"> </script></p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-12-06T00:00:00-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -750,47 +791,6 @@ categories: [&#8220;django&#8221;]&#8212;
 
 
 <time datetime="2010-01-06T00:00:00-08:00" pubdate data-updated="true">Jan 6<span>th</span>, 2010</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2009/12/24/big-companies-make-me-laugh">Big Companies Make Me Laugh</a></h1>
-    <div class="entry">
-        <p>And then want to take a chainsaw to their operations center..</p>
-
-<p>My girlfriend and I started playing World of Warcraft so I figured I&#8217;d just reactivate my old account. Went to login and got an &#8220;account permanently banned&#8221; notice. Well, sure, I did odd things Blizzard didn&#8217;t like back in the day, but it wasn&#8217;t banned when I migrated it to the Battle.net service.</p>
-
-<p>So, I drop an email to the address that they direct you to, and here&#8217;s the (fucking retarded) response I get:</p>
-
-<blockquote>After further investigation, Blizzard has determined there is insufficient evidence that the chargeback in place on the World of Warcraft account ZEEG was a direct result of an account compromise. As such, the account will remain disabled until the negative balance of $14.99 is repaid.
-
-<p>Please review the World of Warcraft Terms of Use at (http://www.worldofwarcraft.com/legal/termsofuse.html), which was agreed to upon establishment of the account in question. If a charge is returned to Blizzard Entertainment for any reason, Blizzard Entertainment reserves the right, in its sole discretion, to suspend or terminate access and the Account, as well as terminating this Agreement and all of Blizzard Entertainment&#8217;s obligations hereunder.</p>
-
-<p>These funds can only be repaid via a United States money order for the full and EXACT amount of the disputed funds: $14.99</blockquote></p>
-
-<p>First off, negative balance? What? Explain that bullshit. I haven&#8217;t played WoW in I don&#8217;t know how long, and why would I still owe them money? Secondly, money order? Is this 1995 again?</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2009</time></div>
         <div class="tags">
 
 </div>
