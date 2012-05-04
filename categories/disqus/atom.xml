@@ -4,7 +4,7 @@
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:51:19-07:00</updated>
+  <updated>2012-05-04T15:55:09-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -29,19 +29,13 @@ based on that row. We never care about results, we just want to be able to finis
 <p>Generally, we'd just create a simple <code>do_something.py</code> that would look something like this:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">RangeQuerySetWrapper</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">do_something</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+for comment in RangeQuerySetWrapper(Post.objects.all()):</p>
+
+<pre><code>do_something(comment)
+</code></pre>
+
+<p>{% endcodeblock %}</p>
 
 <p>Note: RangeQuerySetWrapper is a wrapper around Django's ORM that efficiently iterates a table.</p>
 
@@ -53,33 +47,20 @@ on the last primary key, and to track status. It evolved into a slightly more co
 Taskmaster:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">do_something</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-</span><span class='line'><span class="n">tm</span> <span class="o">=</span> <span class="n">Taskmaster</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
-</span><span class='line'><span class="n">tm</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+def callback(obj):</p>
+
+<pre><code>do_something(obj)
+</code></pre>
+
+<p>def main(**options):</p>
+
+<pre><code>qs = Post.objects.all()
+tm = Taskmaster(callback, qs, **options)
+tm.start()
+</code></pre>
+
+<p>{% endcodeblock %}</p>
 
 <p>This used to never be much of a problem. We'd just spin up some utility server and max the CPUs on that single machine
 to get data processed in a day or less. Lately however, we've grown beyond the bounds of what is reasonable for a single
@@ -114,66 +95,44 @@ very simple to just throw in a capped Queue and have workers connect, get and ex
 single master process. In the end, we came up with an API looking something like this:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>spawn the master process&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>run a slave&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p>$ tm-slave do_something:handle_job --host=192.168.0.1:5050</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:bash %}</p>
+
+<h1>spawn the master process</h1>
+
+<p>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050</p>
+
+<h1>run a slave</h1>
+
+<p>$ tm-slave do_something:handle_job --host=192.168.0.1:5050
+{% endcodeblock %}</p>
 
 <p>You'll see the status on the master as things process, and if you cancel the process and start it again, it will
 automatically resume:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050
-</span><span class='line'>Taskmaster server running on '0.0.0.0:5050'
-</span><span class='line'>Current Job: 30421 | Rate:  991.06/s | Elapsed Time: 0:00:40</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:bash %}
+$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050
+Taskmaster server running on '0.0.0.0:5050'
+Current Job: 30421 | Rate:  991.06/s | Elapsed Time: 0:00:40
+{% endcodeblock %}</p>
 
 <p>Implementing the iterator and the callback are just as simple as they used to be:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">get_jobs</span><span class="p">(</span><span class="n">last</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c"># ``last`` will only be passed if previous state was available</span>
-</span><span class='line'><span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">RangeQuerySetWrapper</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">min_id</span><span class="o">=</span><span class="n">last</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">yield</span> <span class="n">obj</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">handle_job</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">print</span> <span class="s">&quot;Got </span><span class="si">%r</span><span class="s">!&quot;</span> <span class="o">%</span> <span class="n">obj</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+def get_jobs(last=0):</p>
+
+<pre><code># ``last`` will only be passed if previous state was available
+for obj in RangeQuerySetWrapper(Post.objects.all(), min_id=last):
+    yield obj
+</code></pre>
+
+<p>def handle_job(obj):</p>
+
+<pre><code>print "Got %r!" % obj
+</code></pre>
+
+<p>{% endcodeblock %}</p>
 
 <p>Now under the hood Taskmaster will continue to iterate on <code>get_jobs</code> whenever the size of the queue is
 under the threshold (which defaults to 10,000 items). This means we have a constant memory footprint and can just spin
@@ -211,107 +170,70 @@ our configuration files for our Django and Python projects.</p>
 <p>A basic <code>.travis.yml</code> might look something like this:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
-</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
-</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
-</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:yaml %}
+language: python
+python:
+  - "2.6"
+  - "2.7"
+install:
+  - pip install -q -e . --use-mirrors
+script:
+  - python setup.py test
+{% endcodeblock %}</p>
 
 <p>Most of the projects themselves use Django, which also means they need to test several Django versions. Travis makes
 this very simple with its matrix builds. In our case, we need to setup a DJANGO matrix, and ensure it gets installed:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
-</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:yaml %}
+env:
+  - DJANGO=1.2.7
+  - DJANGO=1.3.1
+  - DJANGO=1.4
+install:
+  - pip install -q Django==$DJANGO --use-mirrors
+  - pip install -q -e . --use-mirrors
+{% endcodeblock %}</p>
 
 <p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We also use a custom
 version of pyflakes which allows us to filter out warnings, as those are never critical errors. Add this in is pretty
 simple using the <code>before_script</code> hook, which gets run before the tests are run in <code>script</code>.</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
-</span><span class='line'><span class="l-Scalar-Plain">before_script</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:yaml %}
+install:
+  - pip install -q Django==$DJANGO --use-mirrors
+  - pip install pep8 --use-mirrors
+  - pip install https://github.com/dcramer/pyflakes/tarball/master
+  - pip install -q -e . --use-mirrors
+before_script:
+  - "pep8 --exclude=migrations --ignore=E501,E225 src"
+  - pyflakes -x W src
+{% endcodeblock %}</p>
 
 <p>When all is said and done, we end up with something like this:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
-</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
-</span><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
-</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
-</span><span class='line'><span class="l-Scalar-Plain">before_script</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
-</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:yaml %}
+language: python
+python:
+  - "2.6"
+  - "2.7"
+env:
+  - DJANGO=1.2.7
+  - DJANGO=1.3.1
+  - DJANGO=1.4
+install:
+  - pip install -q Django==$DJANGO --use-mirrors
+  - pip install pep8 --use-mirrors
+  - pip install https://github.com/dcramer/pyflakes/tarball/master
+  - pip install -q -e . --use-mirrors
+before_script:
+  - "pep8 --exclude=migrations --ignore=E501,E225 src"
+  - pyflakes -x W src
+script:
+  - python setup.py test
+{% endcodeblock %}</p>
 
 <p>Travis will automatically matrix each environment variable with each Python version, so you'll get
 a test run for every combination of the two. Pretty easy, right?</p>
@@ -379,57 +301,33 @@ of extra resources (such as scripts, or documentation). Fundamentally they're id
 thing, it <strong>does not prevent you from using setup.py</strong>. Let's take an example setup.py:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&#39;Flask==0.8&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;redis==2.4.11&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;hiredis==0.1.1&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;nydus==0.8.1&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">setup</span><span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;something-sexy&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="n">version</span><span class="o">=</span><span class="s">&#39;1.0.0&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="n">author</span><span class="o">=</span><span class="s">&quot;DISQUS&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="n">author_email</span><span class="o">=</span><span class="s">&quot;dev@disqus.com&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="n">package_dir</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="s">&#39;src&#39;</span><span class="p">},</span>
-</span><span class='line'><span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">),</span>
-</span><span class='line'><span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">,</span>
-</span><span class='line'><span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+from setuptools import setup, find_packages</p>
+
+<p>requires = [</p>
+
+<pre><code>'Flask==0.8',
+'redis==2.4.11',
+'hiredis==0.1.1',
+'nydus==0.8.1',
+</code></pre>
+
+<p>]</p>
+
+<p>setup(</p>
+
+<pre><code>name='something-sexy',
+version='1.0.0',
+author="DISQUS",
+author_email="dev@disqus.com",
+package_dir={'': 'src'},
+packages=find_packages("src"),
+install_requires=requires,
+zip_safe=False,
+</code></pre>
+
+<p>)
+{% endcodeblock %}</p>
 
 <p>Now, in our case, this is probably a service on Disqus, which means we're not listing it as a dependancy. In every
 single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. There's many ways
@@ -593,97 +491,59 @@ child_id | value
 <p>The schema and data storage is pretty straightforward, the bigger challenge is actually implementing the logic in your application (or if you're insane, within SQL triggers). We end up with a mess of SQL statements, with a singular goal to bring everything down to an atomic, transactionless nature. As an example, creating a new child probably resemebles something like the following:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">postsort</span> <span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">tree_id</span><span class="p">,</span>
-</span><span class='line'><span class="n">child_id</span><span class="p">,</span>
-</span><span class='line'><span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
-</span><span class='line'><span class="k">SELECT</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span><span class="p">,</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>   <span class="o">%</span><span class="p">(</span><span class="n">child_id</span><span class="p">)</span><span class="n">d</span> <span class="k">as</span> <span class="n">child_id</span><span class="p">,</span>
-</span><span class='line'>   <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">value</span> <span class="o">||</span> <span class="o">%</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="n">s</span><span class="p">::</span><span class="nb">numeric</span><span class="p">[])</span> <span class="k">as</span> <span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">FROM</span> <span class="n">postsort</span> <span class="k">as</span> <span class="n">t2</span>
-</span><span class='line'><span class="k">WHERE</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">d</span>
-</span><span class='line'>  <span class="k">AND</span> <span class="n">t2</span><span class="p">.</span><span class="n">child_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">parent_child_id</span><span class="p">)</span><span class="n">d</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:sql %}
+INSERT INTO postsort (</p>
+
+<pre><code>tree_id,
+child_id,
+value
+</code></pre>
+
+<p>)
+SELECT t2.tree_id,</p>
+
+<pre><code>   %(child_id)d as child_id,
+   (t2.value || %(value)s::numeric[]) as value
+</code></pre>
+
+<p>FROM postsort as t2
+WHERE t2.tree_id = %(tree_id)d
+  AND t2.child_id = %(parent_child_id)d
+{% endcodeblock %}</p>
 
 <p>Once you've populated the table, queries become amazingly simple:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SELECT</span> <span class="n">child_id</span>
-</span><span class='line'><span class="k">FROM</span> <span class="n">postsort</span>
-</span><span class='line'><span class="k">WHERE</span> <span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">s</span>
-</span><span class='line'><span class="k">ORDER</span> <span class="k">BY</span> <span class="n">value</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:sql %}
+SELECT child_id
+FROM postsort
+WHERE tree_id = %(tree_id)s
+ORDER BY value
+{% endcodeblock %}</p>
 
 <p>What's even more cool, aside from a lot of custom SQL we had to create for this to work in Django, is the fact that we were able to easily prototype and implement arrays within the Django ORM:</p>
 
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">NumericArrayField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Field</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SubfieldBase</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">db_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;numeric[]&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">get_prep_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">to_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% codeblock lang:python %}
+class NumericArrayField(models.Field):</p>
+
+<pre><code>__metaclass__ = models.SubfieldBase
+
+def db_type(self):
+    return "numeric[]"
+
+def get_prep_value(self, value):
+    if value:
+        value = map(float, value)
+    return value
+
+def to_python(self, value):
+    if value:
+        value = map(float, value)
+    return value
+</code></pre>
+
+<p>{% endcodeblock %}</p>
 
 <p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, and has pushed us into a new direction in what we can do with SQL. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
 

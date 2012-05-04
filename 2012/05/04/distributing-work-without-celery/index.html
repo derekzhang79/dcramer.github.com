@@ -120,26 +120,28 @@ route. That route ended up with a simple distributed buffer queue, built on the
 very simple to just throw in a capped Queue and have workers connect, get and execute jobs, and control state via that
 single master process. In the end, we came up with an API looking something like this:</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># spawn the master process
-</span><span class='line'>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># spawn the master process</span>
+</span><span class='line'><span class="nv">$ </span>tm-master taskmaster.example --reset --key<span class="o">=</span>foo --host<span class="o">=</span>0.0.0.0:5050
 </span><span class='line'>
-</span><span class='line'># run a slave
-</span><span class='line'>$ tm-slave do_something:handle_job --host=192.168.0.1:5050</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'><span class="c"># run a slave</span>
+</span><span class='line'><span class="nv">$ </span>tm-slave do_something:handle_job --host<span class="o">=</span>192.168.0.1:5050
+</span></code></pre></td></tr></table></div></figure>
 
 <p>You&#8217;ll see the status on the master as things process, and if you cancel the process and start it again, it will
 automatically resume:</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050
-</span><span class='line'>Taskmaster server running on '0.0.0.0:5050'
-</span><span class='line'>Current Job: 30421 | Rate:  991.06/s | Elapsed Time: 0:00:40</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>tm-master taskmaster.example --reset --key<span class="o">=</span>foo --host<span class="o">=</span>0.0.0.0:5050
+</span><span class='line'>Taskmaster server running on <span class="s1">&#39;0.0.0.0:5050&#39;</span>
+</span><span class='line'>Current Job: 30421 | Rate:  991.06/s | Elapsed Time: 0:00:40
+</span></code></pre></td></tr></table></div></figure>
 
 <p>Implementing the iterator and the callback are just as simple as they used to be:</p>
 
