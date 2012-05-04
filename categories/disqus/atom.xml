@@ -4,7 +4,7 @@
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:47:17-07:00</updated>
+  <updated>2012-05-04T15:51:19-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Distributing work in Python without Celery]]></title>
+    <title type="html"><![CDATA[Distributing Work in Python Without Celery]]></title>
     <link href="http://justcramer.com/2012/05/04/distributing-work-without-celery"/>
     <updated>2012-05-04T15:12:00-07:00</updated>
     <id>http://justcramer.com/2012/05/04/distributing-work-without-celery</id>
@@ -127,11 +127,22 @@ single master process. In the end, we came up with an API looking something like
 </span><span class='line'>
 </span><span class='line'>&lt;h1>spawn the master process&lt;/h1>
 </span><span class='line'>
-</span><span class='line'>&lt;p>$ tm-master do_something:get_jobs --host=0.0.0.0:5050&lt;/p>
+</span><span class='line'>&lt;p>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050&lt;/p>
 </span><span class='line'>
 </span><span class='line'>&lt;h1>run a slave&lt;/h1>
 </span><span class='line'>
 </span><span class='line'>&lt;p>$ tm-slave do_something:handle_job --host=192.168.0.1:5050</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>You'll see the status on the master as things process, and if you cancel the process and start it again, it will
+automatically resume:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ tm-master taskmaster.example --reset --key=foo --host=0.0.0.0:5050
+</span><span class='line'>Taskmaster server running on '0.0.0.0:5050'
+</span><span class='line'>Current Job: 30421 | Rate:  991.06/s | Elapsed Time: 0:00:40</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Implementing the iterator and the callback are just as simple as they used to be:</p>
 
