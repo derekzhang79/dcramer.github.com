@@ -4,7 +4,7 @@
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:38:05-07:00</updated>
+  <updated>2012-05-04T15:47:17-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Distributing Work Without Celery]]></title>
+    <title type="html"><![CDATA[Distributing work in Python without Celery]]></title>
     <link href="http://justcramer.com/2012/05/04/distributing-work-without-celery"/>
     <updated>2012-05-04T15:12:00-07:00</updated>
     <id>http://justcramer.com/2012/05/04/distributing-work-without-celery</id>
