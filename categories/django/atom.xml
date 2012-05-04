@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:55:09-07:00</updated>
+  <updated>2012-05-04T15:56:20-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,183 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Distributing Work in Python Without Celery]]></title>
+    <link href="http://justcramer.com/2012/05/04/distributing-work-without-celery"/>
+    <updated>2012-05-04T15:12:00-07:00</updated>
+    <id>http://justcramer.com/2012/05/04/distributing-work-without-celery</id>
+    <content type="html"><![CDATA[<p>We've been migrating a lot of data to various places lately at DISQUS. These generally have been things like running
+consistancy checks on our PostgreSQL shards, or creating a new system which requires a certain form of denormalized data. It
+usually involves iterating through the results of an entire table (and sometimes even more), and performing some action
+based on that row. We never care about results, we just want to be able to finish as quickly as possible.</p>
+
+
+
+
+<p>Generally, we'd just create a simple <code>do_something.py</code> that would look something like this:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">RangeQuerySetWrapper</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">do_something</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Note: RangeQuerySetWrapper is a wrapper around Django's ORM that efficiently iterates a table.</p>
+
+
+
+
+<p>Eventually we came up with an internal tool to make this a bit more bearable. Mostly to handle resuming processes based
+on the last primary key, and to track status. It evolved into a slightly more complex, but still simple utility we called
+Taskmaster:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">do_something</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</span><span class='line'><span class="n">tm</span> <span class="o">=</span> <span class="n">Taskmaster</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+</span><span class='line'><span class="n">tm</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>This used to never be much of a problem. We'd just spin up some utility server and max the CPUs on that single machine
+to get data processed in a day or less. Lately however, we've grown beyond the bounds of what is reasonable for a single
+machine to take care of, and we've had to look towards other solutions.</p>
+
+
+
+
+<p>As with most people, we rely on Celery and RabbitMQ for distributing asyncrhonous tasks in our application. Unfortunately
+that's not quite the ideal fit out of the box for us in these situations. The root of the problem stems from the fact that
+we may need to run through a billion objects, and without some effort, that would mean every single task would need to
+fit into a RabbitMQ instance.</p>
+
+
+
+
+<p>Given that we can't simply queue every task and then distribute them to some Celery workers, and even more so that we
+simply dont want to bring up Celery machines/write throwaway Celery code for a simple script, we chose to take a different
+route. That route ended up with a simple distributed buffer queue, built on the 
+<a href="http://docs.python.org/library/multiprocessing.html">Python multiprocessing module</a>.</p>
+
+
+
+
+<h3>Introducing Taskmaster</h3>
+
+
+
+
+<p><a href="https://github.com/dcramer/taskmaster">Taskmaster</a> takes advantage of the remote management capabilities built into the multiprocessing module. This makes it
+very simple to just throw in a capped Queue and have workers connect, get and execute jobs, and control state via that
+single master process. In the end, we came up with an API looking something like this:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;spawn the master process&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;<span class="nv">$ </span>tm-master taskmaster.example --reset --key<span class="o">=</span>foo --host<span class="o">=</span>0.0.0.0:5050&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;h1&gt;run a slave&lt;/h1&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;<span class="nv">$ </span>tm-slave do_something:handle_job --host<span class="o">=</span>192.168.0.1:5050
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>You'll see the status on the master as things process, and if you cancel the process and start it again, it will
+automatically resume:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>tm-master taskmaster.example --reset --key<span class="o">=</span>foo --host<span class="o">=</span>0.0.0.0:5050
+</span><span class='line'>Taskmaster server running on <span class="s1">&#39;0.0.0.0:5050&#39;</span>
+</span><span class='line'>Current Job: 30421 | Rate:  991.06/s | Elapsed Time: 0:00:40
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Implementing the iterator and the callback are just as simple as they used to be:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">get_jobs</span><span class="p">(</span><span class="n">last</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c"># ``last`` will only be passed if previous state was available</span>
+</span><span class='line'><span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">RangeQuerySetWrapper</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">min_id</span><span class="o">=</span><span class="n">last</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">yield</span> <span class="n">obj</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">handle_job</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">print</span> <span class="s">&quot;Got </span><span class="si">%r</span><span class="s">!&quot;</span> <span class="o">%</span> <span class="n">obj</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now under the hood Taskmaster will continue to iterate on <code>get_jobs</code> whenever the size of the queue is
+under the threshold (which defaults to 10,000 items). This means we have a constant memory footprint and can just spin
+slaves to process the data.</p>
+
+
+
+
+<p>Taskmaster is still new, but if you're in need of these kinds of one-off migration scripts, we encourage you to <a href="https://github.com/dcramer/taskmaster">try
+it out</a> and see if it fits.</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Using Travis-CI with Python and Django]]></title>
@@ -36,70 +213,107 @@ our configuration files for our Django and Python projects.</p>
 <p>A basic <code>.travis.yml</code> might look something like this:</p>
 
 
-<p>{% codeblock lang:yaml %}
-language: python
-python:
-  - "2.6"
-  - "2.7"
-install:
-  - pip install -q -e . --use-mirrors
-script:
-  - python setup.py test
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Most of the projects themselves use Django, which also means they need to test several Django versions. Travis makes
 this very simple with its matrix builds. In our case, we need to setup a DJANGO matrix, and ensure it gets installed:</p>
 
 
-<p>{% codeblock lang:yaml %}
-env:
-  - DJANGO=1.2.7
-  - DJANGO=1.3.1
-  - DJANGO=1.4
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install -q -e . --use-mirrors
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Additionally we generally conform to pep8, and we always want to run pyflakes against our build. We also use a custom
 version of pyflakes which allows us to filter out warnings, as those are never critical errors. Add this in is pretty
 simple using the <code>before_script</code> hook, which gets run before the tests are run in <code>script</code>.</p>
 
 
-<p>{% codeblock lang:yaml %}
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install pep8 --use-mirrors
-  - pip install https://github.com/dcramer/pyflakes/tarball/master
-  - pip install -q -e . --use-mirrors
-before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 src"
-  - pyflakes -x W src
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">before_script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>When all is said and done, we end up with something like this:</p>
 
 
-<p>{% codeblock lang:yaml %}
-language: python
-python:
-  - "2.6"
-  - "2.7"
-env:
-  - DJANGO=1.2.7
-  - DJANGO=1.3.1
-  - DJANGO=1.4
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install pep8 --use-mirrors
-  - pip install https://github.com/dcramer/pyflakes/tarball/master
-  - pip install -q -e . --use-mirrors
-before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 src"
-  - pyflakes -x W src
-script:
-  - python setup.py test
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">language</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python</span>
+</span><span class='line'><span class="l-Scalar-Plain">python</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.6&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;2.7&quot;</span>
+</span><span class='line'><span class="l-Scalar-Plain">env</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.2.7</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.3.1</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DJANGO=1.4</span>
+</span><span class='line'><span class="l-Scalar-Plain">install</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q Django==$DJANGO --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install pep8 --use-mirrors</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install https://github.com/dcramer/pyflakes/tarball/master</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pip install -q -e . --use-mirrors</span>
+</span><span class='line'><span class="l-Scalar-Plain">before_script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;pep8</span><span class="nv"> </span><span class="s">--exclude=migrations</span><span class="nv"> </span><span class="s">--ignore=E501,E225</span><span class="nv"> </span><span class="s">src&quot;</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">pyflakes -x W src</span>
+</span><span class='line'><span class="l-Scalar-Plain">script</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">python setup.py test</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Travis will automatically matrix each environment variable with each Python version, so you'll get
 a test run for every combination of the two. Pretty easy, right?</p>
@@ -167,33 +381,57 @@ of extra resources (such as scripts, or documentation). Fundamentally they're id
 thing, it <strong>does not prevent you from using setup.py</strong>. Let's take an example setup.py:</p>
 
 
-<p>{% codeblock lang:python %}
-from setuptools import setup, find_packages</p>
-
-<p>requires = [</p>
-
-<pre><code>'Flask==0.8',
-'redis==2.4.11',
-'hiredis==0.1.1',
-'nydus==0.8.1',
-</code></pre>
-
-<p>]</p>
-
-<p>setup(</p>
-
-<pre><code>name='something-sexy',
-version='1.0.0',
-author="DISQUS",
-author_email="dev@disqus.com",
-package_dir={'': 'src'},
-packages=find_packages("src"),
-install_requires=requires,
-zip_safe=False,
-</code></pre>
-
-<p>)
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&#39;Flask==0.8&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;redis==2.4.11&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;hiredis==0.1.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="s">&#39;nydus==0.8.1&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">setup</span><span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;something-sexy&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">version</span><span class="o">=</span><span class="s">&#39;1.0.0&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="n">author</span><span class="o">=</span><span class="s">&quot;DISQUS&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="n">author_email</span><span class="o">=</span><span class="s">&quot;dev@disqus.com&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="n">package_dir</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="s">&#39;src&#39;</span><span class="p">},</span>
+</span><span class='line'><span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">),</span>
+</span><span class='line'><span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">,</span>
+</span><span class='line'><span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Now, in our case, this is probably a service on Disqus, which means we're not listing it as a dependancy. In every
 single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. There's many ways
@@ -357,59 +595,97 @@ child_id | value
 <p>The schema and data storage is pretty straightforward, the bigger challenge is actually implementing the logic in your application (or if you're insane, within SQL triggers). We end up with a mess of SQL statements, with a singular goal to bring everything down to an atomic, transactionless nature. As an example, creating a new child probably resemebles something like the following:</p>
 
 
-<p>{% codeblock lang:sql %}
-INSERT INTO postsort (</p>
-
-<pre><code>tree_id,
-child_id,
-value
-</code></pre>
-
-<p>)
-SELECT t2.tree_id,</p>
-
-<pre><code>   %(child_id)d as child_id,
-   (t2.value || %(value)s::numeric[]) as value
-</code></pre>
-
-<p>FROM postsort as t2
-WHERE t2.tree_id = %(tree_id)d
-  AND t2.child_id = %(parent_child_id)d
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">postsort</span> <span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">tree_id</span><span class="p">,</span>
+</span><span class='line'><span class="n">child_id</span><span class="p">,</span>
+</span><span class='line'><span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
+</span><span class='line'><span class="k">SELECT</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span><span class="p">,</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>   <span class="o">%</span><span class="p">(</span><span class="n">child_id</span><span class="p">)</span><span class="n">d</span> <span class="k">as</span> <span class="n">child_id</span><span class="p">,</span>
+</span><span class='line'>   <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">value</span> <span class="o">||</span> <span class="o">%</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="n">s</span><span class="p">::</span><span class="nb">numeric</span><span class="p">[])</span> <span class="k">as</span> <span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">FROM</span> <span class="n">postsort</span> <span class="k">as</span> <span class="n">t2</span>
+</span><span class='line'><span class="k">WHERE</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">d</span>
+</span><span class='line'>  <span class="k">AND</span> <span class="n">t2</span><span class="p">.</span><span class="n">child_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">parent_child_id</span><span class="p">)</span><span class="n">d</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Once you've populated the table, queries become amazingly simple:</p>
 
 
-<p>{% codeblock lang:sql %}
-SELECT child_id
-FROM postsort
-WHERE tree_id = %(tree_id)s
-ORDER BY value
-{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SELECT</span> <span class="n">child_id</span>
+</span><span class='line'><span class="k">FROM</span> <span class="n">postsort</span>
+</span><span class='line'><span class="k">WHERE</span> <span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">s</span>
+</span><span class='line'><span class="k">ORDER</span> <span class="k">BY</span> <span class="n">value</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>What's even more cool, aside from a lot of custom SQL we had to create for this to work in Django, is the fact that we were able to easily prototype and implement arrays within the Django ORM:</p>
 
 
-<p>{% codeblock lang:python %}
-class NumericArrayField(models.Field):</p>
-
-<pre><code>__metaclass__ = models.SubfieldBase
-
-def db_type(self):
-    return "numeric[]"
-
-def get_prep_value(self, value):
-    if value:
-        value = map(float, value)
-    return value
-
-def to_python(self, value):
-    if value:
-        value = map(float, value)
-    return value
-</code></pre>
-
-<p>{% endcodeblock %}</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">NumericArrayField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Field</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SubfieldBase</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">db_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;numeric[]&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_prep_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">to_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, and has pushed us into a new direction in what we can do with SQL. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
 
@@ -519,282 +795,6 @@ def to_python(self, value):
 
 
 <p>And that's all there is to it. I'd be curious to hear if anyone else is doing things differently.</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Integrating Django with Nose at DISQUS]]></title>
-    <link href="http://justcramer.com/2011/08/05/extending-django-nose"/>
-    <updated>2011-08-05T00:00:00-07:00</updated>
-    <id>http://justcramer.com/2011/08/05/extending-django-nose</id>
-    <content type="html"><![CDATA[<p>About a month ago we decided to make the transition off of Django's test suite over to the Nose runners. Our main selling point was the extensibility, and the existing ecosystem of plugins. Four weeks later I'm happy to say we're running (basically) Nose with some minor extensions, and it's working great.</p>
-
-
-
-
-<p>Getting Django running on Nose is no small feat. Luckily, someone else has already put in a lot of that effort, and packaged it up all nice and neat as <a href="http://pypi.python.org/pypi/django-nose">django-nose</a>. I won't go through setting up the package, but it's pretty straight forward. One thing that we quickly noticed however, was that it didnt quite fit our approach to testing, which was strictly unittest. After a couple days of going back and forth with some minor issues, we came up with a few pretty useful extensions to the platform.</p>
-
-
-
-
-<p>A few of the big highlights for us:</p>
-
-
-
-
-<ul>
-    <li>Xunit integration (XML output of test results)</li>
-    <li>Skipped and deprecated test hooks</li>
-    <li>The ability to organize tests outside of the Django standards</li>
-</ul>
-
-
-
-
-<p>I'm wanted to talk a bit about how we solved some of our problems, and the other benefits we've seen since adopting it.</p>
-
-
-
-
-<h3>Test Organization</h3>
-
-
-
-
-<p>The biggest win for us was definitely being able to reorganize our test suite. This took a bit of work, and I'll talk about this with some of the plugins we whipped up to solve the problems. We ended up with a nice extensible test structure, similar to Django's own test suite:</p>
-
-
-
-
-<pre>
-tests/
-tests/db/
-tests/db/connections/
-tests/db/connections/redis/
-tests/db/connections/redis/__init__.py
-tests/db/connections/redis/models.py
-tests/db/connections/redis/tests.py
-</pre>
-
-
-
-
-<p>We retained the ability to keep tests within the common <code>app/tests</code> convention, but we found that we were just stuffing too many tests into obscure application paths that it became unmaintainable after a while.</p>
-
-
-<h3>Unittest Compatibility</h3>
-
-
-
-
-<p>The first issue we hit was with test discovery. Nose has a pretty good default pattern for finding tests, but it had some behavior that didn't quite fit with all of our existing code. Mostly, it found random functions that were prefixed with <code>test_</code>, or things like <code>start_test_server</code> which weren't tests by themselves.</p>
-
-
-
-
-<p>After digging a bit into the API, it turned out to be a pretty easy problem to solve, and we came up with the following plugin:</p>
-
-
-<p>{% codeblock lang:python %}
-class UnitTestPlugin(object):</p>
-
-<pre><code>"""
-Enables unittest compatibility mode (dont test functions, only TestCase
-subclasses, and only methods that start with [Tt]est).
-"""
-enabled = True
-
-def wantClass(self, cls):
-    if not issubclass(cls, unittest.TestCase):
-        return False
-
-def wantMethod(self, method):
-    if not issubclass(method.im_class, unittest.TestCase):
-        return False
-    if not method.__name__.lower().startswith('test'):
-        return False
-
-def wantFunction(self, function):
-    return False
-</code></pre>
-
-<p>{% endcodeblock %}</p>
-
-<h2>Test Case Selection</h2>
-
-
-
-
-<p>To ensure compatibility with our previous unittest extensions, we needed a simple way to filter only selenium tests. We do this with the --selenium and --exclude-selenium flags.</p>
-
-
-<p>{% codeblock lang:python %}
-from disqus.tests.testcases import DisqusSeleniumTest
-from nose.plugins.base import Plugin</p>
-
-<p>class SeleniumSelector(Plugin):</p>
-
-<pre><code>def options(self, parser, env):
-    parser.add_option("--exclude-selenium",
-                      dest="selenium", action="store_false",
-                      default=None)
-    parser.add_option("--selenium",
-                      dest="selenium", action="store_true",
-                      default=None)
-
-def configure(self, options, config):
-    self.selenium = options.selenium
-    self.enabled = options.selenium is not None
-
-def wantClass(self, cls):
-    if self.selenium:
-        return issubclass(cls, DisqusSeleniumTest)
-    elif issubclass(cls, DisqusSeleniumTest):
-        return False
-</code></pre>
-
-<p>{% endcodeblock %}</p>
-
-<h2>Bisecting Tests</h2>
-
-
-
-
-<p>One feature I always thought was pretty useful in the Django test suite was their <code>--bisect</code> flag. Basically, given your test suite, and a failing test, it could help you find failures which were related to executing tests in say a specific order. This isn't actually made available to normal Django applications, but being a large codebase it's extremely useful for us.</p>
-
-
-
-
-<p><strong>I should note, this one adapted from Django and is very rough. It doesn't report a proper <code>TestResult</code>, but it's pretty close to where we want to get it.</strong></p>
-
-
-<p>{% codeblock lang:python %}
-class _EmptyClass(object):</p>
-
-<pre><code>pass
-</code></pre>
-
-<p>def make_bisect_runner(parent, bisect_label):</p>
-
-<pre><code>def split_tests(test_labels):
-    """
-    Split tests in half, but keep children together.
-    """
-    chunked_tests = defaultdict(list)
-    for test_label in test_labels:
-        cls_path = test_label.rsplit('.', 1)[0]
-        # filter out our bisected test
-        if test_label.startswith(bisect_label):
-            continue
-        chunked_tests[cls_path].append(test_label)
-
-    chunk_a = []
-    chunk_b = []
-    midpoint = len(chunked_tests) / 2
-    for n, cls_path in enumerate(chunked_tests):
-        if n &lt; midpoint:
-            chunk_a.extend(chunked_tests[cls_path])
-        else:
-            chunk_b.extend(chunked_tests[cls_path])
-    return chunk_a, chunk_b
-
-class BisectTestRunner(parent.__class__):
-    """
-    Based on Django 1.3's bisect_tests, recursively splits all tests that are discovered
-    into a bisect grid, grouped by their parent TestCase.
-    """
-    # TODO: potentially break things down further than class level based on whats happening
-    # TODO: the way we determine "stop" might need some improvement
-    def run(self, test):
-        # find all test_labels grouped by base class
-        test_labels = []
-        context_list = list(test._tests)
-        while context_list:
-            context = context_list.pop()
-            if isinstance(context, unittest.TestCase):
-                test = context.test
-                test_labels.append('%s:%s.%s' % (test.__class__.__module__, test.__class__.__name__,
-                                                 test._testMethodName))
-            else:
-                context_list.extend(context)
-
-        subprocess_args = [sys.executable, sys.argv[0]] + [x for x in sys.argv[1:] if (x.startswith('-') and not x.startswith('--bisect'))]
-        iteration = 1
-        result = self._makeResult()
-        test_labels_a, test_labels_b = [], []
-        while True:
-            chunk_a, chunk_b = split_tests(test_labels)
-            if test_labels_a[:-1] == chunk_a and test_labels_b[:-1] == chunk_b:
-                print "Failure found somewhere in", test_labels_a + test_labels_b
-                break
-
-            test_labels_a = chunk_a + [bisect_label]
-            test_labels_b = chunk_b + [bisect_label]
-            print '***** Pass %da: Running the first half of the test suite' % iteration
-            print '***** Test labels:',' '.join(test_labels_a)
-            failures_a = subprocess.call(subprocess_args + test_labels_a)
-
-            print '***** Pass %db: Running the second half of the test suite' % iteration
-            print '***** Test labels:',' '.join(test_labels_b)
-            print
-            failures_b = subprocess.call(subprocess_args + test_labels_b)
-
-            if failures_a and not failures_b:
-                print "***** Problem found in first half. Bisecting again..."
-                iteration = iteration + 1
-                test_labels = test_labels_a[:-1]
-            elif failures_b and not failures_a:
-                print "***** Problem found in second half. Bisecting again..."
-                iteration = iteration + 1
-                test_labels = test_labels_b[:-1]
-            elif failures_a and failures_b:
-                print "***** Multiple sources of failure found"
-                print "***** test labels were:", test_labels_a[:-1] + test_labels_b[:-1]
-                result.addError(test, (Exception, 'Failures found in multiple sets: %s and %s' % (test_labels_a[:-1], test_labels_b[:-1]), None))
-                break
-            else:
-                print "***** No source of failure found..."
-                break
-        return result
-
-inst = _EmptyClass()
-inst.__class__ = BisectTestRunner
-inst.__dict__.update(parent.__dict__)
-return inst
-</code></pre>
-
-<p>class BisectTests(Plugin):</p>
-
-<pre><code>def options(self, parser, env):
-    parser.add_option("--bisect", dest="bisect_label", default=False)
-
-def configure(self, options, config):
-    self.enabled = bool(options.bisect_label)
-    self.bisect_label = options.bisect_label
-
-def prepareTestRunner(self, test):
-    return make_bisect_runner(test, self.bisect_label)
-</code></pre>
-
-<p>{% endcodeblock %}</p>
-
-<h2>Improvements to django-nose</h2>
-
-
-
-
-<p>Finally I wanted to talk about some of the things that we've been pushing back upstream. The first was support for discovery of models that were in non-app tests. This works the same way as Django in that it looks for <code>appname/models.py</code>, and if it's found, it adds it to the <code>INSTALLED_APPS</code> automatically.</p>
-
-
-
-
-<p>The second addition we've been working on allows you to run selective tests that dont require the database, and avoids actually building the database. It does this by looking for classes which inherit from <code>TransactionTestCase</code>, and if none are found, it skips database creation.</p>
-
-
-
-
-<p>I'm curious to here what others have for tips and tricks regarding Nose (or maybe just helpful strategies in your own test runner).</p>
 
 ]]></content>
   </entry>
