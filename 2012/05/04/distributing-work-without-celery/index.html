@@ -104,6 +104,8 @@ Taskmaster:</p>
 to get data processed in a day or less. Lately however, we&#8217;ve grown beyond the bounds of what is reasonable for a single
 machine to take care of, and we&#8217;ve had to look towards other solutions.</p>
 
+<h3>Why Not Celery?</h3>
+
 <p>As with most people, we rely on Celery and RabbitMQ for distributing asyncrhonous tasks in our application. Unfortunately
 that&#8217;s not quite the ideal fit out of the box for us in these situations. The root of the problem stems from the fact that
 we may need to run through a billion objects, and without some effort, that would mean every single task would need to

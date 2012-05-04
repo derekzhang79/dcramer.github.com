@@ -4,7 +4,7 @@
   <title><![CDATA[Category: python | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/python/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:58:14-07:00</updated>
+  <updated>2012-05-04T16:01:36-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -84,6 +84,11 @@ Taskmaster:</p>
 <p>This used to never be much of a problem. We'd just spin up some utility server and max the CPUs on that single machine
 to get data processed in a day or less. Lately however, we've grown beyond the bounds of what is reasonable for a single
 machine to take care of, and we've had to look towards other solutions.</p>
+
+
+
+
+<h3>Why Not Celery?</h3>
 
 
 
