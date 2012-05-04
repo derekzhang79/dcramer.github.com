@@ -4,7 +4,7 @@
   <title><![CDATA[Category: disqus | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/disqus/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:34:52-07:00</updated>
+  <updated>2012-05-04T15:38:05-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -104,12 +104,12 @@ route. That route ended up with a simple distributed buffer queue, built on the
 
 
 
-<p>We've called that project <a href="https://github.com/dcramer/taskmaster">Taskmaster</a>.</p>
+<h3>Introducing Taskmaster</h3>
 
 
 
 
-<p>Taskmaster takes advantage of the remote management capabilities built into the multiprocessing module. This makes it
+<p><a href="https://github.com/dcramer/taskmaster">Taskmaster</a> takes advantage of the remote management capabilities built into the multiprocessing module. This makes it
 very simple to just throw in a capped Queue and have workers connect, get and execute jobs, and control state via that
 single master process. In the end, we came up with an API looking something like this:</p>
 

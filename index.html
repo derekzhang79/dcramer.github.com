@@ -118,9 +118,9 @@ simply dont want to bring up Celery machines/write throwaway Celery code for a s
 route. That route ended up with a simple distributed buffer queue, built on the 
 <a href="http://docs.python.org/library/multiprocessing.html">Python multiprocessing module</a>.</p>
 
-<p>We&#8217;ve called that project <a href="https://github.com/dcramer/taskmaster">Taskmaster</a>.</p>
+<h3>Introducing Taskmaster</h3>
 
-<p>Taskmaster takes advantage of the remote management capabilities built into the multiprocessing module. This makes it
+<p><a href="https://github.com/dcramer/taskmaster">Taskmaster</a> takes advantage of the remote management capabilities built into the multiprocessing module. This makes it
 very simple to just throw in a capped Queue and have workers connect, get and execute jobs, and control state via that
 single master process. In the end, we came up with an API looking something like this:</p>
 
