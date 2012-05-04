@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-05-04T15:32:09-07:00</updated>
+  <updated>2012-05-04T15:34:52-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -20,7 +20,7 @@
     <id>http://justcramer.com/2012/05/04/distributing-work-without-celery</id>
     <content type="html"><![CDATA[<p>We&#8217;ve been migrating a lot of data to various places lately at DISQUS. These generally have been things like running
 consistancy checks on our PostgreSQL shards, or creating a new system which requires a certain form of denormalized data. It
-generally involves iterating through the results of an entire table (and sometimes even more), and performing some action
+usually involves iterating through the results of an entire table (and sometimes even more), and performing some action
 based on that row. We never care about results, we just want to be able to finish as quickly as possible.</p>
 
 <p>Generally, we&#8217;d just create a simple <code>do_something.py</code> that would look something like this:</p>

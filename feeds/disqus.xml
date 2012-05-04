@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-05-04T15:32:09-07:00</updated>
+    <updated>2012-05-04T15:34:52-07:00</updated>
     <id>http://justcramer.com/</id>
 
     
@@ -14,7 +14,7 @@
                 <id>id:/2012/05/04/distributing-work-without-celery</id>
                 <content type="html">We&amp;#8217;ve been migrating a lot of data to various places lately at DISQUS. These generally have been things like running
 consistancy checks on our PostgreSQL shards, or creating a new system which requires a certain form of denormalized data. It
-generally involves iterating through the results of &amp;hellip;</content>
+usually involves iterating through the results of &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>
