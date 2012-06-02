@@ -2,1132 +2,1139 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>http://justcramer.com</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>1</priority>
    </url>
    <url>
       <loc>http://justcramer.com/resume/</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.8</priority>
    </url>
    <url>
       <loc>http://justcramer.com/code/</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>daily</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
+      <loc>http://justcramer.com/2012/06/02/the-cloud-is-not-for-you</loc>
+      <lastmod>2012-06-02</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+   </url>
+
+   <url>
       <loc>http://justcramer.com/2012/05/04/distributing-work-without-celery</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2012/05/03/using-travis-ci</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2012/04/24/sticking-with-standards</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/11/10/scaling-schema-changes</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/08/05/extending-django-nose</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/07/20/python-and-os-x-lion</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/06/24/europython</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/05/09/creating-a-one-way-git-server-mirror</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/04/04/setting-up-your-own-pypi-server</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/03/08/building-cursors-for-the-disqus-api</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/02/08/using-os-x-media-keys-in-rdio-desktop</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/01/25/error-tracing-in-sentry</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/01/13/settings-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2011/01/04/how-to-actually-make-localsolr-work</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/12/30/database-routers-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/12/27/django-bitfield</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/12/24/blog-refresh</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/12/10/announcing-the-disqus-code-blog</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/12/06/tracking-changes-to-fields-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/11/30/integrating-pyflakes-into-textmate</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/10/19/keeping-your-logging-compatible-with-sentry</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/08/26/tips-tricks-for-your-django-powered-database</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/07/09/feature-switches-at-disqus</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/05/12/announcing-django-db-log-1-7-1</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/02/18/starcraft-2-is-here</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/02/09/presenting-django-devserver-a-better-runserver</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2010/01/06/debugging-django-errors</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/12/24/big-companies-make-me-laugh</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/12/22/windows-7-network-issues-on-evga-780i-motherboard</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/09/30/jinja2-and-django-registration</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/09/14/using-jinja2-with-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/07/15/dynamic-keyword-arguments-in-django-urls</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/07/02/pagination-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/06/29/chuggin-away</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/06/03/the-ea-experience</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/04/17/improving-gzipmiddleware-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/04/14/cleaning-up-with-json-and-sql</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/04/04/refactoring-lifestream</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/04/02/problems-uploading-packages-with-setuptools-on-os-x</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/03/25/setting-up-django-and-sphinx-full-text-search-django-sphinx</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/03/14/scaling-your-frontend-far-futures-headers-and-template-tags</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/03/12/mac-os-x-security-update-2009-01-perl-fix</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/02/28/improved-uuidfield-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/02/22/javascript-widgets-on-nibbits</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/02/09/large-sql-result-sets-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2009/02/05/lifestreams-evolution-into-a-platform</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/12/29/denormalizing-model-abstraction-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/12/02/singletons-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/12/01/spaceless-html-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/11/22/impressions-of-the-blackberry-storm</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/11/11/sidebar-widgets-come-to-lifestream</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/11/07/tips-for-scaling-a-web-app</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/10/17/how-things-have-changed</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/10/17/blogrolls-and-friendships</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/28/handling-database-maintenance-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/28/django-scaling-numbers-for-ibegin</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/25/quick-profiling-your-django-website-with-debug_toolbar</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/22/apple-hardware-the-downside-to-using-a-mac</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/17/whats-wrong-with-django-templates</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/11/dealing-with-automated-form-submission-spam</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/09/djangocon-2008-is-over</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/07/django-debug-toolbar</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/09/06/high-performance-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/25/wordpress-lifestream-updates</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/23/logging-in-with-email-addresses-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/13/a-better-paginator-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/12/updating-to-mysql-51-from-a-fink-installation</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/08/custom-fields-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/02/more-updates-to-django-sphinx</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/08/01/jinja-refactoring-django-support</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/07/30/wordpress-lifestream-plugin-wp-lifestream</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/07/30/new-pluggable-django-object-view-tracking</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/07/30/configuration-generation-for-django-sphinx</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/07/27/high-performance-django-at-djangocon</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/07/27/fixing-remote-nano-sessions-in-terminalapp</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/07/26/bash-trick-history-searching-ala-ipython</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/06/12/the-woes-of-moving</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/05/12/django-db-log</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/05/04/gta4-problems-on-ps3</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/16/ibegin-share-23-now-with-stats</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/14/php-vs-python</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/14/jinja-2-is-coming</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/13/php-database</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/11/file-fields-without-renaming-duplicates</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/04/ibegin-share-update</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/04/announcing-django-sphinx-200</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/02/segmentation-fault</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/04/01/dont-use-padding-or-margin-on-body-tags</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/29/using-jinja-with-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/27/making-django-newforms-useful</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/24/modelchoicefields-as-charfields-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/22/setup-mod_wsgi-for-django-and-shared-hosting</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/22/deploying-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/21/pastethat-ideas</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/19/django-hosting-want-some</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/17/ibegin-places-powered-by-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/15/ibegin-share-ibox-and-wordpress-plug-ins</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/14/get-offsets-xy-for-an-object-javascript</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/13/pastethats-super-sexy-revamp</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/12/word-wrap-preformatted-text</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/03/11/ibox-v2-released</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/02/29/pastethat-updates</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/02/24/in-depth-django-sphinx-tutorial</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/02/21/turn-mysql-completely-into-utf-8</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/02/13/slow-connections-in-firefox-3-beta-3-on-mac-os-x-leopard</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/02/09/wrt54g-and-ps3-internet-crashing</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/31/php-httplib</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/30/file-widgets-on-curse</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/21/unicode-update-for-django-sphinx</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/21/caching-layer-for-django-orm</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/19/firefox-extension-version-changer</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/17/using-locks-in-mysql</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/03/trim-in-javascript</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2008/01/03/setting-up-django-with-sphinx</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/12/20/set-cookies-without-a-response-in-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/12/20/dir-in-javascript</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/12/06/handling-cache-invalidation</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/12/04/great-youtube-video-about-overexgatterated-worth</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/11/28/curse-version-5</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/11/14/dpaste-was-down</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/11/05/mysqldb-on-leopard</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/11/05/enabling-php-5-on-mac-os-x-leopard</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/09/07/mediawiki-markup-and-sphinxsearch-for-django</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/08/02/blizzcon-updates-find-them-first</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/07/30/cursecom-launches</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/07/05/age-of-conan-hands-on-preview</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/07/04/django-cachemanager</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/07/02/inline-blocks-the-answer-to-sprites</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/06/22/wowheadcom-joins-the-ige-parade</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/06/11/safari-now-on-windows</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/06/07/it-begins-cursecom</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/05/24/what-powers-curse</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/05/23/rapid-development-serving-500000-pageshour</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/03/30/lord-of-the-rings-open-beta</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/01/31/ea-mythic-press-event-warhammer-online-unleashed</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2007/01/15/announcing-the-burning-crusade-guides</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/11/15/passionate-webgraphics-designer-for-curse-gaming</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/10/29/a-better-object-tracking</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/10/23/curse-gaming-beta-tests-new-website</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/10/22/tracking-unread-objects</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/09/19/avast-me-hearties</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/08/06/integrating-mediawiki-with-vanilla-forums</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/08/01/sql-optimization-with-disk-caching-in-php</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/07/31/nibbits-update</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/07/23/redirect-non-www-requests-to-www</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/07/11/zidanes-headbutt</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/07/06/vanilla-_the_-forum-software</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/07/06/signal-home</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/06/29/wdb-to-csv-converter</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/06/13/ill-be-seeing-you-at-blizzcon-06-my-precious-diablo-3</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/06/04/some-new-sites-a-new-theory-and-the-tourist</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/05/21/popup-calender</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/05/21/new-images</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/05/21/image-resizingresampling</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/05/21/html-tooltips</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>
 
    <url>
       <loc>http://justcramer.com/2006/05/20/search-engine-standards</loc>
-      <lastmod>2012-05-04</lastmod>
+      <lastmod>2012-06-02</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
    </url>

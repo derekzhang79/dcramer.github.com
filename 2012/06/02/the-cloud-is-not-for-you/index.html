@@ -1,0 +1,218 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>The Cloud is Not For You - David Cramer's Blog</title>
+    <meta name="author" content="David Cramer">
+
+    
+    <meta name="description" content="The Cloud Is Not for You It&#8217;s been a fun year so far. There&#8217;s been exciting things happening both for me personally, as well as at &hellip;">
+    
+    <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
+
+    <link href="http://feeds.feedburner.com/DavidCramernet" rel="alternate" title="David Cramer's Blog" type="application/atom+xml">
+    <link rel="canonical" href="">
+    <link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css?1" media="screen, projection" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4f0ffdc0844d521595000001');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+    
+
+</head>
+
+<body>
+	<header class="inner"><h1><a href="/">David Cramer's Blog</a></h1>
+<nav class="menu"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+</ul>
+</nav>
+<div class="right">
+	<form class="search right" action="http://google.com/search" method="get">
+		<input class="left" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:justcramer.com">
+	</form>
+	<div class="social right">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/zeeg" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/dcramer" title="GitHub">GitHub</a>
+		
+		
+		
+		<a class="rss" href="http://feeds.feedburner.com/DavidCramernet" title="RSS">RSS</a>
+		
+	</div>
+</div>
+
+</header>
+	<div id="content" class="inner"><article class="post">
+    <h1 class="title">The Cloud Is Not for You</h1>
+    <div class="entry"><p>It&#8217;s been a fun year so far. There&#8217;s been exciting things happening both for me personally, as well as at DISQUS. One of
+those things has been launching a new side project, <a href="https://www.getsentry.com">getsentry.com</a>. This is about
+it&#8217;s 4th month running publicly, and it&#8217;s been doing very well. I wanted to talk a little bit about where it started, and
+how quickly it&#8217;s shifted in the stance of where it&#8217;s going.</p>
+
+<p>Around Christmas of 2011, and after a lot of prodding by <a href="http://www.craigkerstiens.com/">Craig Kerstiens</a> (of Heroku)
+I had finally given in to the pressure of creating a hosted version of Sentry to launch as a Heroku addon. I already knew
+Sentry was awesome, as did many others, and this just meant getting something I put a lot of effort into out in front of
+so many others. It was very little work to get things up and running on Heroku, and just as easy to setup the addon
+endpoints. We started a private beta shortly thereafter, and immediately picked up a bunch of the Django/Python crowd.</p>
+
+<p>From there it slowly, but steadily grew in both customers and data. In fact, for the first couple of months we were able
+to survive on just a few dynos and the first tier of dedicated postgres (which was the $200 package at the time). We&#8217;ve
+also expanded to cover nearly all popular languages, including PHP, Ruby, Java, and even JavaScript.</p>
+
+<p>A bit further in the background of how I structured the Sentry service:</p>
+
+<ul>
+    <li>Two separate apps (www and app)</li>
+    <li>SSL everywhere (two certs, two addons, $40/month plus SSL cert costs)</li>
+    <li>A minimum of two dynos each ($140/month~)</li>
+    <li>Tier-1 dedicated DB (Ronin, $200/month)</li>
+</ul>
+
+<p>Now, before I continue, let me say that I thoroughly enjoyed using Heroku. It&#8217;s a great service, I&#8217;m friends with a lot
+of people there. Now let&#8217;s talk about why you shouldn&#8217;t use Heroku, or the cloud.</p>
+
+<p>Right from the get-go we had a system that had pretty good HA and redundancy, especially due to how Heroku&#8217;s Postgres
+solution works. Unfortunately, we quickly saw the limitations of what both the Postgres and the dynos could handle.</p>
+
+<p>Our first attempt to address this was to add worker nodes (ala Celery) to handle concurrency better. This turned into one
+or two additional dynos dedicated to processing jobs, as well as an additional Redis addon. Unfortunately the Redis addon
+is completely overpriced, we quickly shifted to pulling up a VM in Linode&#8217;s eastcoast datacenter instead. This bought us
+a little bit of time, but really I&#8217;d say we were only given an additional 10% capacity by what should have been a large
+optimization.</p>
+
+<p>Another week or two went by, and it was suggested that we get off the Ronin database, and upgrade to the Fugu package (
+which bumped up the database cost to $400/month). This did quite a bit. In fact, this let us handle most things without
+too much of a concern. A little while down the road, we had a customer sign up who was actually send realistic amounts of
+data. More specifically, <strong>not even close to the amount of data Disqus&#8217; Sentry server handles</strong>, but about 10x
+more than the rest of our customers combined had been sending.</p>
+
+<p>Then shit started to hit the fan.</p>
+
+<p>In no specific order, we started finding numerous problems with various systems:</p>
+
+<ul>
+    <li>Redis takes too much memory to reliably queue Sentry jobs.</li>
+    <li>Dynos are either memory or CPU bound, but we have no idea how or why.</li>
+    <li>The Postgres server can&#8217;t handle any reasonable level of concurrency.</li>
+    <li>We randomly have to spin up 20 dynos to get anywhere in the queue backlog.</li>
+</ul>
+
+<p>Given all of that, I made the decision that I was going to go back to using real hardware and managing it myself. I&#8217;m
+no stranger to operations work, though it&#8217;s never been my day job. I did however want to do this right, and with the advice
+of my coworker, friend, and roommate, <a href="https://twitter.com/#!/sugarc0de">Mike Clarke</a> I decided I&#8217;d set these
+up properly, with Chef.</p>
+
+<p>About three days into it, and I had learned how to use Chef (I don&#8217;t write Ruby), brought up two full pluggable
+configurations for a db node and a web node, written a deployment script in Fabric, migrated to the new hardware and
+destroyed my Heroku and Linode instances. Three days, that&#8217;s all it took to replace the cloud.</p>
+
+<p>Now you might argue that the cloud let&#8217;s you scale up easily. <strong>YOU ARE WRONG, IT DOES NOT.</strong> The cloud
+gives you the convenience, or more importantly, the illusion of convenience, that you can bring up nodes to add to your
+network without giving it much thought. You can do that. You don&#8217;t ever realistically need to do that.</p>
+
+<p>Almost any company worth a damn can bring online a server within 24 hours, even budget companies. When have you actually
+needed turnaround time faster than that? If you did you, maybe you should read up on capacity planning.</p>
+
+<p>The hosted Sentry now runs on two budget servers, one which runs Postgres, pgbouncer, and Redis, the other which runs
+Nginx, Celery, memcached, and the Python webserver. The cost for these two machines? About $300/month. When I destroyed
+Heroku, my bill was looking to be around $600-700 between Heroku and Linode. Given the numbers we run at Disqus, the
+physical hardware should be able to handle no less than 2000% the capacity I was struggling to handle on the cloud.</p>
+
+<p>I&#8217;m not saying you can&#8217;t make use of the cloud. For example, Disqus uses Amazon for running large amounts of map/reduce
+work. You know, <strong>elastic computing</strong>, the kind of computing that is inconsistent, unplanned, or generally
+infrequent. I&#8217;m also not saying you shouldn&#8217;t Heroku. You should see if it works for you. However, if you ever come up
+to me and argue that the cloud is going to fix any problem, I&#8217;ll make the assumption that you&#8217;re one of those annoying
+kids that runs around screaming MongoDB and Node.js are the answer to all of the worlds problems.</p></div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-02T13:57:00-07:00" pubdate data-updated="true">Jun 2<span>nd</span>, 2012</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/django/'>django</a>, <a class='category' href='/categories/heroku/'>heroku</a>, <a class='category' href='/categories/sentry/'>sentry</a>
+  
+</div>
+
+</div>
+        
+        <span class="comments"><a href="#disqus_thread">Comments</a></span>
+        
+    </div>
+</article>
+<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+<section id="comment">
+    <h1 class="title">Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer class="inner">Copyright &copy; 2012 David Cramer &mdash; Need exceptional error logging? Try out <a href="https://www.getsentry.com">Sentry</a></footer>
+	<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script src="/javascripts/slash.js"></script>
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'davidcramer';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://justcramer.com/2012/06/02/the-cloud-is-not-for-you';
+        var disqus_url = 'http://justcramer.com/2012/06/02/the-cloud-is-not-for-you';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+</body>
+</html>

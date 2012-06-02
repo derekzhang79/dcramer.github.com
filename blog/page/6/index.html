@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="An Identity Mapper in Django (Formerly Django Singletons) As a sort of challenge to myself, I once again attempted to recreate ticket #17 as a &hellip;">
+    <meta name="description" content="Denormalizing Model Abstraction in Django In the Lifestream service I&#8217;ve been working on, I presented myself with the need to have some class &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,118 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/12/29/denormalizing-model-abstraction-in-django">Denormalizing Model Abstraction in Django</a></h1>
+    <div class="entry">
+        <p>In the Lifestream service I&#8217;ve been working on, I presented myself with the need to have some class abstraction, but not in the fashion which is available in Django models. I wanted to achieve a base class, which is stored in the database, and then child classes which simply override some methods. It turned out this would be a lot more complex than anticipated.</p>
+
+<p>This is a fairly common approach to class abstraction, especially in Python. It&#8217;s used all over the place in your daily code. Whether you are overriding the save() method on your model, or creating your own admin form by subclassing ModelAdmin. I wanted to accomplish a similar task, but doing so on a model. Let&#8217;s call it backwards abstraction (since abstraction works the other direction in Django). We create a single table, which houses many classes, and possibly even some denormalization for additional data on these classes.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">TemplateModel</span><span class="p">):</span>
+</span><span class='line'><span class="nb">id</span>              <span class="o">=</span> <span class="n">UUIDField</span><span class="p">(</span><span class="n">auto</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'><span class="n">plugin</span>          <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span><span class='line'><span class="n">title</span>           <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="n">options</span>         <span class="o">=</span> <span class="n">JSONField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Tell the TemplateModel class what we have called our field.</span>
+</span><span class='line'><span class="n">__template_key__</span> <span class="o">=</span> <span class="s">&#39;plugin&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'><span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see in the above, we have our base class. It&#8217;s extending from the TemplateModel class (more on this further in), and contains some basic information. We have a <code>plugin</code> field which is the name of the class which is extending the instance, and an <code>options</code> field for storing some extra information based on that class. There is also a <code>render()</code> method for the extension which should be handled by the subclass.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">class</span> <span class="nc">TwitterExtension</span><span class="p">(</span><span class="n">FeedExtension</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span class='line'><span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">title</span>
+</span></code></pre></td></tr></table></div></figure>
+
+Our Twitter extension, for this sample, is very simple. All it does it say &#8220;Use the base Source class, and render the title of the event&#8221;. Now while this may not seem all that useful, it begins to be when we do even more complex development. To backtrack things a bit, <code>TwitterExtension</code> extends from the <code>FeedExtension</code>, which is where we are handling most of the logic.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">FeedExtension</span><span class="p">(</span><span class="n">Source</span><span class="p">):</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span class='line'><span class="k">return</span> <span class="s">&#39;&lt;a href=&quot;</span><span class="si">%s</span><span class="s">&quot;&gt;</span><span class="si">%s</span><span class="s">&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">fetch_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+</span><span class='line'><span class="n">feed</span> <span class="o">=</span> <span class="n">feedparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</span><span class='line'><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">feed</span><span class="p">[</span><span class="s">&#39;entries&#39;</span><span class="p">]:</span>
+</span><span class='line'><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+</span><span class='line'><span class="n">data</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_media_type_for_url</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+</span><span class='line'><span class="n">data</span><span class="p">[</span><span class="s">&#39;signature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature_for_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+</span><span class='line'><span class="k">yield</span> <span class="n">data</span>
+</span></code></pre></td></tr></table></div></figure>
+
+As you can see here, we&#8217;re simply changing how the Twitter events are rendered. So simple example, complex to build. Even more so, we want these classes to automatically be delivered whenever we access the base Source class, as well as being able to use the classes directly.
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c"># The instance becomes a &lt;TwitterExtension: TwitterExtensionobject&gt; on creation.</span>
+</span><span class='line'><span class="n">twitter</span> <span class="o">=</span> <span class="n">Source</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">plugin</span><span class="o">=</span><span class="s">&#39;TwitterExtension&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c"># And it saves into the Source model.</span>
+</span><span class='line'><span class="n">twitter</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+<p>To do this I created a class which I&#8217;ve randomly described as <code>TemplateModel</code>. It does exactly what is talked about above. It stores references to each child class within the parent, and upon instantiation, if it can, it returns the child class instead of the parent.</p>
+
+<p>So without further delay, <strong><a href="http://www.pastethat.com/ta5U1">view the source for TemplateModel</a></strong>.</p>
+
+<p>I&#8217;d be interested in hearing if anyone else has come up with their own solutions, and if you use something like this in your project how well its working for you.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-29T00:00:00-08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -766,49 +878,6 @@ Here&#8217;s a rough implementation (a bit old) of how ours was working. As you 
 
 
 <time datetime="2008-09-28T00:00:00-07:00" pubdate data-updated="true">Sep 28<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/09/25/quick-profiling-your-django-website-with-debug_toolbar">Quick Profiling Your Django Website With `debug_toolbar`</a></h1>
-    <div class="entry">
-        <p><a href="http://www.pastethat.com/GiPZ1" style="float:right;background:none;padding:5px;"><img src="http://www.pastethat.com/GiPZ1.jpg"/></a>One of the projects that I&#8217;ve been spending a lot of time with is the <a href="http://github.com/dcramer/django-debug-toolbar/tree">django-debug-toolbar</a>. It was started off by Rob Hudson, and since has had huge amounts of support. While my fork is quite a ways off of Rob&#8217;s, they&#8217;re both quite useful in their own right. To clear up one very annoying detail: This project is in no way intended to replace profiling tools or complex debugging tools like <em>pdb</em>. It&#8217;s designed to give you quick access to general information to help debug or rough profile your web application.</p>
-
-<p><a href="http://www.pastethat.com/MgVcm" style="float:left;background:none;padding:5px;"><img src="http://www.pastethat.com/MgVcm.jpg"/></a>I&#8217;ve been focusing on some of the hardcore features in panels, such as my SQL panel. MySQL users will find this especially useful, as not only do you get EXPLAIN support (provided for all backends which support it via <code>EXPLAIN [statement]</code>) but you also can get a printout of all of the available indexes and their columns. It makes figuring out what&#8217;s going on with your database a lot quicker.</p>
-
-<p>I have also added full tracebacks for both database queries, and cache calls. Again, see the example, but it is another very helpful feature which can assist you in finding where stuff is happening within your codebase.</p>
-
-<p><a href="http://www.pastethat.com/ZsReC" style="float:right;background:none;padding:5px;"><img src="http://www.pastethat.com/ZsReC.jpg"/></a>Among the many changes that have been getting thrown into my [somewhat unstable] fork, is a great design revamp by a character who goes by <em>mape</em>. It gives it a much more django-esque feel, and even has a lot of fancy &#8220;web 2.0&#8221; (javascript) actions hooked in, such as inline filtering and sorting of tables.</p>
-
-<p>To try out the project, it&#8217;s just a few simple actions to get it up and running:</p>
-
-<ol><br><li><code>git clone git://github.com/dcramer/django-debug-toolbar.git</code></li><br><li>Add <code>django-debug-toolbar/</code> to your <code>PYTHONPATH</code>.</li><br><li>Add <code>debug_toolbar</code> to your <code>INSTALLED_APPS</code>.</code><br><li>Add <code>'debug_toolbar.middleware.DebugToolbarMiddleware'</code> to your middleware. It should go after your Session, Auth, and GZip middleware, but can be placed before most others.</li><br><li>Login via your superuser, or use the <code>INTERNAL_IPS</code> setting to allow your user to access it. Currently <code>DEBUG</code> must also be set to true.</li><br></ol>
-
-<p>I very much urge anyone who&#8217;s interested in the project to give feedback, as well as contribute if they so desire. There&#8217;s still a lot this project can achieve, and it most certainly can be a benefit in most web applications.</p>
-
-<p>Just a note, if you&#8217;re using my branch, the template panel (as of writing) is non functional as I like to source everything, and it&#8217;s being revamped for Django+Jinja.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-09-25T00:00:00-07:00" pubdate data-updated="true">Sep 25<span>th</span>, 2008</time></div>
         <div class="tags">
 
 </div>

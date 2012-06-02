@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Building Cursors for the Disqus API This last week we&#8217;ve been implementing cursors for the Disqus API (3.0). If you&#8217;re not familiar, the &hellip;">
+    <meta name="description" content="Setting Up Your Own PyPi Server Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,170 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2011/04/04/setting-up-your-own-pypi-server">Setting Up Your Own PyPi Server</a></h1>
+    <div class="entry">
+        <p>Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git repository? For a low low price of FREE, and an hour of labor, get your very own PyPi server and solve all of your worries!</p>
+
+<h3>Set up Chishop</h3>
+
+<p>We&#8217;re going to jump right into this one. Start by setting up Chishop. Currently the best way is to do so using <a href="https://github.com/disqus/chishop">the DISQUS fork</a> as it contains several fixes. Expect to see all of the hard work in the various forks merged upstream as soon as we get some proper docs going. Follow the instructions in the README to configure Chishop, and your PyPi index.</p>
+
+<p>Now you&#8217;re going to want to tweak some things that are on by default. For starters, you&#8217;re probably going to want to proxy the official PyPi repository, and this can be done by enabling a simple flag in your newly created <code>settings.py</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">DJANGOPYPI_PROXY_MISSING</span> <span class="o">=</span> <span class="bp">True</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>There are many other configuration options, but you&#8217;re going to have to read the source for those.</p>
+
+<h3>Configure PIP/Setuptools/Buildout</h3>
+
+<p>Now that you&#8217;ve got a sexy PyPi server up and running, you&#8217;ll probably want to configure the default index locations for your package managers. It took me a bit of Googling but then I stumpled upon an awesome post by Jacob Kaplan-Moss about <a href="http://jacobian.org/writing/when-pypi-goes-down/">dealing with PyPi when it goes down</a>, which describes procedures for configuring PyPi mirrors.</p>
+
+<p>Let&#8217;s start with <strong>pip</strong>, which stores its configuration in <code>~/.pip/pip.conf</code>:</p>
+
+<pre>[global]
+index-url = http://my.chishop/simple</pre>
+
+<p>Next up, <strong>setuptools</strong>, located in <code>~/.pydistutils.cfg</code>:</p>
+
+<pre>[easy_install]
+index_url = http://my.chishop/simple</pre>
+
+<p>And finally, if you use <strong>buildout</strong>, tweak your <code>buildout.cfg</code>:</p>
+
+<pre>[buildout]
+index = http://my.chishop/simple</pre>
+
+<h3>Use It</h3>
+
+<p>Now that you have a fully functioning PyPi, kill off your requirements files and build a real setup.py. Hopefully as a bit of inspiration, here&#8217;s a snippet from Sentry&#8217;s:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">ez_setup</span> <span class="kn">import</span> <span class="n">use_setuptools</span>
+</span><span class='line'>    <span class="n">use_setuptools</span><span class="p">()</span>
+</span><span class='line'>    <span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">tests_require</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s">&#39;django&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;django-celery&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;south&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;django-haystack&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s">&#39;whoosh&#39;</span><span class="p">,</span>
+</span><span class='line'><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">setup</span><span class="p">(</span>
+</span><span class='line'>    <span class="n">name</span><span class="o">=</span><span class="s">&#39;django-sentry&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">version</span><span class="o">=</span><span class="s">&#39;1.6.8.1&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author</span><span class="o">=</span><span class="s">&#39;David Cramer&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">author_email</span><span class="o">=</span><span class="s">&#39;dcramer@gmail.com&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">url</span><span class="o">=</span><span class="s">&#39;http://github.com/dcramer/django-sentry&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Exception Logging to a Database in Django&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="s">&quot;example_project&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">install_requires</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>        <span class="s">&#39;django-paging&gt;=0.2.2&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;django-indexer==0.2.1&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;uuid&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'>    <span class="n">dependency_links</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>        <span class="s">&#39;https://github.com/disqus/django-haystack/tarball/master#egg=django-haystack&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'>    <span class="n">tests_require</span><span class="o">=</span><span class="n">tests_require</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">extras_require</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;test&#39;</span><span class="p">:</span> <span class="n">tests_require</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">test_suite</span><span class="o">=</span><span class="s">&#39;sentry.runtests.runtests&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">include_package_data</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">classifiers</span><span class="o">=</span><span class="p">[</span>
+</span><span class='line'>        <span class="s">&#39;Framework :: Django&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Intended Audience :: Developers&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Intended Audience :: System Administrators&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Operating System :: OS Independent&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s">&#39;Topic :: Software Development&#39;</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>, <a class='category' href='/categories/python/'>python</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1158,45 +1322,6 @@ project/conf/settings/dev.py
 
 
 <time datetime="2010-12-21T00:00:00-08:00" pubdate data-updated="true">Dec 21<span>st</span>, 2010</time></div>
-        <div class="tags">
-
-<div class="cat">
-  
-    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
-  
-</div>
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2010/12/10/announcing-the-disqus-code-blog">Announcing the DISQUS Code Blog</a></h1>
-    <div class="entry">
-        <p>Yesterday we semi-silently launched our <a href="http://code.disqus.com/">engineering blog and project site</a> over at DISQUS. We&#8217;re going to be aggregating posts from all of the engineering team&#8217;s personal blogs, as well as putting all of our open source projects and conference coverage over there. Look for all of the juicy details with what we&#8217;re building in Python and Django, and how we scale those apps.</p>
-
-<p>As I&#8217;m sure many will ask what we&#8217;re using to power that site, the answer is GitHub. We originally had looked at using Tumblr to aggregate RSS feeds into a new blog, but their existing tools werent powerful enough. By the time we had written our own (to import a post and tag it appropriately), we realized that their API just wasn&#8217;t responsive (or available) enough. In the end we decided to use <a href="http://github.com">GitHub</a> and the <a href="https://github.com/mojombo/jekyll">Jekyll blog application</a>. Being that this is GitHub, you can also check out the <a href="https://github.com/disqus/disqus.github.com">source to our blog</a> if you dare. We&#8217;re still fairly new to Jekyll, so don&#8217;t use us as best practices just yet.</p>
-
-<p>Oh, and don&#8217;t forget to <a href="http://feeds.feedburner.com/DisqusCode">subscribe</a> to updates :)</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-12-10T00:00:00-08:00" pubdate data-updated="true">Dec 10<span>th</span>, 2010</time></div>
         <div class="tags">
 
 <div class="cat">

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: heroku | David Cramer's Blog]]></title>
+  <link href="http://justcramer.com/categories/heroku/atom.xml" rel="self"/>
+  <link href="http://justcramer.com/"/>
+  <updated>2012-06-02T14:32:00-07:00</updated>
+  <id>http://justcramer.com/</id>
+  <author>
+    <name><![CDATA[David Cramer]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[The Cloud is Not For You]]></title>
+    <link href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you"/>
+    <updated>2012-06-02T13:57:00-07:00</updated>
+    <id>http://justcramer.com/2012/06/02/the-cloud-is-not-for-you</id>
+    <content type="html"><![CDATA[<p>It's been a fun year so far. There's been exciting things happening both for me personally, as well as at DISQUS. One of
+those things has been launching a new side project, <a href="https://www.getsentry.com">getsentry.com</a>. This is about
+it's 4th month running publicly, and it's been doing very well. I wanted to talk a little bit about where it started, and
+how quickly it's shifted in the stance of where it's going.</p>
+
+
+
+
+<p>Around Christmas of 2011, and after a lot of prodding by <a href="http://www.craigkerstiens.com/">Craig Kerstiens</a> (of Heroku)
+I had finally given in to the pressure of creating a hosted version of Sentry to launch as a Heroku addon. I already knew
+Sentry was awesome, as did many others, and this just meant getting something I put a lot of effort into out in front of
+so many others. It was very little work to get things up and running on Heroku, and just as easy to setup the addon
+endpoints. We started a private beta shortly thereafter, and immediately picked up a bunch of the Django/Python crowd.</p>
+
+
+
+
+<p>From there it slowly, but steadily grew in both customers and data. In fact, for the first couple of months we were able
+to survive on just a few dynos and the first tier of dedicated postgres (which was the $200 package at the time). We've
+also expanded to cover nearly all popular languages, including PHP, Ruby, Java, and even JavaScript.</p>
+
+
+
+
+<p>A bit further in the background of how I structured the Sentry service:</p>
+
+
+
+
+<ul>
+    <li>Two separate apps (www and app)</li>
+    <li>SSL everywhere (two certs, two addons, $40/month plus SSL cert costs)</li>
+    <li>A minimum of two dynos each ($140/month~)</li>
+    <li>Tier-1 dedicated DB (Ronin, $200/month)</li>
+</ul>
+
+
+
+
+<p>Now, before I continue, let me say that I thoroughly enjoyed using Heroku. It's a great service, I'm friends with a lot
+of people there. Now let's talk about why you shouldn't use Heroku, or the cloud.</p>
+
+
+
+
+<p>Right from the get-go we had a system that had pretty good HA and redundancy, especially due to how Heroku's Postgres
+solution works. Unfortunately, we quickly saw the limitations of what both the Postgres and the dynos could handle.</p>
+
+
+
+
+<p>Our first attempt to address this was to add worker nodes (ala Celery) to handle concurrency better. This turned into one
+or two additional dynos dedicated to processing jobs, as well as an additional Redis addon. Unfortunately the Redis addon
+is completely overpriced, we quickly shifted to pulling up a VM in Linode's eastcoast datacenter instead. This bought us
+a little bit of time, but really I'd say we were only given an additional 10% capacity by what should have been a large
+optimization.</p>
+
+
+
+
+<p>Another week or two went by, and it was suggested that we get off the Ronin database, and upgrade to the Fugu package (
+which bumped up the database cost to $400/month). This did quite a bit. In fact, this let us handle most things without
+too much of a concern. A little while down the road, we had a customer sign up who was actually send realistic amounts of
+data. More specifically, <strong>not even close to the amount of data Disqus' Sentry server handles</strong>, but about 10x
+more than the rest of our customers combined had been sending.</p>
+
+
+
+
+<p>Then shit started to hit the fan.</p>
+
+
+
+
+<p>In no specific order, we started finding numerous problems with various systems:</p>
+
+
+
+
+<ul>
+    <li>Redis takes too much memory to reliably queue Sentry jobs.</li>
+    <li>Dynos are either memory or CPU bound, but we have no idea how or why.</li>
+    <li>The Postgres server can't handle any reasonable level of concurrency.</li>
+    <li>We randomly have to spin up 20 dynos to get anywhere in the queue backlog.</li>
+</ul>
+
+
+
+
+<p>Given all of that, I made the decision that I was going to go back to using real hardware and managing it myself. I'm
+no stranger to operations work, though it's never been my day job. I did however want to do this right, and with the advice
+of my coworker, friend, and roommate, <a href="https://twitter.com/#!/sugarc0de">Mike Clarke</a> I decided I'd set these
+up properly, with Chef.</p>
+
+
+
+
+<p>About three days into it, and I had learned how to use Chef (I don't write Ruby), brought up two full pluggable
+configurations for a db node and a web node, written a deployment script in Fabric, migrated to the new hardware and
+destroyed my Heroku and Linode instances. Three days, that's all it took to replace the cloud.</p>
+
+
+
+
+<p>Now you might argue that the cloud let's you scale up easily. <strong>YOU ARE WRONG, IT DOES NOT.</strong> The cloud
+gives you the convenience, or more importantly, the illusion of convenience, that you can bring up nodes to add to your
+network without giving it much thought. You can do that. You don't ever realistically need to do that.</p>
+
+
+
+
+<p>Almost any company worth a damn can bring online a server within 24 hours, even budget companies. When have you actually
+needed turnaround time faster than that? If you did you, maybe you should read up on capacity planning.</p>
+
+
+
+
+<p>The hosted Sentry now runs on two budget servers, one which runs Postgres, pgbouncer, and Redis, the other which runs
+Nginx, Celery, memcached, and the Python webserver. The cost for these two machines? About $300/month. When I destroyed
+Heroku, my bill was looking to be around $600-700 between Heroku and Linode. Given the numbers we run at Disqus, the
+physical hardware should be able to handle no less than 2000% the capacity I was struggling to handle on the cloud.</p>
+
+
+
+
+<p>I'm not saying you can't make use of the cloud. For example, Disqus uses Amazon for running large amounts of map/reduce
+work. You know, <strong>elastic computing</strong>, the kind of computing that is inconsistent, unplanned, or generally
+infrequent. I'm also not saying you shouldn't Heroku. You should see if it works for you. However, if you ever come up
+to me and argue that the cloud is going to fix any problem, I'll make the assumption that you're one of those annoying
+kids that runs around screaming MongoDB and Node.js are the answer to all of the worlds problems.</p>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Don&#8217;t Use Padding or Margin on BODY Tags Today I was adding full screen support to iBox, and I hit an IE6 bug. The bug is introduced because &hellip;">
+    <meta name="description" content="Segmentation Fault Last week I made the decision to begin the conversion from MySQL to PostgreSQL. Well, more of a benchmark conversion, but none &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,47 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/04/02/segmentation-fault">Segmentation Fault</a></h1>
+    <div class="entry">
+        <p>Last week I made the decision to begin the conversion from MySQL to PostgreSQL. Well, more of a benchmark conversion, but none the less. So we begin the installation..</p>
+
+<p>I installed PostgreSQL server, version 8.2, painlessly both locally and on our staging server. I then installed psycopg2 via Python setuptools. Nice, quick and easy, right? <strong>Segmentation Fault</strong> when I try to sync up the database. So I figure maybe setuptools is outdated, and I removed psycopg2 and grabbed it with Darwin Ports. &#8220;Warning: [&#8230;]&#8221; everytime its initialized. I finally managed to get it working by downloading the source and compiling it. About an hour later, the only thing left to do is import the data&#8230;</p>
+
+<p>First I needed to sync the database, <code>manage.py syncdb</code>. Yep, Django makes it quick and easy. Things worked fine, no problems yet.  I began importing the www.ibegin.com database (12 million business listings, among other meta data). About 10% through California (which is massive) I get &#8220;Cannot Adapt&#8221;. First thing that comes through my head is &#8220;What the fuck kind of error message is that?&#8221;. I come from a strictly MySQL background, and I stand behind it to this day. After a little bit of searching, and pestering #postgresql on freenode, I learned that <em>somehow</em> the primary key sequence had corrupted itself.</p>
+
+<p>Correcting the sequence was fairly easy. You select the max value currently, and then do <code>setval()</code> or <code>nextval()</code> respectively on the sequence to fix it. I had no idea why this had occurred however.  I get done about 70% of the way through California, and notice my importer is slowing down. Oh, that&#8217;s right, my version of Django is still horrendously slow because it&#8217;s missing <a href="http://code.djangoproject.com/ticket/17">#17</a>.</p>
+
+<p>I quickly optimize my script to store everything in memory, and turn off <code>settings.DEBUG</code> because it wastes too damn much memory. I then continue the import from where it left off, and I notice that every so often it hangs. I check my indexes, and my select queries, and they&#8217;re all blazing fast. After a bit more pestering of the #postgresql people, I learned that PGSQL <strong>sucks hardcore</strong> on count queries. Now I didn&#8217;t plan to use them like I was in the importer, but that&#8217;s still a pretty big setback. So, the 1,000,000 extra meta rows that would exist, will have to wait until the import is fully finished.</p>
+
+<p>I get done with California, and move on to Florida, another fairly large state. I screen it and go to bed. I wake up to <strong>Cannot Adapt</strong> Again, &#8220;What the fuck!?&#8221;. This was getting very tiresome, and still is. I&#8217;m still only about 50% done with the import and I&#8217;ve had this come up at least a half dozen times already.</p>
+
+<p>All in all, PostgreSQL is neat. Transactions are great. Row-locking is great. MySQL&#8217;s InnoDB isn&#8217;t. It has a GIS framework. It causes a lot of headaches. Weighing the pros vs the cons, we&#8217;re going to stick with it. We&#8217;ll be deploying the new iBegin.com page (powered by Django) running a PostgreSQl 8.3 database, which will be pretty massive, to which I&#8217;m hoping that I don&#8217;t have to patch Django for ticket #17 to handle it.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-02T00:00:00-07:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -381,35 +422,6 @@
 
 
 <time datetime="2008-03-17T00:00:00-07:00" pubdate data-updated="true">Mar 17<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/03/15/ibegin-share-ibox-and-wordpress-plug-ins">iBegin Share, iBox, and Wordpress Plug-ins</a></h1>
-    <div class="entry">
-        <p>Today we released <a href="http://gamma.ibegin.com/share/">iBegin Share v2.10</a>, a complete rewrite to the original, <a href="http://gamma.ibegin.com/ibox/">iBox v2.11</a>, and WordPress plug-in&#8217;s to go along with each of them (see Share below this post).<br>
-        
-        <a href="/2008/03/15/ibegin-share-ibox-and-wordpress-plug-ins" class="more-link">Read on &rarr;</a>
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-15T00:00:00-07:00" pubdate data-updated="true">Mar 15<span>th</span>, 2008</time></div>
         <div class="tags">
 
 </div>

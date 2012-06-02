@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Tracking Changes to Fields in Django A common practice we have used over at Disqus is tracking changes on a model (explicitly) in order to determine &hellip;">
+    <meta name="description" content="Announcing the DISQUS Code Blog Yesterday we semi-silently launched our engineering blog and project site over at DISQUS. We&#8217;re going to be &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,45 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2010/12/10/announcing-the-disqus-code-blog">Announcing the DISQUS Code Blog</a></h1>
+    <div class="entry">
+        <p>Yesterday we semi-silently launched our <a href="http://code.disqus.com/">engineering blog and project site</a> over at DISQUS. We&#8217;re going to be aggregating posts from all of the engineering team&#8217;s personal blogs, as well as putting all of our open source projects and conference coverage over there. Look for all of the juicy details with what we&#8217;re building in Python and Django, and how we scale those apps.</p>
+
+<p>As I&#8217;m sure many will ask what we&#8217;re using to power that site, the answer is GitHub. We originally had looked at using Tumblr to aggregate RSS feeds into a new blog, but their existing tools werent powerful enough. By the time we had written our own (to import a post and tag it appropriately), we realized that their API just wasn&#8217;t responsive (or available) enough. In the end we decided to use <a href="http://github.com">GitHub</a> and the <a href="https://github.com/mojombo/jekyll">Jekyll blog application</a>. Being that this is GitHub, you can also check out the <a href="https://github.com/disqus/disqus.github.com">source to our blog</a> if you dare. We&#8217;re still fairly new to Jekyll, so don&#8217;t use us as best practices just yet.</p>
+
+<p>Oh, and don&#8217;t forget to <a href="http://feeds.feedburner.com/DisqusCode">subscribe</a> to updates :)</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-12-10T00:00:00-08:00" pubdate data-updated="true">Dec 10<span>th</span>, 2010</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -687,111 +726,6 @@ False</pre>
     <a class='category' href='/categories/django/'>django</a>
   
 </div>
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2010/01/06/debugging-django-errors">Debugging Django Errors</a></h1>
-    <div class="entry">
-        &#8212;
-wordpress_id: 502
-layout: post
-title: Debugging Django Errors
-wordpress_url: http://www.davidcramer.net/?p=502
-categories: [&#8220;django&#8221;]&#8212;
-<p>Today (for many hours) I sat here attempting to debug an error which Django wasn&#8217;t spitting out. This happened when combining Django+mod_wsgi and having a runtime import error. The result is a generic white internal server error page from Apache, and nothing recorded in any kind of error log.</p>
-
-<p>So, to make your life easier, I thought I&#8217;d help you out by showing what I discovered.</p>
-
-<p>First things first, you&#8217;re going to want to install a piece of debugging wsgi middleware. This was new to me, but its basically just a decorating class for your wsgi application. What I used was Paste&#8217;s ErrorMiddleware:</p>
-
-<pre>pip install -e svn+http://svn.pythonpaste.org/Paste/trunk</pre>
-
-<p>Now, pop open your handler file (handler.wsgi in our case). What we did, was make it so if DEBUG is set to True, then it wraps the application handler with the new middleware:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os.path</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Add the project to the python path</span>
-</span><span class='line'><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s">&#39;..&#39;</span><span class="p">))</span>
-</span><span class='line'><span class="c"># Prevent mod_wsgi from erroring on stdout access</span>
-</span><span class='line'><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Set our settings module</span>
-</span><span class='line'><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DJANGO_SETTINGS_MODULE&#39;</span><span class="p">]</span><span class="o">=</span><span class="s">&#39;iplatform.settings&#39;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">django.core.handlers.wsgi</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Run WSGI handler for the application</span>
-</span><span class='line'><span class="n">application</span> <span class="o">=</span> <span class="n">django</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">wsgi</span><span class="o">.</span><span class="n">WSGIHandler</span><span class="p">()</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Debug middleware</span>
-</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
-</span><span class='line'><span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Using Paste error middleware&quot;</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">paste.exceptions.errormiddleware</span> <span class="kn">import</span> <span class="n">ErrorMiddleware</span>
-</span><span class='line'><span class="n">application</span> <span class="o">=</span> <span class="n">ErrorMiddleware</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_exceptions_in_wsgi_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c"># Create session directory if not present</span>
-</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SESSION_FILE_PATH</span><span class="p">:</span>
-</span><span class='line'><span class="k">try</span><span class="p">:</span>
-</span><span class='line'><span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">SESSION_FILE_PATH</span><span class="p">)</span>
-</span><span class='line'><span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-</span><span class='line'><span class="k">pass</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Hope this helps you as much as it helped me!</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-01-06T00:00:00-08:00" pubdate data-updated="true">Jan 6<span>th</span>, 2010</time></div>
-        <div class="tags">
 
 </div>
         
