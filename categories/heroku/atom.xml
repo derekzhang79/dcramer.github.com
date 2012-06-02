@@ -4,7 +4,7 @@
   <title><![CDATA[Category: heroku | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/heroku/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-02T14:44:37-07:00</updated>
+  <updated>2012-06-02T14:45:04-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -135,7 +135,7 @@ needed turnaround time faster than that? If you did, maybe you should read up on
 
 
 
-<p>The hosted Sentry now runs on two budget servers, one which runs Postgres, pgbouncer, and Redis, the other which runs
+<p>The hosted Sentry now runs on two budget servers, one of which runs Postgres, pgbouncer, and Redis, the other handles
 Nginx, Celery, memcached, and the Python webserver. The cost for these two machines? About $300/month. When I destroyed
 Heroku, my bill was looking to be around $600-700 between Heroku and Linode. Given the numbers we run at Disqus, the
 physical hardware should be able to handle no less than 2000% the capacity I was struggling to handle on the cloud.</p>
