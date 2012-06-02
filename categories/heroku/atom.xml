@@ -4,7 +4,7 @@
   <title><![CDATA[Category: heroku | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/heroku/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-02T14:41:24-07:00</updated>
+  <updated>2012-06-02T14:44:37-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -130,7 +130,7 @@ network without giving it much thought. You can do that. You don't ever realisti
 
 
 <p>Almost any company worth a damn can bring online a server within 24 hours, even budget companies. When have you actually
-needed turnaround time faster than that? If you did you, maybe you should read up on capacity planning.</p>
+needed turnaround time faster than that? If you did, maybe you should read up on capacity planning.</p>
 
 
 
