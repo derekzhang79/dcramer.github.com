@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-02T14:32:00-07:00</updated>
+  <updated>2012-06-02T14:34:26-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -58,7 +58,7 @@ also expanded to cover nearly all popular languages, including PHP, Ruby, Java, 
 
 
 <p>Now, before I continue, let me say that I thoroughly enjoyed using Heroku. It's a great service, I'm friends with a lot
-of people there. Now let's talk about why you shouldn't use Heroku, or the cloud.</p>
+of people there. That said, I want to explain why you shouldn't use Heroku, or the cloud.</p>
 
 
 
