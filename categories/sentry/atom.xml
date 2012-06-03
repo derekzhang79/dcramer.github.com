@@ -4,7 +4,7 @@
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-02T14:45:04-07:00</updated>
+  <updated>2012-06-02T17:03:41-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -18,7 +18,12 @@
     <link href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you"/>
     <updated>2012-06-02T13:57:00-07:00</updated>
     <id>http://justcramer.com/2012/06/02/the-cloud-is-not-for-you</id>
-    <content type="html"><![CDATA[<p>It's been a fun year so far. There's been exciting things happening both for me personally, as well as at DISQUS. One of
+    <content type="html"><![CDATA[<p>Well, maybe not specifically <em>you</em>, but the mass that screams it will solve their problems.</p>
+
+
+
+
+<p>It's been a fun year so far. There's been exciting things happening both for me personally, as well as at DISQUS. One of
 those things has been launching a new side project, <a href="https://www.getsentry.com">getsentry.com</a>. This is about
 it's 4th month running publicly, and it's been doing very well. I wanted to talk a little bit about where it started, and
 how quickly it's shifted in the stance of where it's going.</p>

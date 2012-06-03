@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-06-02T14:45:04-07:00</updated>
+    <updated>2012-06-02T17:03:41-07:00</updated>
     <id>http://justcramer.com/</id>
 
     
@@ -12,9 +12,10 @@
                 <link href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you"/>
                 <updated>2012-06-02T13:57:00-07:00</updated>
                 <id>http://justcramer.com/2012/06/02/the-cloud-is-not-for-you</id>
-                <content type="html">It&amp;#8217;s been a fun year so far. There&amp;#8217;s been exciting things happening both for me personally, as well as at DISQUS. One of
-those things has been launching a new side project, getsentry.com. This is about
-it&amp;#8217;s 4th month running publicly, and it&amp;#8217;s been doing very well. I wanted &amp;hellip;</content>
+                <content type="html">Well, maybe not specifically you, but the mass that screams it will solve their problems.
+
+It&amp;#8217;s been a fun year so far. There&amp;#8217;s been exciting things happening both for me personally, as well as at DISQUS. One of
+those things has been launching a new side project, getsentry.com. This is &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>
