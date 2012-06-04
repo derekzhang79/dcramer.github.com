@@ -4,7 +4,7 @@
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T18:28:42-07:00</updated>
+  <updated>2012-06-03T18:29:34-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -34,7 +34,7 @@ with the result of <em>2 + 2</em>. I can't even explain the level of ignorance I
 <p>There are many definitions that float around for "the cloud", and what it means, and more specifically what it's
 supposed to do for you. When I talk about it, I'm not talking about you setting up hundreds of your own servers and
 virtualizing them. <strong>We do that too.</strong> I'm talking about the notion that there's some mythical provider
-that is going to cater to yoru needs and you're never going to have to worry about operational concerns.</p>
+that is going to cater to your needs and you're never going to have to worry about operational concerns.</p>
 
 <p>There is nothing wrong with using Heroku, AWS, Dotcloud, or any of the hundreds of other cloud providers out there.
 They all provide you with some level of relaxed operational requirements. That said, you're still restricted to whatever
