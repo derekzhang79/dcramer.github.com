@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T18:30:32-07:00</updated>
+  <updated>2012-06-03T18:32:51-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -50,8 +50,8 @@ system.</p>
 <p>One of the first things I pointed out in my article was the fact that I had to spin up large amounts of instances to
 handle temporary workload. Look, I was using the cloud, yay I&#8217;m scalable! Except that we forgot one important factor:
 I have a database, and I cant just &#8220;spin up more database&#8221;. There are many amazing systems out there that are built
-on the notion of distributed data with the goal of some level of horizontal scalability (Riak, Cassandra). They do not allow you
-to spin up more servers and gain more capacity immediately either.</p>
+on the notion of distributed data with the goal of some level of horizontal scalability (<a href="http://basho.com/products/riak-overview/">Riak</a>,
+<a href="http://cassandra.apache.org/">Cassandra</a>). They also do not allow youto spin up more servers and gain more capacity immediately.</p>
 
 <h3>Operations Complexity</h3>
 
