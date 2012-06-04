@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Denormalizing Model Abstraction in Django In the Lifestream service I&#8217;ve been working on, I presented myself with the need to have some class &hellip;">
+    <meta name="description" content="Lifestream&#8217;s Evolution Into a Platform One of the big things I&#8217;ve been talking about, and working on over the past couple of months ( &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,49 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2009/02/05/lifestreams-evolution-into-a-platform">Lifestream&#8217;s Evolution Into a Platform</a></h1>
+    <div class="entry">
+        <p>One of the big things I&#8217;ve been talking about, and working on over the past couple of months (although I haven&#8217;t been working much on it), is our new Lifestream service. The goal is to simply create an open platform. A place where a user can sign up and add their feeds much like on FriendFeed, or one of those hundred clones. However, we have a slightly different vision from the limited scope that is FriendFeed.</p>
+
+<p>We want to create a platform where this data is open to the user. A platform where they can use this data whenever, wherever, and however they want. Breaking down barriers between the data providers, and the user is not our only goal, but we also want to bring you a platform which goes above and beyond what the others offer. Allowing you to group and tweak your feeds (which are being relabled as sources) to your hearts desire.</p>
+
+<p>Let&#8217;s take an example. In the current Lifestream plugin, you have a &#8220;Digg&#8221; extension. This is a chunk of actual code, which lets you say &#8220;I want to show my Digg submissions, Digg favorites, and other Diggness, and group them all together.&#8221;. This by itself is fairly powerful, and gives the user some choice.</p>
+
+<p>There is no more code which powers Digg, instead we have a simply &#8220;Feed&#8221; extension which can power any RSS/Atom based feed. Instead, Digg exists as a virtual extension, which requires very little configuration, and can be used, and reused, by any user, as well as created very easily without much of a learning curve.</p>
+
+<p>Even more so, we have completely scrapped our previous grouping concept. Instead of restricting groups to simply being media types from the same source, we now allow you to group ANY source together as long as it&#8217;s the same media type (images can&#8217;t be grouped with messages). This opens up some very cool possibilities like being able to group all of your trendy news sites together (Digg, Reddit), or group all your bookmark posts together (Delicious, Google).</p>
+
+<p>Beyond just the technical details, we&#8217;re launching this as a service oriented platform. What this means is that you have a one-stop-shop to do whatever you want with your Lifestream, and then you can reuse that data on a variety of sources. Our initial release will include not only a WordPress plugin, but extensions for vBulletin, Blogger, and MediaWiki as well (pending time).</p>
+
+<p>Not only are we launching with several extensions, but we will also provide a very simple, themeable homepage for the user much like Pownce or Tumblr. This will allow you to post directly to your Lifestream, but also give you the ability to pull in information like your tweets. Essentially, this opens up an entire new blogging approach which hasn&#8217;t been very well explored.</p>
+
+<p>To the point. The service will be slowly opening up to users over the next month, and we hope to launch a fully open beta within the next 3-6 months. If you&#8217;re an extreme Lifestream fan, and you think you can really contribute in terms of feedback, and quality testing, we&#8217;re looking for you. Simply send me an <a href="mailto:dcramer@gmail.com/">email</a> letting me know that you are interested.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-05T00:00:00-08:00" pubdate data-updated="true">Feb 5<span>th</span>, 2009</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -824,43 +867,6 @@ Here&#8217;s a rough implementation (a bit old) of how ours was working. As you 
 </span><span class='line'><span class="k">return</span> <span class="n">response</span>
 </span></code></pre></td></tr></table></div></figure>
 
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-09-28T00:00:00-07:00" pubdate data-updated="true">Sep 28<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/09/28/django-scaling-numbers-for-ibegin">Django Scaling Numbers for iBegin</a></h1>
-    <div class="entry">
-        <p>So we&#8217;ve been pushing live some changes the last few days over at <a href="http://www.ibegin.com/">iBegin</a>. The biggest one is our brand new Django-powered website. The reason I bring this up, is to show all the haters out there, that Django really can scale well if you&#8217;ve designed your architecture properly from the get-go.</p>
-
-<p>We haven&#8217;t been able to peak yet, as we&#8217;re still doing some configuration changes and changes to the website itself, but so far the numbers are VERY impressive. The server is shared between all of our websites, which are both PHP and Python (Django) powered. It also hosts the memcached instance, and the static files. In fact, the only thing which is not hosted on the server, is the database.</p>
-
-<p>Anyways, here&#8217;s what we&#8217;ve been able to achieve off some initial siege tests. Keep in mind, this is limited to a single (somewhat randomly chosen) URL, and it varies a little bit depending on which page you&#8217;re hitting (file sizes, cache expirations, etc.). The average we&#8217;re seeing right now is around 200 req/s consistently across the website with siege tests, and our top numbers are around 500 req/s.</p>
-
-<pre><br>ifting the server siege...      done.<br>Transactions:               23305 hits<br>Availability:              100.00 %<br>Elapsed time:               43.32 secs<br>Data transferred:          434.98 MB<br>Response time:                0.05 secs<br>Transaction rate:          537.97 trans/sec<br>Throughput:               10.04 MB/sec<br>Concurrency:               26.68<br>Successful transactions:       23305<br>Failed transactions:               0<br>Longest transaction:            0.69<br>Shortest transaction:            0.00<br></pre>
-
-<p>I will post more results once we&#8217;ve tweaked some of the configuration settings, and I&#8217;ve created a proper URL configuration for siege to target.</p>
         
         
     </div>

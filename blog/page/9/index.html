@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="The Woes of Moving I&#8217;ve been out of touch for a little over a month now as I&#8217;ve been transitioning from the west to east coast. I &hellip;">
+    <meta name="description" content="Bash Trick: History Searching Ala iPython Recently I ran across a trick on the net. I use iPython quite a bit, and I love how I can type a partial &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,39 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/07/26/bash-trick-history-searching-ala-ipython">Bash Trick: History Searching Ala iPython</a></h1>
+    <div class="entry">
+        <p>Recently I ran across a trick on the net. I use iPython quite a bit, and I love how I can type a partial history command, and then use up/down to cycle through the recently used commands/code lines. I thought it would be pretty cool to have this same technique available in the bash prompt. After a bit of searching, I found some results, so here you go:</p>
+
+<pre># Enable bash history<br>export HISTCONTROL=erasedups<br>export HISTSIZE=10000<br>shopt -s histappend
+
+<p># These set up/down to do the history searching<br>bind '"\e[A"':history-search-backward<br>bind '"\e[B"':history-search-forward<br></pre></p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-26T00:00:00-07:00" pubdate data-updated="true">Jul 26<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -446,59 +479,6 @@ An example use:
         <p>We released new versions of iBegin Share and the Wordpress plug-in this morning. These are critical updates to solve display inconsistencies across browsers. You can grab them both over at <a href="http://labs.ibegin.com/">the labs</a>.</p>
 
 <p>If you don&#8217;t know what iBegin Share is, it&#8217;s a simple tool which allows you to &#8220;share&#8221; pages of your website. It&#8217;s very similar to things like ShareThis, except that it adds even more depth to the situation. You can view a demo of it by clicking &#8220;Share&#8221; below the title of this post.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/04/04/announcing-django-sphinx-200">Announcing Django-sphinx 2.0.0 Full-text Search</a></h1>
-    <div class="entry">
-        <p>One of my tasks lately has been updating the <a href="http://code.google.com/p/django-sphinx">django-sphinx</a> library to work with Sphinx 0.98, as it includes GIS components which we have been wanting to possibly utilize on our new search engine. So today, the conclusion of.. very few hours of work, I&#8217;d like to announce 2.0.0 of the Django integration.</p>
-
-<p>The SphinxSearch manager has been completely rewritten to rely strictly on the Python Sphinx API (a request from the author of Sphinx), which means it should have much more compatibility with newer versions in the future. I have also updated the querysets it returns to work like normal Django QuerySet instances, to where they clone themselves so you can fork your queryset into several different actions.</p>
-
-<p>The search results also now have a proxy which wraps each object. This proxy is specifically geared towards <a href="http://code.djangoproject.com/ticket/17">ticket #17</a>, and allows you to access a <code>_sphinx</code> attribute on each instance, without actually modifying that instance. You can also now access a <code>_sphinx</code> attribute on the queryset itself. Both of these contain relative meta-data for their object.</p>
-
-<p>So, a quick usage example using the new API:<br><pre><br>In [1]: from sphinxtest.tests.models import *</p>
-
-<p>In [2]: x = Document.search.query('a')</p>
-
-<p>In [3]: x._sphinx<br>Out[3]:<br>{'total': 10,<br>'total_found': 10,<br>'words': [{'docs': 10, 'hits': 10, 'word': 'a'}]}</p>
-
-<p>In [4]: x<br>Out[4]: [&lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;]</p>
-
-<p>In [5]: x[0]._sphinx<br>Out[5]: {'weight': 1}</p>
-
-<p>In [6]: x[0].title<br>Out[6]: u'Document 0'</p>
-
-<p>In [7]: type(x)<br>Out[7]: &lt;class 'djangosphinx.SphinxSearch'&gt;</p>
-
-<p>In [8]: type(x[0])<br>Out[8]: &lt;class 'djangosphinx.SphinxProxy'&gt;<br></pre></p>
-
-<p>As you can see, it&#8217;s full backwards compatible. Calling <code>queryset._sphinx</code> will force evaluation on the queryset. Grab the release over at <a href="http://code.google.com/p/django-sphinx">Google code</a>.</p>
-
-<p>Comments and criticism, send em my way :)</p>
         
         
     </div>

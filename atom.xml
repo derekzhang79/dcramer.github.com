@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-02T18:14:49-07:00</updated>
+  <updated>2012-06-03T18:24:24-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,76 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Scaling Your Clouds]]></title>
+    <link href="http://justcramer.com/2012/06/03/scaling-your-clouds"/>
+    <updated>2012-06-03T17:53:00-07:00</updated>
+    <id>http://justcramer.com/2012/06/03/scaling-your-clouds</id>
+    <content type="html"><![CDATA[<p>My post yesterday seems to have gotten all the cloud fanboy&#8217;s panties into a twist, so I figured I&#8217;d give them something
+else to rage about.</p>
+
+<p>There were lots of claims that without the cloud you can&#8217;t scale, or you dont have redundancy, or you can&#8217;t come up
+with the result of <em>2 + 2</em>. I can&#8217;t even explain the level of ignorance I&#8217;ve seen come out of the woodwork.
+
+<p>So let&#8217;s clarify some things.</p>
+
+<h3>&#8220;The Cloud&#8221;</h3>
+
+<p>There are many definitions that float around for &#8220;the cloud&#8221;, and what it means, and more specifically what it&#8217;s
+supposed to do for you. When I talk about it, I&#8217;m not talking about you setting up hundreds of your own servers and
+virtualizing them. <strong>We do that too.</strong> I&#8217;m talking about the notion that there&#8217;s some mythical provider
+that is going to cater to yoru needs and you&#8217;re never going to have to worry about operational concerns.</p>
+
+<p>There is nothing wrong with using Heroku, AWS, Dotcloud, or any of the hundreds of other cloud providers out there.
+They all provide you with some level of relaxed operational requirements. That said, you&#8217;re still restricted to whatever
+completely fucking shit hardware they decide is right for virtualization. Now I&#8217;m not talking AWS so much, as they do
+allow reasonable size instances, <strong>but you&#8217;re still restricted to what they&#8217;re willing to offer</strong>. You never
+have the option to order custom hardware.</p>
+
+<h3>Scale</h3>
+
+<p>A bunch of the internet hipsters on Hacker News and elsewhere seem to think that if you use the cloud, your application
+is going to magically scale by adding more servers to it. That may be true if you&#8217;re using MongoDB, <strong>but we dont
+live in a fairy tale here</strong> and it <strong>will not ever work</strong>. There are very few systems that I&#8217;m aware
+of that can scale from one machine to tens to hundreds to thousands without a massive rearchitecture of how you use the
+system.</p>
+
+<p>One of the first things I pointed out in my article was the fact that I had to spin up large amounts of instances to
+handle temporary workload. Look, I was using the cloud, yay I&#8217;m scalable! Except that we forgot one important factor:
+I have a database, and I cant not just &#8220;spin up more database&#8221;. There are many amazing systems out there that are built
+on the notion of distributed data with the goal of some level of horizontal scalability. <strong>They do not allow you
+to spin up more servers and gain more capacity immediately either.</strong></p>
+
+<h3>Operations Complexity</h3>
+
+<p>Another argument that was brought up was the fact that I now personally have to deal with redundancy, monitoring, security
+fixes, OS upgrades, bringing up more servers, etc.. Sure, that&#8217;s true. Except that that will cost me far less time than I would
+have spent trying to create a SQL database that can horizontal scale to infinity.</p>
+
+<ul>
+    <li>Redundancy is easy, especially at small scale. Cloud hosting is not going to solve your database redundancy for you.</li>
+    <li>Just because I&#8217;m hosting my own machines doesnt mean I cant use New Relic, or in my case <a href="http://scoutapp.com">Scout</a>.</li>
+    <li>I dont need to frequently bring up additional servers to handle the load <strong>because my actual hardware performs 2000 times better</strong> than my old virtualized hardware</li>
+    <li>Security updates? OS reloads? Its not like I&#8217;m compiling shit by hand, and through the convenience of configuration management <strong>this is unbelievably easy</strong>.</li>
+</ul>
+
+<p>If you ignore the entirety of operations, you will never have any idea what&#8217;s going on when there&#8217;s a problem.</p>
+
+<h3>The Time/Cost Tradeoff</h3>
+
+<p>In my original post I stated it took me about three days to get everything into Chef, and have the new hardware ordered and online. Even if this was three full days of my time, I had just spent four days a previous trying to get the infinitely scalable cloud solution to perform well enough. Simple math right, four is more than three. <strong>Not worth it.</strong></p>
+
+<p>I built <a href="https://www.getsentry.com">getsentry.com</a> specifically with the goal of optimizing cost vs
+profit margins. Ths is the first month that it&#8217;s been profitable, and unless every single customer jumps ship at once,
+it&#8217;s unlikely that I will ever have to put my own money (excluding my time) into the project again.</p>
+
+<h3>tl;dr</h3>
+
+<p>Virtualized computing has many great uses, but you <strong>do not need it</strong>, especially if you&#8217;re just starting
+a business. You can be <em>anything</em> at <em>any random company</em> and tell me you use the cloud successfully, and
+I&#8217;ll give you a pat on the back. I&#8217;ll then tell you that we rent servers successfully, and by we, I mean <a href="http://disqus.com">DISQUS</a>.</p>]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[The Cloud is Not For You]]></title>
@@ -2127,24 +2197,6 @@ project/conf/settings/dev.py
 <p>After a few wacky ideas I decided that the simplest solution would just be to write a URL mapper using origin and destination columns. With this in mind, I quickly whipped up a PHP script to dump my entire database of posts into a CSV file. The file converted the old permalinks (on davidcramer.net) to the new style. Finishing up the AppEngine app was fairly straight forward after this was ready. It included a CSV importer (to throw data into my datastore model), and handling the redirect part was painless. Again, if you&#8217;re curious, the <a href="https://github.com/dcramer/davidcramer-redirect">source</a> is on GitHub.</p>
 
 <p>I still have to deal with migrating URLs for Disqus, but let me know if you have any feedback on the new blog, it&#8217;s design, or just anything in general. Thanks!</p>]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Feature Switches in Django with Gargoyle]]></title>
-    <link href="http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle"/>
-    <updated>2010-12-21T00:00:00-08:00</updated>
-    <id>http://justcramer.com/2010/12/21/feature-switches-in-django-with-gargoyle</id>
-    <content type="html"><![CDATA[<p>A while back we talked about using <a href="http://blog.disqus.com/post/789540337/partial-deployment-with-feature-switches">feature switches</a> to deal with partial deployment. This allows you to easily deploy to portions of your audience, or bring out less finalized features without hiding them behind branches and the likes. This last week we hosted a company hack day here at DISQUS, and myself and <a href="http://anton.kovalyov.net/">Anton Kovalyov</a> decided we&#8217;d open source our switches platform. So the idea was that everyone here had a whole day to work on their projects. We figured that&#8217;d leave us plenty of time left over. In the end it turned out that creating an extensible platform was a bit more work than we had hoped.</p>
-
-<p>After hack day, and some sparse hours of finalizing things, we&#8217;re proud to be announcing <a href="https://github.com/disqus/gargoyle">Gargoyle</a> today.</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/-egenorlfjki.png" style="max-width:100%;" alt="gargoyle"/></p>
-
-<p>So out of the box, here&#8217;s what you get:</p>
-
-<ul><li>Support for IP address (by percent and IP)</li><li>Support for User (by percent, username, is_staff, is_superuser, and is_anonymous)</li><li>Integration using <a href="http://github.com/dcramer/nexus">Nexus</a> (post incoming later this week)</li><li>Easily extensible form-like condition sets for adding your own</li></ul>
-
-<p>Check out the <a href="https://github.com/disqus/gargoyle">README</a> and let us know what you think!</p>]]></content>
   </entry>
   
 </feed>

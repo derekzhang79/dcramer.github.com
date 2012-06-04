@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Vanilla Tired of using that piece of crap phpBB board, or maybe you&#8217;d just rather a cheaper and more user-friendly solution to vBulletin. Well &hellip;">
+    <meta name="description" content="Zidane&#8217;s Headbutt To be honest, I&#8217;m not a big football (soccer) fan, but the World Cup is always exciting. This year, I think it may &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,37 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2006/07/11/zidanes-headbutt">Zidane&#8217;s Headbutt</a></h1>
+    <div class="entry">
+        <p>To be honest, I&#8217;m not a big football (soccer) fan, but the World Cup is always exciting. This year, I think it may have been even more so. With 10 minutes left in the game, the French team member Zinedine Zidane, decided he had enough. Why? Who knows, but he sure made sure an Italian player, <span class="txt3Bold">Materazzi</span><span class="txt4Bold">, by smashing his head into the Italian player&#8217;s chest.</span></p>
+
+<p>To see it in action, check out my latest site, <a href="http://www.ggzidane.com/">Good Game Zidane</a>. The site was live 10 minutes after the event, gotta love GoDaddy and my servers :)<br><span class="txt4Bold" /></p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-07-11T00:00:00-07:00" pubdate data-updated="true">Jul 11<span>th</span>, 2006</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -356,65 +387,12 @@
     </div>
 </article>
 
-
-    <article class="post">
-    <h1 class="title"><a href="/2006/05/20/search-engine-standards">Search Engine Standards</a></h1>
-    <div class="entry">
-        <p>Just some notes, so I can hand these out to people:</p>
-
-<p><strong>Every page should have an h1</strong><br>The H1 should specifically tell what that page is. It should not be filled w/ keywords, keep it compact and simple. If your page has news about a game, the h1 should be &#8220;Name of Game News&#8221;. Ok?</p>
-
-<p><strong>The title should be very similar to the h1</strong><br>In most cases, your title can match your h1. Although you may want additional keywords and the added ability to brand the site name. A good structure is H1 Name - Category/Section Name - Site Name</p>
-
-<p>Although for your Index, this is the exception. Your main page (www.blah.com) is a good area to describe what your site is about in the title. Include many keywords but keep it less than 255 characters. &#8220;My Site - Game News, Game Forums, Game Porn&#8221; you get the jist.</p>
-
-<p><strong>Now we have h1 we need h2</strong><br>In my experiences I&#8217;ve followed all of these rules, and I&#8217;ve never used anything to much extend beyond h1 and h2. My rules for h2 are use it for navigation (section) headers, and article titles.</p>
-
-<p>In your nav you may have a section called forums,and list links under it. Forums would be in h2, the links of course should be in a standard list<br>If you have news on your page, make each news title an h2 (I&#8217;ve also seen these pushed to h3 but I believe they have a lot of weight and sticking w/ my routine, I&#8217;ve used h2).</p>
-
-<p><strong>Keyworded links and titles</strong><br>So you have a webpage, and when you link to stuff you say &#8220;click here&#8221; as the link name. Find a new career path (or keep reading). No one searches for &#8220;click here&#8221; so why would you say the page your linking to is about &#8220;click here&#8221;. Your link&#8217;s name should be about what the page is about, makes sense don&#8217;t it?</p>
-
-<p>There *are* exceptions where you need to link something w/ some retarded text, or an image, etc.. This is where the title attribute comes into use. <a title="World of Warcraft" href="http://mmotheatre.com/~dcramer/mysite">CLICK HERE</a> - This basically changes the name of the link to &#8220;World of Warcraft&#8221; in a search engine&#8217;s eyes.</p>
-
-<p>Keep your html clean, small, and prefix it with an x for even more luck<br>If you can&#8217;t figure out XHTML transitional, refer to finding a new career path. Overloading your page w/ tables, extra attributes, and well, improper tags hurts you not only in bandwidth costs (xhtml vs html) but it can also hurt your SE ranking. This is where using headers, proper linking, and lists comes into play as well.</p>
-
-<p>Use tags as they were meant to be used. It&#8217;s not like you&#8217;re sticking your link in an IMG tag are you? So why would you stick paragraph in div, or your list in a table.</p>
-
-<p><strong>URL Rewriting</strong><br>I dont think this does as much as everyone thinks, but it&#8217;s still a nice touch.<br>Most sites have dynamic content, and pages will look something like /myscript.php?someID=5. I prefer to take this, and say for example myscript shows articles. We can use mod_rewrite (google it) and do /articles/5/this-is-fake-words-blah-blah.html.<br>Try this, can&#8217;t say I never did anything for you:</p>
-
-<p>function safe_name($string)<br>{<br>if (!trim($string))<br>return false;<br>$string = preg_replace(&#8216;/[^a-zA-Z0-9_-s.]/&#8217;, &#8221;, $string);<br>$string = preg_replace(&#8216;/s/&#8217;, &#8216;-&#8216;, $string);<br>$string = strtolower($string); // make the string all lowercase values</p>
-
-<p>return $string;<br>}</p>
-
-<p>Already follow all these rules? Congratulations! You are one of the few people who seem to understand this not so complicated concept!<br>Anyways, agree or not, my methods are proven effective, check out <a href="http://www.nibbits.com/">Nibbits</a> for my latest example of finely tuned SE content as well as proof on <a href="http://www.wowguru.com/">World of Warcraft Guru</a>.<br><ul /></p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2006-05-20T00:00:00-07:00" pubdate data-updated="true">May 20<span>th</span>, 2006</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
 <nav id="pagenavi">
     
         <a href="/blog/page/15/" class="prev">Prev</a>
     
+    
+        <a href="/blog/page/17/" class="next">Next</a>
     
     <a href="/blog/archives" class="center">Blog Archives</a>
 </nav></div>

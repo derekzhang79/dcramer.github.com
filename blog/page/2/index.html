@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Setting Up Your Own PyPi Server Ever had problems with PyPi being unreachable? Dislike dealing with requirement.txt files just to support a git &hellip;">
+    <meta name="description" content="Creating a Read-only Mirror for Your GitHub Server Recently we&#8217;ve been transitioning our git repositories to GitHub. We chose to go this route &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,101 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2011/05/09/creating-a-one-way-git-server-mirror">Creating a Read-only Mirror for Your GitHub Server</a></h1>
+    <div class="entry">
+        <p>Recently we&#8217;ve been transitioning our git repositories to GitHub. We chose to go this route for a variety of reasons, but mostly
+because they have kickass pull requests, which we&#8217;re going to test run as code reviews. However, one of the requirements of this process was that
+our original git-server still remain functional, in at least a read-only state. This saves us the time of having to update deploy and
+other scripts which read from this mirror and perform various tasks.</p>
+
+<p>I was a bit surprised when I originally searched around for this, as I was either failing horribly at Google (granted, my queries were &#8220;how to setup git-server mirror&#8221;), or there just wasn&#8217;t much information out there on it. After a bit of crawling I found what seems to be a pretty easy way to get the behavior we wanted. For a recap, here&#8217;s a checklist of what we needed:</p>
+
+<ul>
+    <li>Read-only git server</li>
+    <li>One-way mirror from our new server to the legacy server.</li>
+    <li>Mirror all branches</li>
+    <li>Updated near real-time</li>
+</ul>
+
+<p>So, given this, we created a simple bash script that runs on a 1 minute cron timer (it&#8217;s as close to real-time as we needed):</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'>
+</span><span class='line'>mkdir -p  /var/git/mirrors/
+</span><span class='line'>
+</span><span class='line'><span class="nb">cd</span> /var/git/mirrors/
+</span><span class='line'>
+</span><span class='line'><span class="c"># clone our newly acquired GitHub mirror</span>
+</span><span class='line'>git clone --mirror git@github.com:organization/repo-name.git
+</span><span class='line'>
+</span><span class='line'><span class="nb">cd </span>disqus.git
+</span><span class='line'>
+</span><span class='line'><span class="c"># Add our local remote</span>
+</span><span class='line'>git remote add <span class="nb">local</span> /var/git/repositories/repo-name.git
+</span><span class='line'>
+</span><span class='line'><span class="c"># Unsure if we need to fetch from local, but let&#39;s do it anyways</span>
+</span><span class='line'>git fetch origin
+</span><span class='line'>git fetch <span class="nb">local</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># push all changes to local using --mirror (ensures all refs in remotes are pushed)</span>
+</span><span class='line'>git push <span class="nb">local</span> --mirror
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Since we were already using gitosis for permissions, it was easy for us to deprecate the legacy repo by simply moving everyone into a readable group that lacks write privileges.</p>
+
+<p>Would love to hear some feedback from avid git users if there&#8217;s a better way to do this.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-05-09T00:00:00-07:00" pubdate data-updated="true">May 9<span>th</span>, 2011</time></div>
+        <div class="tags">
+
+<div class="cat">
+  
+    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/git/'>git</a>
+  
+</div>
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -1284,51 +1379,6 @@ project/conf/settings/dev.py
 
 <time datetime="2010-12-24T00:00:00-08:00" pubdate data-updated="true">Dec 24<span>th</span>, 2010</time></div>
         <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2010/12/21/feature-switches-in-django-with-gargoyle">Feature Switches in Django With Gargoyle</a></h1>
-    <div class="entry">
-        <p>A while back we talked about using <a href="http://blog.disqus.com/post/789540337/partial-deployment-with-feature-switches">feature switches</a> to deal with partial deployment. This allows you to easily deploy to portions of your audience, or bring out less finalized features without hiding them behind branches and the likes. This last week we hosted a company hack day here at DISQUS, and myself and <a href="http://anton.kovalyov.net/">Anton Kovalyov</a> decided we&#8217;d open source our switches platform. So the idea was that everyone here had a whole day to work on their projects. We figured that&#8217;d leave us plenty of time left over. In the end it turned out that creating an extensible platform was a bit more work than we had hoped.</p>
-
-<p>After hack day, and some sparse hours of finalizing things, we&#8217;re proud to be announcing <a href="https://github.com/disqus/gargoyle">Gargoyle</a> today.</p>
-
-<p><img src="http://dl.dropbox.com/u/116385/Screenshots/-egenorlfjki.png" style="max-width:100%;" alt="gargoyle"/></p>
-
-<p>So out of the box, here&#8217;s what you get:</p>
-
-<ul><li>Support for IP address (by percent and IP)</li><li>Support for User (by percent, username, is_staff, is_superuser, and is_anonymous)</li><li>Integration using <a href="http://github.com/dcramer/nexus">Nexus</a> (post incoming later this week)</li><li>Easily extensible form-like condition sets for adding your own</li></ul>
-
-<p>Check out the <a href="https://github.com/disqus/gargoyle">README</a> and let us know what you think!</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-12-21T00:00:00-08:00" pubdate data-updated="true">Dec 21<span>st</span>, 2010</time></div>
-        <div class="tags">
-
-<div class="cat">
-  
-    <a class='category' href='/categories/disqus/'>disqus</a>, <a class='category' href='/categories/django/'>django</a>
-  
-</div>
 
 </div>
         

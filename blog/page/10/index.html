@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Segmentation Fault Last week I made the decision to begin the conversion from MySQL to PostgreSQL. Well, more of a benchmark conversion, but none &hellip;">
+    <meta name="description" content="Announcing Django-sphinx 2.0.0 Full-text Search One of my tasks lately has been updating the django-sphinx library to work with Sphinx 0.98, as it &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,59 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/04/04/announcing-django-sphinx-200">Announcing Django-sphinx 2.0.0 Full-text Search</a></h1>
+    <div class="entry">
+        <p>One of my tasks lately has been updating the <a href="http://code.google.com/p/django-sphinx">django-sphinx</a> library to work with Sphinx 0.98, as it includes GIS components which we have been wanting to possibly utilize on our new search engine. So today, the conclusion of.. very few hours of work, I&#8217;d like to announce 2.0.0 of the Django integration.</p>
+
+<p>The SphinxSearch manager has been completely rewritten to rely strictly on the Python Sphinx API (a request from the author of Sphinx), which means it should have much more compatibility with newer versions in the future. I have also updated the querysets it returns to work like normal Django QuerySet instances, to where they clone themselves so you can fork your queryset into several different actions.</p>
+
+<p>The search results also now have a proxy which wraps each object. This proxy is specifically geared towards <a href="http://code.djangoproject.com/ticket/17">ticket #17</a>, and allows you to access a <code>_sphinx</code> attribute on each instance, without actually modifying that instance. You can also now access a <code>_sphinx</code> attribute on the queryset itself. Both of these contain relative meta-data for their object.</p>
+
+<p>So, a quick usage example using the new API:<br><pre><br>In [1]: from sphinxtest.tests.models import *</p>
+
+<p>In [2]: x = Document.search.query('a')</p>
+
+<p>In [3]: x._sphinx<br>Out[3]:<br>{'total': 10,<br>'total_found': 10,<br>'words': [{'docs': 10, 'hits': 10, 'word': 'a'}]}</p>
+
+<p>In [4]: x<br>Out[4]: [&lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;, &lt;Document: Document object&gt;]</p>
+
+<p>In [5]: x[0]._sphinx<br>Out[5]: {'weight': 1}</p>
+
+<p>In [6]: x[0].title<br>Out[6]: u'Document 0'</p>
+
+<p>In [7]: type(x)<br>Out[7]: &lt;class 'djangosphinx.SphinxSearch'&gt;</p>
+
+<p>In [8]: type(x[0])<br>Out[8]: &lt;class 'djangosphinx.SphinxProxy'&gt;<br></pre></p>
+
+<p>As you can see, it&#8217;s full backwards compatible. Calling <code>queryset._sphinx</code> will force evaluation on the queryset. Grab the release over at <a href="http://code.google.com/p/django-sphinx">Google code</a>.</p>
+
+<p>Comments and criticism, send em my way :)</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-04T00:00:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -393,35 +446,6 @@
 
 
 <time datetime="2008-03-19T00:00:00-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2008/03/17/ibegin-places-powered-by-django">iBegin Places &#8211; Powered by Django</a></h1>
-    <div class="entry">
-        <p><a href='/wp-content/uploads/2008/03/picture-1.png'><img src="http://www.davidcramer.net/wp-content/uploads/2008/03/picture-1.png" alt="" title="picture-" width="150" height="70" class="alignleft size-thumbnail attachment wp-att-104" /></a>We&#8217;ve launched our first new site over at iBegin, and it&#8217;s called <a href="http://places.ibegin.com/">Places</a>. It&#8217;s an experiment in mapping informal spaces, or outlining landmarks and other types of locations that you wouldn&#8217;t normally find on a map. The framework was built in about a week, and is powered by Django, MySQL, the Jinja templating engine, and of course, Google Maps.<br>
-        
-        <a href="/2008/03/17/ibegin-places-powered-by-django" class="more-link">Read on &rarr;</a>
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-17T00:00:00-07:00" pubdate data-updated="true">Mar 17<span>th</span>, 2008</time></div>
         <div class="tags">
 
 </div>

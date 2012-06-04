@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-02T18:14:49-07:00</updated>
+  <updated>2012-06-03T18:24:24-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,81 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Scaling Your Clouds]]></title>
+    <link href="http://justcramer.com/2012/06/03/scaling-your-clouds"/>
+    <updated>2012-06-03T17:53:00-07:00</updated>
+    <id>http://justcramer.com/2012/06/03/scaling-your-clouds</id>
+    <content type="html"><![CDATA[<p>My post yesterday seems to have gotten all the cloud fanboy's panties into a twist, so I figured I'd give them something
+else to rage about.</p>
+
+
+
+
+<p>There were lots of claims that without the cloud you can't scale, or you dont have redundancy, or you can't come up
+with the result of <em>2 + 2</em>. I can't even explain the level of ignorance I've seen come out of the woodwork.
+
+<p>So let's clarify some things.</p>
+
+<h3>"The Cloud"</h3>
+
+<p>There are many definitions that float around for "the cloud", and what it means, and more specifically what it's
+supposed to do for you. When I talk about it, I'm not talking about you setting up hundreds of your own servers and
+virtualizing them. <strong>We do that too.</strong> I'm talking about the notion that there's some mythical provider
+that is going to cater to yoru needs and you're never going to have to worry about operational concerns.</p>
+
+<p>There is nothing wrong with using Heroku, AWS, Dotcloud, or any of the hundreds of other cloud providers out there.
+They all provide you with some level of relaxed operational requirements. That said, you're still restricted to whatever
+completely fucking shit hardware they decide is right for virtualization. Now I'm not talking AWS so much, as they do
+allow reasonable size instances, <strong>but you're still restricted to what they're willing to offer</strong>. You never
+have the option to order custom hardware.</p>
+
+<h3>Scale</h3>
+
+<p>A bunch of the internet hipsters on Hacker News and elsewhere seem to think that if you use the cloud, your application
+is going to magically scale by adding more servers to it. That may be true if you're using MongoDB, <strong>but we dont
+live in a fairy tale here</strong> and it <strong>will not ever work</strong>. There are very few systems that I'm aware
+of that can scale from one machine to tens to hundreds to thousands without a massive rearchitecture of how you use the
+system.</p>
+
+<p>One of the first things I pointed out in my article was the fact that I had to spin up large amounts of instances to
+handle temporary workload. Look, I was using the cloud, yay I'm scalable! Except that we forgot one important factor:
+I have a database, and I cant not just "spin up more database". There are many amazing systems out there that are built
+on the notion of distributed data with the goal of some level of horizontal scalability. <strong>They do not allow you
+to spin up more servers and gain more capacity immediately either.</strong></p>
+
+<h3>Operations Complexity</h3>
+
+<p>Another argument that was brought up was the fact that I now personally have to deal with redundancy, monitoring, security
+fixes, OS upgrades, bringing up more servers, etc.. Sure, that's true. Except that that will cost me far less time than I would
+have spent trying to create a SQL database that can horizontal scale to infinity.</p>
+
+<ul>
+    <li>Redundancy is easy, especially at small scale. Cloud hosting is not going to solve your database redundancy for you.</li>
+    <li>Just because I'm hosting my own machines doesnt mean I cant use New Relic, or in my case <a href="http://scoutapp.com">Scout</a>.</li>
+    <li>I dont need to frequently bring up additional servers to handle the load <strong>because my actual hardware performs 2000 times better</strong> than my old virtualized hardware</li>
+    <li>Security updates? OS reloads? Its not like I'm compiling shit by hand, and through the convenience of configuration management <strong>this is unbelievably easy</strong>.</li>
+</ul>
+
+<p>If you ignore the entirety of operations, you will never have any idea what's going on when there's a problem.</p>
+
+<h3>The Time/Cost Tradeoff</h3>
+
+<p>In my original post I stated it took me about three days to get everything into Chef, and have the new hardware ordered and online. Even if this was three full days of my time, I had just spent four days a previous trying to get the infinitely scalable cloud solution to perform well enough. Simple math right, four is more than three. <strong>Not worth it.</strong></p>
+
+<p>I built <a href="https://www.getsentry.com">getsentry.com</a> specifically with the goal of optimizing cost vs
+profit margins. Ths is the first month that it's been profitable, and unless every single customer jumps ship at once,
+it's unlikely that I will ever have to put my own money (excluding my time) into the project again.</p>
+
+<h3>tl;dr</h3>
+
+<p>Virtualized computing has many great uses, but you <strong>do not need it</strong>, especially if you're just starting
+a business. You can be <em>anything</em> at <em>any random company</em> and tell me you use the cloud successfully, and
+I'll give you a pat on the back. I'll then tell you that we rent servers successfully, and by we, I mean <a href="http://disqus.com">DISQUS</a>.</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[The Cloud is Not For You]]></title>
@@ -602,248 +677,6 @@ ensures that is never the case.</p>
 
 
 <p>Keep it simple. Keep it obvious.</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Using Arrays as Materialized Paths in Postgres]]></title>
-    <link href="http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres"/>
-    <updated>2012-04-08T16:52:00-07:00</updated>
-    <id>http://justcramer.com/2012/04/08/using-arrays-as-materialized-paths-in-postgres</id>
-    <content type="html"><![CDATA[<p>Something we've been casually working on at Disqus for <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">quite some time</a> is an improved pagination method for threaded comments. This is obviously pretty important to us, it drives the very foundation of our product. It also happens to be an area that's somewhat challenging, and has a <a href="http://en.wikipedia.org/wiki/Nested_intervals">wide</a> <a href="http://en.wikipedia.org/wiki/Nested_set_model">array</a> <a href="http://en.wikipedia.org/wiki/Adjacency_list">of</a> <a href="https://communities.bmc.com/communities/docs/DOC-9902">solutions</a>. In the end, this is an overly complicated solution to solve the problem of threads having 10s or 100s of thousands of comments.</p>
-
-
-
-
-<p>For some background, our first implementation is very similar to how <a href="http://reddit.com">Reddit</a> and many other systems work. It generally looks something like this:</p>
-
-
-
-
-<ol>
-    <li>Fetch all children for a tree</li>
-    <li>Resort them in memory</li>
-    <li>Return the N entry result set</li>
-</ol>
-
-
-
-
-<p>While fairly easy to implement, this has the enormous cost of pulling down every single child and resorting it at an application level. There are various ways to optimize this, and we even attempted doing it <a href="http://justcramer.com/2010/05/30/scaling-threaded-comments-on-django-at-disqus/">within the database</a> itself. In the end, none of our solutions worked at scale. They would either be too write heavy, or they'd move too much of the logic (read: CPU usage) to the database servers. That said, they led to something great, and in the end we settled on a solution that's neither too write or read heavy. That solution was materialized paths, but not in your typical way.</p>
-
-
-
-
-<p>A materialized path generally is represented as a serialization of all parents. So in a simple case, it might be a simple delimited list of id values. As an example, let's say that we have a list of comments that are guaranteed to only be less than 1000 for their identifying value:</p>
-
-
-
-
-<pre>
-001
-001002
-001002003
-001002007
-001004
-001005
-001005006
-</pre>
-
-
-
-
-<p>In this case we've managed to stuff all of this into a sortable numeric value. Unfortunately, in the real world, it's never this easy, so we looked for existing solutions to solve this problem. We'll skip all of the bikeshedding here, and jump straight to our solution: Arrays.</p>
-
-
-
-
-<p>Arrays are quite an interesting feature in Postgresql. They're a native data type, indexable, sortable, and contain a variety of operators and functions (and even more so in 8.4+). They also fit in nicely with our previous solution, with the caveat that we had to write to the arrays rather than generate them at execution time. In fact, they fit so well that we were able to directly translate a majority of the effort we spent while toying with CTEs.</p>
-
-
-
-
-<p>What we finally settled on was a schema which looks something like this:</p>
-
-
-
-
-<pre>
-\d postsort
-
-  Column   |   Type    | Modifiers 
------------+-----------+-----------
- tree_id   | integer   | not null
- child_id  | integer   | not null
- value     | numeric[] | not null
-
-Indexes:
-    "postsort_pkey" PRIMARY KEY, btree (tree_id, child_id)
-    "postsort_path" btree (tree_id, value)
-</pre>
-
-
-
-
-<p>A simple three-column schema gives us:</p>
-
-
-
-
-<ul>
-    <li><code>tree_id</code> The root node for this tree (for us, this is a comment thread)</li>
-    <li><code>child_id</code> A child contained within this tree. There's a row for every child</li>
-    <li><code>value</code> Our materialized path, implemented as an array</li>
-</ul>
-
-
-
-
-<p>The most important bit here is the <code>value</code>, and even more so what that array contains. Let's take a look at our previous example of simple numeric IDs, and how that'd be represented in this table:</p>
-
-
-
-
-<pre>
-child_id | value
-----------------
-1        | [1.0]
-2        | [1.0, 2.0]
-3        | [1.0, 2.0, 3.0]
-7        | [1.0, 2.0, 7.0]
-4        | [1.0, 4.0]
-5        | [1.0, 5.0]
-6        | [1.0, 5.0, 6.0]
-</pre>
-
-
-
-
-<p>You'll notice that the value always contains the id of the child as the last element, and is prefixed parents value. The child's ID <strong>must</strong> be present in order to guarantee sortability in conditions where these values are not unique. More specifically, in a real world scenario, you'll probably have some kind of <code>score</code> that you'd be including. As a demonstration of this eventual conflict, take the following values:</p>
-
-
-
-
-<pre>
-child_id | value
-----------------
-1        | [0.9134834, 1.0]
-2        | [0.9134834, 1.0, 0.149341, 2.0]
-3        | [0.9134834, 1.0, 0.149341, 2.0, 0.14123434, 3.0]
-4        | [0.9134834, 1.0, 0.149341, 2.0, 0.14123434, 7.0]
-5        | [0.9134834, 1.0, 0.149341, 5.0]
-6        | [0.9134834, 1.0, 0.149341, 5.0, 0.601343, 5.0]
-</pre>
-
-
-
-
-<p>You'll see that we had a conflicting score for two children. If we always include the <strong>unique identifying numeric value</strong> we'll never have to worry about rows shifting into parents which they're not a part of. You will also see that we've prefixed each child's value with the score. This again gives us the numeric sorting order which we're looking for and allows us to sort by any arbitrary score. This could be anything from a timestamp to a completely custom scoring algorithm based on something like up and down votes on a child.</p>
-
-
-
-
-<p>The schema and data storage is pretty straightforward, the bigger challenge is actually implementing the logic in your application (or if you're insane, within SQL triggers). We end up with a mess of SQL statements, with a singular goal to bring everything down to an atomic, transactionless nature. As an example, creating a new child probably resemebles something like the following:</p>
-
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">postsort</span> <span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">tree_id</span><span class="p">,</span>
-</span><span class='line'><span class="n">child_id</span><span class="p">,</span>
-</span><span class='line'><span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
-</span><span class='line'><span class="k">SELECT</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span><span class="p">,</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>   <span class="o">%</span><span class="p">(</span><span class="n">child_id</span><span class="p">)</span><span class="n">d</span> <span class="k">as</span> <span class="n">child_id</span><span class="p">,</span>
-</span><span class='line'>   <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">value</span> <span class="o">||</span> <span class="o">%</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="n">s</span><span class="p">::</span><span class="nb">numeric</span><span class="p">[])</span> <span class="k">as</span> <span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">FROM</span> <span class="n">postsort</span> <span class="k">as</span> <span class="n">t2</span>
-</span><span class='line'><span class="k">WHERE</span> <span class="n">t2</span><span class="p">.</span><span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">d</span>
-</span><span class='line'>  <span class="k">AND</span> <span class="n">t2</span><span class="p">.</span><span class="n">child_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">parent_child_id</span><span class="p">)</span><span class="n">d</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>Once you've populated the table, queries become amazingly simple:</p>
-
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SELECT</span> <span class="n">child_id</span>
-</span><span class='line'><span class="k">FROM</span> <span class="n">postsort</span>
-</span><span class='line'><span class="k">WHERE</span> <span class="n">tree_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span><span class="n">s</span>
-</span><span class='line'><span class="k">ORDER</span> <span class="k">BY</span> <span class="n">value</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>What's even more cool, aside from a lot of custom SQL we had to create for this to work in Django, is the fact that we were able to easily prototype and implement arrays within the Django ORM:</p>
-
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">NumericArrayField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Field</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SubfieldBase</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">db_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;numeric[]&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">get_prep_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">to_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>We've just begun rolling this out at Disqus, but our initial performance and capacity tests are showing great results. The flexibility of arrays has been amazingly helpful in this scenario, and has pushed us into a new direction in what we can do with SQL. Disqus reaches more than 700 million unique visitors across its platform, and as always, Postgres has stood its ground and will continue to be our primary datastore of choice.</p>
-
-
-
-
-<p>If Disqus sounds interesting to you, and you think you're a good fit and we're looking for passionate people to <a href="http://disqus.com/jobs/">join our team</a>.</p>
 
 ]]></content>
   </entry>
