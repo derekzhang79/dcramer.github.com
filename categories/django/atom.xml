@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T20:26:34-07:00</updated>
+  <updated>2012-06-03T21:39:54-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -94,7 +94,13 @@ tell you that we rent servers successfully, and by we, I mean <a href="http://di
     <link href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you"/>
     <updated>2012-06-02T13:57:00-07:00</updated>
     <id>http://justcramer.com/2012/06/02/the-cloud-is-not-for-you</id>
-    <content type="html"><![CDATA[<p>Well, maybe not specifically <em>you</em>, but the mass that screams it will solve their problems.</p>
+    <content type="html"><![CDATA[<p><strong>Update:</strong> Did I hurt your feelings with this post? Read
+<a href="http://justcramer.com/2012/06/03/scaling-your-clouds/">Scaling your Clouds</a> so you can rage even more.</p>
+
+
+
+
+<p>Well, maybe not specifically <em>you</em>, but the mass that screams it will solve their problems.</p>
 
 
 
