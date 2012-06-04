@@ -99,10 +99,10 @@ of that can scale from one machine to tens to hundreds to thousands without a ma
 system.</p>
 
 <p>One of the first things I pointed out in my article was the fact that I had to spin up large amounts of instances to
-handle temporary workload. Look, I was using the cloud, yay I&#8217;m scalable! Except that we forgot one important factor:
-I have a database, and I cant just &#8220;spin up more database&#8221;. There are many amazing systems out there that are built
+handle temporary workload. Too bad the database was bottlenecking on concurrent writes to the same row. You can&#8217;t ignore one important factor:
+I cant just &#8220;spin up more database&#8221;. There are many amazing systems out there that are built
 on the notion of distributed data with the goal of some level of horizontal scalability (<a href="http://basho.com/products/riak-overview/">Riak</a>,
-<a href="http://cassandra.apache.org/">Cassandra</a>). They also do not allow youto spin up more servers and gain more capacity immediately.</p>
+<a href="http://cassandra.apache.org/">Cassandra</a>). Even they also do not allow you to spin up more servers and gain more capacity immediately.</p>
 
 <h3>Operations Complexity</h3>
 
