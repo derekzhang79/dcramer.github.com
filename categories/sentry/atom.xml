@@ -4,7 +4,7 @@
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T18:32:51-07:00</updated>
+  <updated>2012-06-03T18:36:10-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -81,7 +81,7 @@ it's unlikely that I will ever have to put my own money (excluding my time) into
 
 <h3>tl;dr</h3>
 
-<p>Virtualized computing has many great uses, but you <strong>do not need it</strong>, especially if you're just starting
+<p>Virtualized computing has many great uses, but you do not <strong>need</strong> it, especially if you're just starting
 a business. You can be <em>anything</em> at <em>any random company</em> and tell me you use the cloud successfully, and
 I'll give you a pat on the back. I'll then tell you that we rent servers successfully, and by we, I mean <a href="http://disqus.com">DISQUS</a>.</p>
 
