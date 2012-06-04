@@ -4,7 +4,7 @@
   <title><![CDATA[Category: heroku | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/heroku/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T18:29:34-07:00</updated>
+  <updated>2012-06-03T18:30:32-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -52,7 +52,7 @@ system.</p>
 
 <p>One of the first things I pointed out in my article was the fact that I had to spin up large amounts of instances to
 handle temporary workload. Look, I was using the cloud, yay I'm scalable! Except that we forgot one important factor:
-I have a database, and I cant not just "spin up more database". There are many amazing systems out there that are built
+I have a database, and I cant just "spin up more database". There are many amazing systems out there that are built
 on the notion of distributed data with the goal of some level of horizontal scalability (Riak, Cassandra). They do not allow you
 to spin up more servers and gain more capacity immediately either.</p>
 
