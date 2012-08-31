@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T21:54:23-07:00</updated>
+  <updated>2012-08-30T21:56:09-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -125,8 +125,8 @@ supervisor_service "web-2" do
 end</pre>
 
 <p>There is a bit more to it then what I've shown, but all in all it was pretty simple. It just took me a bit to understand
-    how chef functioned. All in all, I'm now an engineer that has experience in Chef, even if it's very little, which
-    from my perspective (on the hiring end at Disqus), is an extremely nice addition to a skillset.</p>
+    how chef functioned. All in all, I'm now an engineer that has experience in Chef, even if it's very little. From
+    from my perspective (on the hiring end at Disqus), that's is an awesome addition to an engineer's skillset.</p>
 
 <p>Once the web server was online, all I had to do was to configure a primary database server. I simply brought up another
     node, gave it a new role (db), and didn't even need to create a custom recipe (I simply reused the existing pgbouncer,

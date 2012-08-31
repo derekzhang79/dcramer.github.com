@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T21:54:23-07:00</updated>
+  <updated>2012-08-30T21:56:09-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -110,8 +110,8 @@ supervisor_service "web-2" do
 end</pre>
 
 <p>There is a bit more to it then what I&#8217;ve shown, but all in all it was pretty simple. It just took me a bit to understand
-    how chef functioned. All in all, I&#8217;m now an engineer that has experience in Chef, even if it&#8217;s very little, which
-    from my perspective (on the hiring end at Disqus), is an extremely nice addition to a skillset.</p>
+    how chef functioned. All in all, I&#8217;m now an engineer that has experience in Chef, even if it&#8217;s very little. From
+    from my perspective (on the hiring end at Disqus), that&#8217;s is an awesome addition to an engineer&#8217;s skillset.</p>
 
 <p>Once the web server was online, all I had to do was to configure a primary database server. I simply brought up another
     node, gave it a new role (db), and didn&#8217;t even need to create a custom recipe (I simply reused the existing pgbouncer,
