@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-08-30T23:10:39-07:00</updated>
+    <updated>2012-08-30T23:14:31-07:00</updated>
     <id>http://justcramer.com/</id>
 
     
@@ -12,10 +12,11 @@
                 <link href="http://justcramer.com/2012/08/30/how-noops-works-for-sentry"/>
                 <updated>2012-08-30T20:59:00-07:00</updated>
                 <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
-                <content type="html">I&amp;#8217;ve talked a lot about how I run getsentry.com, mostly with my experiences
-on Heroku and how I switched to leased servers. Many people consistently
-suggested that operations work is difficult so they shouldn&amp;#8217;t deal with it themselves. I&amp;#8217;m not going to tell you that my
-roommate, &amp;hellip;</content>
+                <content type="html">Update: Don&amp;#8217;t decide against Heroku just because you&amp;#8217;ve read my blog. It makes some things (especially
+  prototyping) very easy, and with certain kinds of applications it can work just fine.
+
+I&amp;#8217;ve talked a lot about how I run getsentry.com, mostly with my experiences
+on Heroku and &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>
