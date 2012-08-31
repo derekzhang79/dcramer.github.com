@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T23:14:31-07:00</updated>
+  <updated>2012-08-30T23:15:12-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -19,7 +19,7 @@
     <updated>2012-08-30T20:59:00-07:00</updated>
     <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
     <content type="html"><![CDATA[<p><strong>Update:</strong> Don't decide against Heroku just because you've read my blog. It makes some things (especially
-  prototyping) very easy, and with certain kinds of applications it can work just fine.</p>
+  prototyping) very easy, and with certain kinds of applications it can work very well.</p>
 
 
 

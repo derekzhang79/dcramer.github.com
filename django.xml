@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-08-30T23:14:31-07:00</updated>
+    <updated>2012-08-30T23:15:12-07:00</updated>
     <id>http://justcramer.com/</id>
 
     
@@ -13,7 +13,7 @@
                 <updated>2012-08-30T20:59:00-07:00</updated>
                 <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
                 <content type="html">Update: Don&amp;#8217;t decide against Heroku just because you&amp;#8217;ve read my blog. It makes some things (especially
-  prototyping) very easy, and with certain kinds of applications it can work just fine.
+  prototyping) very easy, and with certain kinds of applications it can work very well.
 
 I&amp;#8217;ve talked a lot about how I run getsentry.com, mostly with my experiences
 on Heroku and &amp;hellip;</content>
