@@ -4,7 +4,7 @@
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T22:20:44-07:00</updated>
+  <updated>2012-08-30T22:21:30-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -21,8 +21,8 @@
     <content type="html"><![CDATA[<p>I've talked a lot about how I run <a href="http://getsentry.com">getsentry.com</a>, mostly with <a href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you/">my experiences
 on Heroku</a> and how I <a href="http://justcramer.com/2012/06/03/scaling-your-clouds/">switched to leased servers</a>. Many people consistently
 suggested that operations work is difficult so they shouldn't deal with it themselves. I'm not going to tell you that my
-roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one of the few operations people we have at
-<a href="http://disqus.com">DISQUS</a> has it easy, but I'd like to give you a little bit of food for thought.</p>
+roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, one of the few operations people we have at
+<a href="http://disqus.com">DISQUS</a>, has it easy, but I'd like to give you a little bit of food for thought.</p>
 
 
 
