@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T21:57:22-07:00</updated>
+  <updated>2012-08-30T22:01:09-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -27,7 +27,7 @@ roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one
 
 
 
-<p>GetSentry started around Christmas of 2011. I had already built and open sourced Sentry at Disqus, and the idea was to
+<p>GetSentry started around Christmas of 2011. I had already built and open sourced <a href="http://github.com/getsentry/sentry">Sentry</a> at Disqus, and the idea was to
     take that work and create a Heroku AddOn out of it. The pitch was that I could make a little bit of money on the side
     simply by hosting Sentry for people. About three months later I had that prototype hosting service running on Heroku,
     accepting payments both via the AddOn infrastructure, as well as on my own using the amazing
@@ -45,7 +45,7 @@ roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one
 
 
 <p>I'm going to tell you a bit of a story of how I switched from Heroku to fully configured leased servers in less than
-    a week, in my free time. I'm also going to try to convince you that it's really <strong>not that complicated</strong>.</p>
+    a week, in my free time. I'm also going to try to convince you that it's really <strong>not that complicated</strong>,.</p>
 
 
 
