@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T21:44:37-07:00</updated>
+  <updated>2012-08-30T21:51:16-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,175 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How 'NoOps' Works for Sentry]]></title>
+    <link href="http://justcramer.com/2012/08/30/how-noops-works-for-sentry"/>
+    <updated>2012-08-30T20:59:00-07:00</updated>
+    <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
+    <content type="html"><![CDATA[<p>I've talked a lot about how I run getsentry.com, mostly with <a href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you/">my experiences
+on Heroku</a> and how I <a href="http://justcramer.com/2012/06/03/scaling-your-clouds/">switched to leased servers</a>. Many people consistently
+suggested that operations work is difficult so they shouldn't deal with it themselves. I'm not going to tell you that my
+roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one of the few operations people we have at
+<a href="http://disqus.com">DISQUS</a> has it easy, but I'd like to give you a little bit of food for thought.</p>
+
+
+
+
+<p>GetSentry started around Christmas of 2011. I had already built and open sourced Sentry at Disqus, and the idea was to
+    take that work and create a Heroku AddOn out of it. The pitch was that I could make a little bit of money on the side
+    simply by hosting Sentry for people. About three months later I had that prototype hosting service running on Heroku,
+    accepting payments both via the AddOn infrastructure, as well as on my own using the amazing
+    <a href="http://stripe.com">Stripe</a> platform.</p>
+
+
+
+
+<p>Let's fast forward to today. I no longer host anything on Heroku (or any cloud provider), and instead I lease servers.
+    Now the company I lease from is what most people would call a "budget provider". They're extremely cheap (they dont
+    take extreme margins off the cost of the machines you're leasing), and they do absolutely nothing for you. It's not
+    for the faint of heart. That said, it's also how I can get away with very low costs.</p>
+
+
+
+
+<p>I'm going to tell you a bit of a story of how I switched from Heroku to fully configured leased servers in less than
+    a week, in my free time. I'm also going to try to convince you that it's really <strong>not that complicated</strong>.</p>
+
+
+
+
+<h3>The First Server</h3>
+
+
+
+
+<p>This part could be more appropriately titled "Learning Chef". I'm fortunate to have some awesome coworkers, and even
+    more fortunate that when I was making this transitiong I had access to my roommate to prod him about questions. I'm
+    also extremely fortunate that medians like Google, IRC, and Twitter exist for any other questions I ever have.
+
+<p>The first task I had to getting my prototype web server online was to get it all configured. I could have taken the
+    old fashioned approach of creating a few config files locally (vcs maybe) and then sending them up to the server,
+    as well as manually installing whatever packages I needed (nginx, memcache, etc.), but with Puppet and Chef becoming
+    all the range I figured it was as good as time as ever to dig into one.</p>
+
+<p>I decided to use the Chef hosted service, and after a few bumps with figuring out what all this Ruby stuff was about,
+    I had managed to get a basic understanding of roles and cookbooks. After quite a bit of fiddling I had created a
+    cookbook specific to getsentry (which holds things like setting up varoius paths), and a bunch of generic ones,
+    like apt, nginx, memcached, python, etc.</p>
+
+<h3>Creating a Recipe</h3>
+
+<p>The meat of this was handled via Chef's awesome roles, and wiring up a few things in the 'default' recipe of getsentry:</p>
+
+<pre>include_recipe "python"
+
+directory "/srv/www" do
+  owner "root"
+  group "root"
+  mode "0755"
+  action :create
+end
+
+directory "/srv/www/getsentry.com" do
+  owner "dcramer"
+  group "dcramer"
+  mode "0755"
+  action :create
+end
+</pre>
+
+<p>This formed the basis of any server that I would be running, and simply setup a couple of directories. I also simply
+    gave ownership to my user, as I'm the only one working on the project, and didn't need the added complexities of build
+    or system users.</p>
+
+<p>I then moved on to a second recipe, which formed the basis of a web node. This one has a lot more to it, as it needed
+    to configure nginx and memcache at the start:</p>
+
+<pre>include_recipe "getsentry"
+include_recipe "supervisor"
+
+template "#{node[:nginx][:dir]}/sites-available/getsentry.com" do
+  source "nginx/getsentry.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :reload, "service[nginx]"
+end
+
+nginx_site "getsentry.com"
+
+supervisor_service "web-1" do
+  directory "/srv/www/getsentry.com/current/"
+  command "/srv/www/getsentry.com/env/bin/python manage.py run_gunicorn -b 0.0.0.0:9000 -w #{node[:getsentry][:web][:workers]}"
+  environment "DJANGO_CONF" => node[:django_conf]
+  user "dcramer"
+end
+
+supervisor_service "web-2" do
+  directory "/srv/www/getsentry.com/current/"
+  command "/srv/www/getsentry.com/env/bin/python manage.py run_gunicorn -b 0.0.0.0:9001 -w #{node[:getsentry][:web][:workers]}"
+  environment "DJANGO_CONF" => node[:django_conf]
+  user "dcramer"
+end</pre>
+
+<p>There is a bit more to it then what I've shown, but all in all it was pretty simple. It just took me a bit to understand
+    how chef functioned. All in all, I'm now an engineer that has experience in Chef, even if it's very little, which
+    from my perspective (on the hiring end at Disqus), is an extremely nice addition to a skillset.</p>
+
+<p>Once the web server was online, all I had to do was to configure a primary database server. I simply brought up another
+    node, gave it a new role (db), and didn't even need to create a custom recipe (I simply reused the existing pgbouncer,
+    postgersql, and redis recipes available elsewhere on the internet).</p>
+
+<h3>Operational Complexity</h3>
+
+<p>I stated in the beginning that I completed this process in less than a week. From Heroku to hardware it took me about
+    three evenings of toying with Chef (mostly more complex components, like iptables and building a deploy script). What
+    I really want to point out is how I have <strong>never</strong> been in an operations position. I've definitely configured
+    servers (ala apt-get install nano), and know my way around, especially with a database, but most of this was fairly
+    new to me.</p>
+
+<p>The continued argument of it being "too difficult" to run your own servers is quite the overstatement. There are many
+    things I have to be concerned about, most importantly data loss and the ability to recover in the event of a disaster
+    on my machines. These also aren't overly complex challenges to handle.</p>
+
+<p>Data redundancy is handled a simple cron script that does nightly backups to S3. It's literally just a script that calls
+    pg_dump and s3cmd to send the files upstream. Now that's not enough for any real requirements, so step two is simply
+    setting up replication on your database node to a second server, if if that server is your application server.</p>
+
+<p>Availability is the second big problem, and is easily avoided the same way that you avoid losing your database: have
+    a second server. This again can be a server thats primary task is for something other than your application (it can
+    be your database). It doesnt have to a permanent location for it. It only has to survive until a primary server is
+    available or you're willing and able to invest in more hardware.</p>
+
+<h3>Closing Thoughts</h3>
+
+<p>I spent an initial three evenings, and another week's worth since on server configuring an operations. There were
+    various problems like Postgres not being tuned well enough (pgtune is amazing by the way), DNS being slow (fuck it,
+    use IPs), and some more minor things that needed addressed throughout that time. All in all, there's basically
+    zero day-to-day operations concerns, and most of the work happens when I need to expand the system (which is rare).</p>
+
+<p>All of it ended as an extremely valuable learning experience, but you using Chef wasn't a nescesity. I could have done
+    things the more "amateur" way, but I also now have the benefit of being able to bring online a server, run a few
+    commands, and have a machine or even a cluster identical to what's already running.</p>
+
+<p>On the limited hardware I run for getsentry.com, that is, two servers that actually service requests (one database,
+    one app), we've serviced around 25 million requests since August 1st, doing anywhere from 500k to 2 million in a
+    single day. That isn't that much traffic, but what's important is it services those requests very quickly, and is
+    using very little of the resources that are dedicated to it. In the end, this means that Sentry's revenue will grow
+    much more quickly than it's monthly bill will.</p>
+
+<p>GetSentry has been profitable since its 4th month, and currently only spends 10% of its monthly revenue (hardware and
+    other third party services). That gap gets larger every month, and I've been more than happy to invest some of my
+    time to keep that gap as large as possible.</p>
+
+<p>Also, <a href="http://whoownsmyavailability.com/">this</a>.</p>
+
+<p>Look for a future post with many more details on how I setup Chef (likely incorrect) with more in-depth code and
+    configuration from the cookbooks.</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Scaling Your Clouds]]></title>
@@ -550,140 +719,6 @@ simple using the <code>before_script</code> hook, which gets run before the test
 
 <p>Travis will automatically matrix each environment variable with each Python version, so you'll get
 a test run for every combination of the two. Pretty easy, right?</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Sticking With Standards]]></title>
-    <link href="http://justcramer.com/2012/04/24/sticking-with-standards"/>
-    <updated>2012-04-24T22:23:00-07:00</updated>
-    <id>http://justcramer.com/2012/04/24/sticking-with-standards</id>
-    <content type="html"><![CDATA[<p>More and more I'm seeing the "requirements.txt pattern" come up. This generally refers to projects (but not just), and
-seems to have started around the same time as Heroku adopting Python. I feel like this is something that matters in the
-Python world, and because I have an opinion on everything, I want to share mine.</p>
-
-
-
-
-<h3>requirements.txt</h3>
-
-
-
-
-<p>Let's first talk about what this pattern actually is. As you should already be familiar with pip (if you're not, this
-post is not for you), the idea of this is that whatever you're doing, is installable by pointing pip at a requirements.txt
-file which contains a list of your projects dependencies. This has some obvious benefits, one being that you can
-mark repositories as dependencies.</p>
-
-
-
-
-<p>Another benefit of this is when you have a large project (like DISQUS) and your dependencies can vary between environments. For
-example, we have several various requirements files for disqus-web (our largest package):</p>
-
-
-
-
-<pre>
-requirements/global.txt
-requirements/production.txt
-requirements/development.txt
-</pre>
-
-
-
-
-<p>These end up being pretty obvious, and when an app has specific needs there's no reason not to approach the problem this
-way. That said, you dont <strong>need</strong> to do things this way, and in every project other than our main repository,
-including our open source work, all dependencies are specified completely in setup.py. Even in this case, we could just
-as easily specify our core requirements as part of the package and simply have additional files which label the production
-and development dependencies.</p>
-
-
-
-
-<h3>setup.py is the right choice</h3>
-
-
-
-
-<p>A common argument for not using setup.py is that a library is not the same as an app (or larger project). Why not? We
-employ the same metadata in everything. Each contains a list of dependencies, some various metadata, and possibly a list
-of extra resources (such as scripts, or documentation). Fundamentally they're identical. Additionally, if pip is your
-thing, it <strong>does not prevent you from using setup.py</strong>. Let's take an example setup.py:</p>
-
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&#39;Flask==0.8&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;redis==2.4.11&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;hiredis==0.1.1&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="s">&#39;nydus==0.8.1&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">setup</span><span class="p">(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;something-sexy&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="n">version</span><span class="o">=</span><span class="s">&#39;1.0.0&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="n">author</span><span class="o">=</span><span class="s">&quot;DISQUS&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="n">author_email</span><span class="o">=</span><span class="s">&quot;dev@disqus.com&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="n">package_dir</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="s">&#39;src&#39;</span><span class="p">},</span>
-</span><span class='line'><span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">),</span>
-</span><span class='line'><span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">,</span>
-</span><span class='line'><span class="n">zip_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>Now, in our case, this is probably a service on Disqus, which means we're not listing it as a dependancy. In every
-single scenario we have, we want our package to be on <code>PYTHONPATH</code>, and this is no different. There's many ways
-to solve the problem, and generally adjusting <code>sys.path</code> is not what you're going to want. Whether you install
-the package or you just run it as an editable package (via pip install -e or setuptool's develop command), packaging
-your app makes it that much easier.</p>
-
-
-
-
-<p>What's even more important is that you <strong>stick with standards</strong>, especially in our growing ecosystem of
-open source and widely available libraries. There's absolutely no reason to have to explain to a developer that they
-need to run some arbitrary command to get your neat tool to install. Following the well defined and adopted standards
-ensures that is never the case.</p>
-
-
-
-
-<p>Keep it simple. Keep it obvious.</p>
 
 ]]></content>
   </entry>

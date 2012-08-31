@@ -4,7 +4,7 @@
   <title><![CDATA[David Cramer's Blog]]></title>
   <link href="http://justcramer.com/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-06-03T21:44:37-07:00</updated>
+  <updated>2012-08-30T21:51:16-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -12,6 +12,158 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How 'NoOps' Works for Sentry]]></title>
+    <link href="http://justcramer.com/2012/08/30/how-noops-works-for-sentry"/>
+    <updated>2012-08-30T20:59:00-07:00</updated>
+    <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
+    <content type="html"><![CDATA[<p>I&#8217;ve talked a lot about how I run getsentry.com, mostly with <a href="http://justcramer.com/2012/06/02/the-cloud-is-not-for-you/">my experiences
+on Heroku</a> and how I <a href="http://justcramer.com/2012/06/03/scaling-your-clouds/">switched to leased servers</a>. Many people consistently
+suggested that operations work is difficult so they shouldn&#8217;t deal with it themselves. I&#8217;m not going to tell you that my
+roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one of the few operations people we have at
+<a href="http://disqus.com">DISQUS</a> has it easy, but I&#8217;d like to give you a little bit of food for thought.</p>
+
+<p>GetSentry started around Christmas of 2011. I had already built and open sourced Sentry at Disqus, and the idea was to
+    take that work and create a Heroku AddOn out of it. The pitch was that I could make a little bit of money on the side
+    simply by hosting Sentry for people. About three months later I had that prototype hosting service running on Heroku,
+    accepting payments both via the AddOn infrastructure, as well as on my own using the amazing
+    <a href="http://stripe.com">Stripe</a> platform.</p>
+
+<p>Let&#8217;s fast forward to today. I no longer host anything on Heroku (or any cloud provider), and instead I lease servers.
+    Now the company I lease from is what most people would call a &#8220;budget provider&#8221;. They&#8217;re extremely cheap (they dont
+    take extreme margins off the cost of the machines you&#8217;re leasing), and they do absolutely nothing for you. It&#8217;s not
+    for the faint of heart. That said, it&#8217;s also how I can get away with very low costs.</p>
+
+<p>I&#8217;m going to tell you a bit of a story of how I switched from Heroku to fully configured leased servers in less than
+    a week, in my free time. I&#8217;m also going to try to convince you that it&#8217;s really <strong>not that complicated</strong>.</p>
+
+<h3>The First Server</h3>
+
+<p>This part could be more appropriately titled &#8220;Learning Chef&#8221;. I&#8217;m fortunate to have some awesome coworkers, and even
+    more fortunate that when I was making this transitiong I had access to my roommate to prod him about questions. I&#8217;m
+    also extremely fortunate that medians like Google, IRC, and Twitter exist for any other questions I ever have.
+
+<p>The first task I had to getting my prototype web server online was to get it all configured. I could have taken the
+    old fashioned approach of creating a few config files locally (vcs maybe) and then sending them up to the server,
+    as well as manually installing whatever packages I needed (nginx, memcache, etc.), but with Puppet and Chef becoming
+    all the range I figured it was as good as time as ever to dig into one.</p>
+
+<p>I decided to use the Chef hosted service, and after a few bumps with figuring out what all this Ruby stuff was about,
+    I had managed to get a basic understanding of roles and cookbooks. After quite a bit of fiddling I had created a
+    cookbook specific to getsentry (which holds things like setting up varoius paths), and a bunch of generic ones,
+    like apt, nginx, memcached, python, etc.</p>
+
+<h3>Creating a Recipe</h3>
+
+<p>The meat of this was handled via Chef&#8217;s awesome roles, and wiring up a few things in the &#8216;default&#8217; recipe of getsentry:</p>
+
+<pre>include_recipe "python"
+
+directory "/srv/www" do
+  owner "root"
+  group "root"
+  mode "0755"
+  action :create
+end
+
+directory "/srv/www/getsentry.com" do
+  owner "dcramer"
+  group "dcramer"
+  mode "0755"
+  action :create
+end
+</pre>
+
+<p>This formed the basis of any server that I would be running, and simply setup a couple of directories. I also simply
+    gave ownership to my user, as I&#8217;m the only one working on the project, and didn&#8217;t need the added complexities of build
+    or system users.</p>
+
+<p>I then moved on to a second recipe, which formed the basis of a web node. This one has a lot more to it, as it needed
+    to configure nginx and memcache at the start:</p>
+
+<pre>include_recipe "getsentry"
+include_recipe "supervisor"
+
+template "#{node[:nginx][:dir]}/sites-available/getsentry.com" do
+  source "nginx/getsentry.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  notifies :reload, "service[nginx]"
+end
+
+nginx_site "getsentry.com"
+
+supervisor_service "web-1" do
+  directory "/srv/www/getsentry.com/current/"
+  command "/srv/www/getsentry.com/env/bin/python manage.py run_gunicorn -b 0.0.0.0:9000 -w #{node[:getsentry][:web][:workers]}"
+  environment "DJANGO_CONF" => node[:django_conf]
+  user "dcramer"
+end
+
+supervisor_service "web-2" do
+  directory "/srv/www/getsentry.com/current/"
+  command "/srv/www/getsentry.com/env/bin/python manage.py run_gunicorn -b 0.0.0.0:9001 -w #{node[:getsentry][:web][:workers]}"
+  environment "DJANGO_CONF" => node[:django_conf]
+  user "dcramer"
+end</pre>
+
+<p>There is a bit more to it then what I&#8217;ve shown, but all in all it was pretty simple. It just took me a bit to understand
+    how chef functioned. All in all, I&#8217;m now an engineer that has experience in Chef, even if it&#8217;s very little, which
+    from my perspective (on the hiring end at Disqus), is an extremely nice addition to a skillset.</p>
+
+<p>Once the web server was online, all I had to do was to configure a primary database server. I simply brought up another
+    node, gave it a new role (db), and didn&#8217;t even need to create a custom recipe (I simply reused the existing pgbouncer,
+    postgersql, and redis recipes available elsewhere on the internet).</p>
+
+<h3>Operational Complexity</h3>
+
+<p>I stated in the beginning that I completed this process in less than a week. From Heroku to hardware it took me about
+    three evenings of toying with Chef (mostly more complex components, like iptables and building a deploy script). What
+    I really want to point out is how I have <strong>never</strong> been in an operations position. I&#8217;ve definitely configured
+    servers (ala apt-get install nano), and know my way around, especially with a database, but most of this was fairly
+    new to me.</p>
+
+<p>The continued argument of it being &#8220;too difficult&#8221; to run your own servers is quite the overstatement. There are many
+    things I have to be concerned about, most importantly data loss and the ability to recover in the event of a disaster
+    on my machines. These also aren&#8217;t overly complex challenges to handle.</p>
+
+<p>Data redundancy is handled a simple cron script that does nightly backups to S3. It&#8217;s literally just a script that calls
+    pg_dump and s3cmd to send the files upstream. Now that&#8217;s not enough for any real requirements, so step two is simply
+    setting up replication on your database node to a second server, if if that server is your application server.</p>
+
+<p>Availability is the second big problem, and is easily avoided the same way that you avoid losing your database: have
+    a second server. This again can be a server thats primary task is for something other than your application (it can
+    be your database). It doesnt have to a permanent location for it. It only has to survive until a primary server is
+    available or you&#8217;re willing and able to invest in more hardware.</p>
+
+<h3>Closing Thoughts</h3>
+
+<p>I spent an initial three evenings, and another week&#8217;s worth since on server configuring an operations. There were
+    various problems like Postgres not being tuned well enough (pgtune is amazing by the way), DNS being slow (fuck it,
+    use IPs), and some more minor things that needed addressed throughout that time. All in all, there&#8217;s basically
+    zero day-to-day operations concerns, and most of the work happens when I need to expand the system (which is rare).</p>
+
+<p>All of it ended as an extremely valuable learning experience, but you using Chef wasn&#8217;t a nescesity. I could have done
+    things the more &#8220;amateur&#8221; way, but I also now have the benefit of being able to bring online a server, run a few
+    commands, and have a machine or even a cluster identical to what&#8217;s already running.</p>
+
+<p>On the limited hardware I run for getsentry.com, that is, two servers that actually service requests (one database,
+    one app), we&#8217;ve serviced around 25 million requests since August 1st, doing anywhere from 500k to 2 million in a
+    single day. That isn&#8217;t that much traffic, but what&#8217;s important is it services those requests very quickly, and is
+    using very little of the resources that are dedicated to it. In the end, this means that Sentry&#8217;s revenue will grow
+    much more quickly than it&#8217;s monthly bill will.</p>
+
+<p>GetSentry has been profitable since its 4th month, and currently only spends 10% of its monthly revenue (hardware and
+    other third party services). That gap gets larger every month, and I&#8217;ve been more than happy to invest some of my
+    time to keep that gap as large as possible.</p>
+
+<p>Also, <a href="http://whoownsmyavailability.com/">this</a>.</p>
+
+<p>Look for a future post with many more details on how I setup Chef (likely incorrect) with more in-depth code and
+    configuration from the cookbooks.</p>]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Scaling Your Clouds]]></title>
@@ -2165,42 +2317,6 @@ project/conf/settings/dev.py
 </span></code></pre></td></tr></table></div></figure>
 
 <p>Let us know if you have any feedback, and make sure you <a href="http://feeds.feedburner.com/DisqusCode">subscribe to updates</a> from our code blog.</p>]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Blog Refresh]]></title>
-    <link href="http://justcramer.com/2010/12/24/blog-refresh"/>
-    <updated>2010-12-24T00:00:00-08:00</updated>
-    <id>http://justcramer.com/2010/12/24/blog-refresh</id>
-    <content type="html"><![CDATA[<p>It&#8217;s been long overdue, but I&#8217;ve given my blog a facelift, and a brand new domain. I wasn&#8217;t content with the .net domain, and my name is just far too common to have that many choices, so I went with one of the few I could come up with that was available, <a href="http://justcramer.com/">JustCramer.com</a>. I figured that with the domain move, I&#8217;d also go ahead and get off of WordPress and refresh the design at the same time.</p>
-
-<p>The new blog is powered off of <a href="https://github.com/mojombo/jekyll">Jekyll</a> and is running off of the <a href="http://pages.github.com">GitHub Pages technology</a>. I decided to use the <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a> project as a starter for the new design, and it&#8217;s turned out pretty well. If you&#8217;re curious, the source is available on <a href="https://github.com/dcramer/dcramer.github.com">GitHub</a> as always.</p>
-
-<p>Importing posts from WordPress turned out to be quite the challenge. Jekyll included a tool to translate the posts (for the most part) to HTML pages, and it worked decently. Though there were a few hurdles to overcome.</p>
-
-<p>The first problem was I had been using a syntax highlighting plugin in WordPress that worked by using <code>pre</code> tags with a <code>lang</code> attribute. For example, <code>&lt;pre lang="python"&gt;</code>. These all had to be translated to the <code>&#123;% highlight %&#125;</code> tags supported by Jekyll (on top of Pygments).</p>
-
-<p>Next up we actually had to deal with outputting &#123; and &#125; characters without Liquid (the template language Jekyll uses) parsing them. Just like Django, it seems they didn&#8217;t see the need to have some kind of raw escape tag (don&#8217;t get me started on the <code>templatetag</code> template tag in Django). After a bit of Googling I discovered the entities for these characters were <code>&amp;#123;</code> and <code>&amp;#125;</code>.</p>
-
-<p>After getting the pages mostly working, I realized they were all in .markdown. While I have nothing against markdown, it didn&#8217;t seem to play nice with some of my html. For example, it didn&#8217;t like lines that started with HTML tags. Not caring to figure out how to work around this, I decided I&#8217;d try to convert all HTML to Markdown. I attempted with both <a href="http://milianw.de/projects/markdownify/">Markdownify</a> (PHP) and a project called <a href="http://www.aaronsw.com/2002/html2text/">html2text</a> (Python). Both projects didn&#8217;t work out.In the end I decided I would just swap all pages over to HTML. </p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">for </span>x in *.dot;
-</span><span class='line'><span class="k">do</span>
-</span><span class='line'><span class="k">  </span>mv <span class="s2">&quot;$x&quot;</span> <span class="s2">&quot;${x%.markdown}.html&quot;</span>;
-</span><span class='line'><span class="k">done</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Now that I had renamed all of the files, it quickly came to my attention that I was going to have to deal with paragraphs. To do this I wrote a quick script that would iterate all of the files and replace lines which appeared to be actual paragraphs, with paragraph tags. If you&#8217;re curious about this script, you can find it <a href="https://github.com/dcramer/dcramer.github.com/blob/master/_import/fix-linebreaks.py">in the source</a>.</p>
-
-<p>The last big hurdle I had to deal with was rewriting permalinks. This was a bigger challenge that I expected. My entire goal here was to be based on free services and handling redirects requires some logic. By suggestion of <a href="http://anton.kovalyov.net">Anton Kovalyov</a> I reluctantly decided I would write a quick AppEngine app.</p>
-
-<p>After a few wacky ideas I decided that the simplest solution would just be to write a URL mapper using origin and destination columns. With this in mind, I quickly whipped up a PHP script to dump my entire database of posts into a CSV file. The file converted the old permalinks (on davidcramer.net) to the new style. Finishing up the AppEngine app was fairly straight forward after this was ready. It included a CSV importer (to throw data into my datastore model), and handling the redirect part was painless. Again, if you&#8217;re curious, the <a href="https://github.com/dcramer/davidcramer-redirect">source</a> is on GitHub.</p>
-
-<p>I still have to deal with migrating URLs for Disqus, but let me know if you have any feedback on the new blog, it&#8217;s design, or just anything in general. Thanks!</p>]]></content>
   </entry>
   
 </feed>

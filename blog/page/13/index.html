@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Dir() in JavaScript I was working with some JavaScript code today (for our new moderation tools on Curse), and found something interesting. Let me &hellip;">
+    <meta name="description" content="Set Cookies Without a Response in Django One issue I&#8217;ve personally had to overcome with Django, and languages which aren&#8217;t specifically &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,45 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2007/12/20/set-cookies-without-a-response-in-django">Set Cookies Without a Response in Django</a></h1>
+    <div class="entry">
+        <p>One issue I&#8217;ve personally had to overcome with Django, and languages which aren&#8217;t specifically designed for the web, is that you don&#8217;t have access to the environment everywhere. The environment I&#8217;m referring to, is the current request, and response objects.</p>
+
+<p>In PHP there is no response object, at least not one as you would see in Django. If you wish to set a header or cookie, you simply do it (before output has been given). In .NET it&#8217;s more or less the same, you set it in a globally accessible environment variable. This makes it very easy for random tidbits of code to modify the headers.</p>
+
+<p>We were recently implementing our new authentication service on Curse. The authentication service, of course, has to set several cookies. The issue we had to overcome was the authentication service may not, and usually wouldn&#8217;t, have access to a response object, as it hadn&#8217;t been created yet. The solution we came up with was simply to make the request.COOKIES variable have set methods on it.</p>
+
+<p>The code itself is fairly confusing, as I attempted to override request.COOKIES originally with just a Cookie() object. This proved to be a backwards-compatible issue as it wouldn&#8217;t return a string by default with getitem (you would need to call cookie.value to get it&#8217;s value instead). To ensure backwards compatibility we had to subclass the Cookie, and Morsel methods, and override getitem to act the same.</p>
+
+<p>All in all, we ended up with two middleware pieces, and a new class for request.COOKIES. The prehandler middleware should be your first middleware, and the post should be your last.</p>
+
+<p>You can <a href="http://www.pastethat.com/djangocookies">view the source at PasteThat</a>.<br><script src="http://gist.github.com/181116.js"></script></p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-20T00:00:00-08:00" pubdate data-updated="true">Dec 20<span>th</span>, 2007</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -365,41 +404,6 @@
 
 
 <time datetime="2007-08-02T00:00:00-07:00" pubdate data-updated="true">Aug 2<span>nd</span>, 2007</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2007/07/30/cursecom-launches">Curse.com Launches!</a></h1>
-    <div class="entry">
-        <p>We finally managed to get the new site pushed out the door last week, and it&#8217;s been one hell of a ride. It&#8217;s a complete overhaul of the old codebase, including a completely new template engine (Jinja), a new internatlization handler (in-house), and quite a few tweaks on the backend.</p>
-
-<p>For the past week we&#8217;ve been struggling with it, as we&#8217;ve hit a bumpy road. Random problems appearing that we haven&#8217;t yet been able to explain (thus, some randomly slow load times). On that note, we&#8217;ll be pushing out a lot more updates, at a lot faster rate.</p>
-
-<p>And worry not Django fans, we&#8217;re going to be contributing more than ever. Brian Harring joined the team recently, his sole purpose, to make Django awesome. He&#8217;s done great work in a few various places that have been enormous amounts of help to us.</p>
-
-<p>We also just recently released a patch to add <a href="http://code.djangoproject.com/ticket/5020">.group_by() support</a>, although not supported by Django officially, it may be useful to some of you. We&#8217;ll also possibly be releasing a <a href="http://groups.google.com/group/django-developers/browse_thread/thread/3b33bfe1e625b4ad">new select_related() optimization</a> if people are interested, again, probably won&#8217;t be adopted in trunk.</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2007-07-30T00:00:00-07:00" pubdate data-updated="true">Jul 30<span>th</span>, 2007</time></div>
         <div class="tags">
 
 </div>

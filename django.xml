@@ -2,9 +2,26 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>JustCramer</title>
     <link href="http://justcramer.com/atom.xml" rel="self"/>
-    <updated>2012-06-03T21:44:37-07:00</updated>
+    <updated>2012-08-30T21:51:16-07:00</updated>
     <id>http://justcramer.com/</id>
 
+    
+        
+            <entry>
+                <title>How &#8216;NoOps&#8217; Works for Sentry</title>
+                <link href="http://justcramer.com/2012/08/30/how-noops-works-for-sentry"/>
+                <updated>2012-08-30T20:59:00-07:00</updated>
+                <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
+                <content type="html">I&amp;#8217;ve talked a lot about how I run getsentry.com, mostly with my experiences
+on Heroku and how I switched to leased servers. Many people consistently
+suggested that operations work is difficult so they shouldn&amp;#8217;t deal with it themselves. I&amp;#8217;m not going to tell you that my
+roommate, &amp;hellip;</content>
+                <author>
+                    <name>David Cramer</name>
+                    <url>http://justcramer.com/</url>
+                </author>
+            </entry>
+        
     
         
             <entry>
@@ -144,20 +161,6 @@ Generally you have &amp;hellip;</content>
                 <content type="html">Just a few quick tips that I&amp;#8217;ve had to run through and discover today while upgrading to Lion.
 
 Start by installing Xcode 4, which is available via the App Store (for free now). This will fix your missing distutils package (which probably fixes a majority of your issues). You&amp;#8217;ll also &amp;hellip;</content>
-                <author>
-                    <name>David Cramer</name>
-                    <url>http://justcramer.com/</url>
-                </author>
-            </entry>
-        
-    
-        
-            <entry>
-                <title>EuroPython</title>
-                <link href="http://justcramer.com/2011/06/24/europython"/>
-                <updated>2011-06-24T00:00:00-07:00</updated>
-                <id>http://justcramer.com/2011/06/24/europython</id>
-                <content type="html">This last week I&amp;#8217;ve been attending EuroPython over here in Firenze (or as we Americans know it, Florence), Italy. It&amp;#8217;s been a pretty amazing time, visiting the beautiful city, putting faces to names, and seeing some great presentations. More importantly, and the main reason for my trip &amp;hellip;</content>
                 <author>
                     <name>David Cramer</name>
                     <url>http://justcramer.com/</url>

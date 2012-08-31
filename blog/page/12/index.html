@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="WRT54G and PS3 Internet Crashing As many people have recently, we experienced our internet constantly crashing while using the PS3. It turned out &hellip;">
+    <meta name="description" content="Slow Connections in Firefox 3 Beta 3 on Mac OS X Leopard Installed Firefox 3 Beta 3 here today at the office. &#8220;Shiny new fixes&#8221; they &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,39 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2008/02/13/slow-connections-in-firefox-3-beta-3-on-mac-os-x-leopard">Slow Connections in Firefox 3 Beta 3 on Mac OS X Leopard</a></h1>
+    <div class="entry">
+        <p>Installed Firefox 3 Beta 3 here today at the office. &#8220;Shiny new fixes&#8221; they said. So I load it up, and obviously none of my addons work again (so I have to run them through my converter), and I attempt to hit Curse. &#8220;Connecting to www.curse.com&#8230;&#8221; for a minute. Ok, wtf, is the website down? Nope, Google doesn&#8217;t work either. Turns out, no websites loading in a timely fashion due to DNS lookups being extremely slow.</p>
+
+<p>So I quickly Googled and found an answer (although unrelated it seemed).</p>
+
+<p>Go to <code>about:config</code> and search for <code>network.dns.disableIPv6</code>. Change the value to <code>true</code> and voila, the internet is now fast again.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-13T00:00:00-08:00" pubdate data-updated="true">Feb 13<span>th</span>, 2008</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -591,45 +624,6 @@ source files_file_en : base
 
 
 <time datetime="2008-01-03T00:00:00-08:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2008</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2007/12/20/set-cookies-without-a-response-in-django">Set Cookies Without a Response in Django</a></h1>
-    <div class="entry">
-        <p>One issue I&#8217;ve personally had to overcome with Django, and languages which aren&#8217;t specifically designed for the web, is that you don&#8217;t have access to the environment everywhere. The environment I&#8217;m referring to, is the current request, and response objects.</p>
-
-<p>In PHP there is no response object, at least not one as you would see in Django. If you wish to set a header or cookie, you simply do it (before output has been given). In .NET it&#8217;s more or less the same, you set it in a globally accessible environment variable. This makes it very easy for random tidbits of code to modify the headers.</p>
-
-<p>We were recently implementing our new authentication service on Curse. The authentication service, of course, has to set several cookies. The issue we had to overcome was the authentication service may not, and usually wouldn&#8217;t, have access to a response object, as it hadn&#8217;t been created yet. The solution we came up with was simply to make the request.COOKIES variable have set methods on it.</p>
-
-<p>The code itself is fairly confusing, as I attempted to override request.COOKIES originally with just a Cookie() object. This proved to be a backwards-compatible issue as it wouldn&#8217;t return a string by default with getitem (you would need to call cookie.value to get it&#8217;s value instead). To ensure backwards compatibility we had to subclass the Cookie, and Morsel methods, and override getitem to act the same.</p>
-
-<p>All in all, we ended up with two middleware pieces, and a new class for request.COOKIES. The prehandler middleware should be your first middleware, and the post should be your last.</p>
-
-<p>You can <a href="http://www.pastethat.com/djangocookies">view the source at PasteThat</a>.<br><script src="http://gist.github.com/181116.js"></script></p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2007-12-20T00:00:00-08:00" pubdate data-updated="true">Dec 20<span>th</span>, 2007</time></div>
         <div class="tags">
 
 </div>

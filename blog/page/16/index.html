@@ -7,7 +7,7 @@
     <meta name="author" content="David Cramer">
 
     
-    <meta name="description" content="Zidane&#8217;s Headbutt To be honest, I&#8217;m not a big football (soccer) fan, but the World Cup is always exciting. This year, I think it may &hellip;">
+    <meta name="description" content="Redirect Non-WWW Requests to WWW Since everything on page one of google isn&#8217;t, well, perfect, here&#8217;s a fully working example where you &hellip;">
     
     <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1">
 
@@ -64,6 +64,39 @@
 
 </header>
 	<div id="content" class="inner">
+
+
+    <article class="post">
+    <h1 class="title"><a href="/2006/07/23/redirect-non-www-requests-to-www">Redirect Non-WWW Requests to WWW</a></h1>
+    <div class="entry">
+        <p>Since everything on page one of google isn&#8217;t, well, perfect, here&#8217;s a fully working example where you don&#8217;t need to type in your silly domain name.</p>
+
+<pre><br># redirect all non-www traffic<br>RewriteCond %{HTTP_HOST} ^([a-zA-Z0-9\-]*)\.com$<br>RewriteRule ^.*$ http://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]<br></pre>
+
+<p>For the unknowing, this code uses <a href="http://httpd.apache.org/docs/1.3/mod/mod_rewrite.html">mod_rewrite</a>.</p>
+        
+        
+    </div>
+    <div class="meta">
+        <div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2006-07-23T00:00:00-07:00" pubdate data-updated="true">Jul 23<span>rd</span>, 2006</time></div>
+        <div class="tags">
+
+</div>
+        
+    </div>
+</article>
 
 
     <article class="post">
@@ -330,39 +363,6 @@
 <p>string input is the source filename<br>string output is the output filename<br>int width is the maximum new width (defaults to 150)<br>int height is the maxium new height (defaults to 100)</p>
 
 <p>You can <a href="http://www.davidcramer.net/projects/resampleImage.phps">download the resample image source here</a>. Have fun</p>
-        
-        
-    </div>
-    <div class="meta">
-        <div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2006-05-21T00:00:00-07:00" pubdate data-updated="true">May 21<span>st</span>, 2006</time></div>
-        <div class="tags">
-
-</div>
-        
-    </div>
-</article>
-
-
-    <article class="post">
-    <h1 class="title"><a href="/2006/05/21/html-tooltips">HTML Tooltips</a></h1>
-    <div class="entry">
-        <p>So I finally took the time to rework my tooltips script which is in use on sites like <a href="http://www.wowguru.com/">WoW Guru</a>. I originally created it as an alternative to using overlib and other quite large (bloated?) libraries as I didn&#8217;t need 90% of what they do.</p>
-
-<p>The tooltip library is very simple, as it currently has one option, which let&#8217;s you adjust the horizontal alignment with the source (wherever the tooltip is originating from). To use the library it&#8217;s as simple as including the javascript on your page (most likely in the header) and calling onmouseover=&#8221;showTip(event, &#8216;Text&#8217;);&#8221; on an element.</p>
-
-<p>If this is of use to you, have at it, if you&#8217;d like to see anything changed or added let me know. You can <a href="/wp-content/tooltips.js">download the javascript tooltips source here</a>.</p>
         
         
     </div>
