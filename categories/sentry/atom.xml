@@ -4,7 +4,7 @@
   <title><![CDATA[Category: sentry | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/sentry/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T22:15:33-07:00</updated>
+  <updated>2012-08-30T22:20:44-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -36,8 +36,8 @@ roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one
 
 
 
-<p>Let's fast forward to today. I no longer host anything on Heroku (or any cloud provider), and instead I lease servers.
-    Now the company I lease from is what most people would call a "budget provider". They're extremely cheap (they dont'
+<p>Let's fast forward to today. I no longer run any servers on Heroku (or any cloud provider, other than S3 for backups),
+    and instead I lease servers. Now the company I lease from is what most people would call a "budget provider". They're extremely cheap (they dont'
     add extreme margins to the cost of the machines you're leasing), and they do absolutely nothing for you. It's not
     for the faint of heart. That said, it's also how I can get away with very low costs.</p>
 
