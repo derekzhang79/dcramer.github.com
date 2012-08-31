@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T21:56:09-07:00</updated>
+  <updated>2012-08-30T21:57:22-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[How 'NoOps' Works for Sentry]]></title>
+    <title type="html"><![CDATA[Moving Sentry from Heroku to Hardware]]></title>
     <link href="http://justcramer.com/2012/08/30/how-noops-works-for-sentry"/>
     <updated>2012-08-30T20:59:00-07:00</updated>
     <id>http://justcramer.com/2012/08/30/how-noops-works-for-sentry</id>
