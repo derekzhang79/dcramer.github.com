@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T21:51:16-07:00</updated>
+  <updated>2012-08-30T21:53:16-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -160,7 +160,7 @@ end</pre>
     use IPs), and some more minor things that needed addressed throughout that time. All in all, there's basically
     zero day-to-day operations concerns, and most of the work happens when I need to expand the system (which is rare).</p>
 
-<p>All of it ended as an extremely valuable learning experience, but you using Chef wasn't a nescesity. I could have done
+<p>All of it ended as an extremely valuable learning experience, but you using Chef wasn't a necessity. I could have done
     things the more "amateur" way, but I also now have the benefit of being able to bring online a server, run a few
     commands, and have a machine or even a cluster identical to what's already running.</p>
 
