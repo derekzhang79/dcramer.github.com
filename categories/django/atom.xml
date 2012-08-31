@@ -4,7 +4,7 @@
   <title><![CDATA[Category: django | David Cramer's Blog]]></title>
   <link href="http://justcramer.com/categories/django/atom.xml" rel="self"/>
   <link href="http://justcramer.com/"/>
-  <updated>2012-08-30T22:01:09-07:00</updated>
+  <updated>2012-08-30T22:10:01-07:00</updated>
   <id>http://justcramer.com/</id>
   <author>
     <name><![CDATA[David Cramer]]></name>
@@ -37,8 +37,8 @@ roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one
 
 
 <p>Let's fast forward to today. I no longer host anything on Heroku (or any cloud provider), and instead I lease servers.
-    Now the company I lease from is what most people would call a "budget provider". They're extremely cheap (they dont
-    take extreme margins off the cost of the machines you're leasing), and they do absolutely nothing for you. It's not
+    Now the company I lease from is what most people would call a "budget provider". They're extremely cheap (they dont'
+    add extreme margins to the cost of the machines you're leasing), and they do absolutely nothing for you. It's not
     for the faint of heart. That said, it's also how I can get away with very low costs.</p>
 
 
@@ -140,9 +140,9 @@ end</pre>
     servers (ala apt-get install nano), and know my way around, especially with a database, but most of this was fairly
     new to me.</p>
 
-<p>The continued argument of it being "too difficult" to run your own servers is quite the overstatement. There are many
-    things I have to be concerned about, most importantly data loss and the ability to recover in the event of a disaster
-    on my machines. These also aren't overly complex challenges to handle.</p>
+<p>The continued argument of it being "too difficult" to run your own servers is quite the overstatement, but it's not
+    something you should ignore. There are many things I have to be concerned about, most importantly data loss and the
+    ability to recover in the event of a disaster on my machines. These also aren't overly complex challenges to handle.</p>
 
 <p>Data redundancy is handled a simple cron script that does nightly backups to S3. It's literally just a script that calls
     pg_dump and s3cmd to send the files upstream. Now that's not enough for any real requirements, so step two is simply

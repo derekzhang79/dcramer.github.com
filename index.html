@@ -83,8 +83,8 @@ roommate, <a href="http://twitter.com/drunkdev">Mike Clarke</a>, who is also one
     <a href="http://stripe.com">Stripe</a> platform.</p>
 
 <p>Let&#8217;s fast forward to today. I no longer host anything on Heroku (or any cloud provider), and instead I lease servers.
-    Now the company I lease from is what most people would call a &#8220;budget provider&#8221;. They&#8217;re extremely cheap (they dont
-    take extreme margins off the cost of the machines you&#8217;re leasing), and they do absolutely nothing for you. It&#8217;s not
+    Now the company I lease from is what most people would call a &#8220;budget provider&#8221;. They&#8217;re extremely cheap (they dont&#8217;
+    add extreme margins to the cost of the machines you&#8217;re leasing), and they do absolutely nothing for you. It&#8217;s not
     for the faint of heart. That said, it&#8217;s also how I can get away with very low costs.</p>
 
 <p>I&#8217;m going to tell you a bit of a story of how I switched from Heroku to fully configured leased servers in less than
@@ -177,9 +177,9 @@ end</pre>
     servers (ala apt-get install nano), and know my way around, especially with a database, but most of this was fairly
     new to me.</p>
 
-<p>The continued argument of it being &#8220;too difficult&#8221; to run your own servers is quite the overstatement. There are many
-    things I have to be concerned about, most importantly data loss and the ability to recover in the event of a disaster
-    on my machines. These also aren&#8217;t overly complex challenges to handle.</p>
+<p>The continued argument of it being &#8220;too difficult&#8221; to run your own servers is quite the overstatement, but it&#8217;s not
+    something you should ignore. There are many things I have to be concerned about, most importantly data loss and the
+    ability to recover in the event of a disaster on my machines. These also aren&#8217;t overly complex challenges to handle.</p>
 
 <p>Data redundancy is handled a simple cron script that does nightly backups to S3. It&#8217;s literally just a script that calls
     pg_dump and s3cmd to send the files upstream. Now that&#8217;s not enough for any real requirements, so step two is simply
